@@ -15,8 +15,9 @@ interface AuthContextType {
   isConfigured: boolean;
   anonKey: string;
   userName: string;
-  signIn: (email: string, password?: string) => Promise<{ data?: any; error: Error | null }>;
-  signUp: (email: string, password?: string, fullName?: string) => Promise<{ data?: any; error: Error | null }>;
+  signIn: (email: string, password?: string) => Promise<{ data?: { user?: User | null; session?: Session | null } | null; error: Error | null }>;
+  signUp: (email: string, password?: string, fullName?: string) => Promise<{ data?: { user?: User | null; session?: Session | null } | null; error: Error | null }>;
+  signInWithDemo: (fullName?: string, email?: string) => void;
   signOut: () => Promise<void>;
   updateAnonKey: (key: string) => void;
   openAuthModal: (mode?: 'signin' | 'signup' | unknown) => void;
@@ -29,9 +30,34 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const demoUserJson = localStorage.getItem('rolewise_demo_user');
+        if (demoUserJson) return JSON.parse(demoUserJson).user;
+      } catch {
+        // ignore
+      }
+    }
+    return null;
+  });
+  const [session, setSession] = useState<Session | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const demoUserJson = localStorage.getItem('rolewise_demo_user');
+        if (demoUserJson) return JSON.parse(demoUserJson).session;
+      } catch {
+        // ignore
+      }
+    }
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('rolewise_demo_user')) {
+      return false;
+    }
+    return true;
+  });
   const [anonKey, setAnonKeyState] = useState<string>(() => getSupabaseAnonKey());
   const [isConfigured, setIsConfigured] = useState<boolean>(() => {
     const k = getSupabaseAnonKey();
@@ -41,6 +67,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
 
   useEffect(() => {
+    // If demo session exists, initial state is already set
+    if (typeof window !== 'undefined' && localStorage.getItem('rolewise_demo_user')) {
+      return;
+    }
+
     const supabase = getSupabaseClient();
 
     // Check active session
@@ -134,9 +165,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithDemo = (fullName = 'Logesh Prasanth', email = 'logesh@rolewise.io') => {
+    const mockUser: User = {
+      id: 'demo-user-logesh',
+      app_metadata: {},
+      user_metadata: { full_name: fullName },
+      aud: 'authenticated',
+      created_at: new Date().toISOString(),
+      email,
+    } as User;
+
+    const mockSession: Session = {
+      access_token: 'demo-access-token-rolewise-mvp',
+      token_type: 'bearer',
+      expires_in: 86400,
+      refresh_token: 'demo-refresh-token',
+      user: mockUser,
+    } as Session;
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('rolewise_demo_user', JSON.stringify({ user: mockUser, session: mockSession }));
+    }
+
+    setUser(mockUser);
+    setSession(mockSession);
+    setIsAuthModalOpen(false);
+  };
+
   const signOut = async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('rolewise_demo_user');
+    }
     const supabase = getSupabaseClient();
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore
+    }
     setUser(null);
     setSession(null);
   };
@@ -167,6 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userName,
         signIn,
         signUp,
+        signInWithDemo,
         signOut,
         updateAnonKey,
         openAuthModal,

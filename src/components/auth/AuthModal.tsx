@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { X, Mail, Lock, User, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 
@@ -87,7 +87,7 @@ export const AuthModal: React.FC = () => {
     setAuthModalMode,
   } = useAuth();
 
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const mode = authModalMode || 'signin';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -99,29 +99,9 @@ export const AuthModal: React.FC = () => {
   const [isEmailConfirmationPending, setIsEmailConfirmationPending] = useState(false);
   const [isExistingUser, setIsExistingUser] = useState(false);
 
-  // Sync mode with context
-  useEffect(() => {
-    if (authModalMode) {
-      setMode(authModalMode);
-    }
-  }, [authModalMode]);
-
-  // Reset state on open/close
-  useEffect(() => {
-    if (isAuthModalOpen) {
-      setErrorMsg(null);
-      setSuccessMsg(null);
-      setShowForgotNotice(false);
-      setIsRateLimited(false);
-      setIsEmailConfirmationPending(false);
-      setIsExistingUser(false);
-    }
-  }, [isAuthModalOpen]);
-
   if (!isAuthModalOpen) return null;
 
   const switchMode = (newMode: 'signin' | 'signup') => {
-    setMode(newMode);
     setAuthModalMode?.(newMode);
     setErrorMsg(null);
     setSuccessMsg(null);

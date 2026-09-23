@@ -3,6 +3,10 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dktjtnjkrmrxvksjizwn.supabase.co';
 const DEFAULT_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
+export function getSupabaseUrl(): string {
+  return SUPABASE_URL;
+}
+
 let cachedClient: SupabaseClient | null = null;
 let currentKey = '';
 

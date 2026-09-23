@@ -1,30 +1,36 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowRight,
   ArrowLeft,
-  Loader2,
+  ArrowRight,
+  Briefcase,
+  CheckCircle2,
   AlertCircle,
-  X,
+  HelpCircle,
+  Sparkles,
+  Bot,
+  Lightbulb,
+  CheckSquare,
+  Loader2,
+  FileCheck,
 } from 'lucide-react';
 import { getPreparationItems } from '@/services/api';
 import { PreparationItem, Role } from '@/types/database';
-import { PriorityBadge, StatusBadge } from '@/components/ui/StatusBadge';
 
 export default function PreparationPage() {
   const params = useParams();
+  const router = useRouter();
   const roleId = params?.id as string;
 
   const [role, setRole] = useState<Role | null>(null);
   const [items, setItems] = useState<PreparationItem[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadPrepItems() {
+    async function loadData() {
       if (!roleId) {
         setIsLoading(false);
         return;
@@ -32,174 +38,274 @@ export default function PreparationPage() {
 
       setIsLoading(true);
       try {
-        const res = await getPreparationItems(roleId);
-        if (res.role) {
-          setRole(res.role);
-          setItems(res.items || []);
-        } else {
-          setRole(null);
-          setItems([]);
-        }
+        const data = await getPreparationItems(roleId);
+        setRole(data.role);
+        setItems(data.items || []);
       } catch (err) {
         console.error('Error loading preparation items:', err);
-        setRole(null);
       } finally {
         setIsLoading(false);
       }
     }
 
-    loadPrepItems();
+    loadData();
   }, [roleId]);
 
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
         <Loader2 className="w-6 h-6 animate-spin text-[#6D5DFB]" />
-        <p className="text-sm">Loading preparation items...</p>
+        <p className="text-xs sm:text-sm">Building your role preparation roadmap...</p>
       </div>
     );
   }
 
   if (!role) {
     return (
-      <div className="space-y-6 max-w-xl mx-auto py-12 text-center animate-in fade-in">
-        <div className="rolewise-card p-8 space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#FFF0ED] text-[#E87967] flex items-center justify-center mx-auto">
-            <AlertCircle className="w-6 h-6" />
-          </div>
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold text-[#1F2937]">Role not found</h2>
-            <p className="text-sm text-[#667085]">
-              Return to your roles and select a valid role.
-            </p>
-          </div>
-          <div className="pt-2">
-            <Link
-              href="/"
-              className="touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Return to Dashboard</span>
-            </Link>
-          </div>
+      <div className="rolewise-card p-8 max-w-lg mx-auto text-center space-y-4 my-12">
+        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#E87967] flex items-center justify-center mx-auto">
+          <AlertCircle className="w-6 h-6" />
         </div>
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold text-[#1F2937]">Role not found</h2>
+          <p className="text-xs text-[#667085]">Return to your jobs list to begin preparing.</p>
+        </div>
+        <Link
+          href="/jobs"
+          className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#6D5DFB] text-white text-xs font-semibold"
+        >
+          <span>Return to My Jobs</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-8 max-w-4xl mx-auto animate-in fade-in duration-300">
-      {/* Back breadcrumb */}
-      <div>
-        <Link
-          href={`/roles/${roleId}/fit`}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#667085] hover:text-[#1F2937] transition-colors touch-target"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Role Fit</span>
-        </Link>
-      </div>
+  const getStatusBadge = (status?: string, alignment?: string) => {
+    const combined = `${status || ''} ${alignment || ''}`.toLowerCase();
+    if (combined.includes('attention') || combined.includes('not demonstrated')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FFF0ED] text-[#E87967] text-[11px] font-semibold">
+          <AlertCircle className="w-3 h-3" />
+          <span>Needs attention</span>
+        </span>
+      );
+    }
+    if (combined.includes('investigation')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FFF5DF] text-[#C58A2B] text-[11px] font-semibold">
+          <HelpCircle className="w-3 h-3" />
+          <span>Needs investigation</span>
+        </span>
+      );
+    }
+    if (combined.includes('transferable')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#EEECFF] text-[#6D5DFB] text-[11px] font-semibold">
+          <Sparkles className="w-3 h-3" />
+          <span>Transferable</span>
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#EAF6F0] text-[#4E9B76] text-[11px] font-semibold">
+        <CheckCircle2 className="w-3 h-3" />
+        <span>Strong alignment</span>
+      </span>
+    );
+  };
 
-      {/* Header */}
-      <section className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-medium text-[#667085]">
-          <span className="font-semibold text-[#1F2937]">{role.title}</span>
-          {role.company && (
-            <>
-              <span>·</span>
-              <span>{role.company}</span>
-            </>
-          )}
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-semibold text-[#1F2937] tracking-tight">
+  const getActionBadge = (status?: string) => {
+    const s = (status || '').toLowerCase();
+    if (s.includes('attention') || s.includes('investigate')) {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#C58A2B]">
+          <span>Investigate</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#6D5DFB]">
+        <span>Practice</span>
+        <ArrowRight className="w-3.5 h-3.5" />
+      </span>
+    );
+  };
+
+  return (
+    <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in duration-300 pb-16">
+      {/* Breadcrumb Back */}
+      <Link
+        href={`/roles/${role.id}/fit`}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#667085] hover:text-[#1F2937] transition-colors"
+      >
+        <ArrowLeft className="w-3.5 h-3.5" />
+        <span>Back to Role Fit</span>
+      </Link>
+
+      {/* HEADER SECTION (PRD Requirement 5) */}
+      <section className="space-y-1">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#1F2937] tracking-tight">
           Prepare for your interview
         </h1>
-        <p className="text-sm sm:text-base text-[#667085]">
-          Focus on the areas that matter most for this role.
+        <p className="text-xs sm:text-sm text-[#667085]">
+          Focus on the areas that matter most for{' '}
+          <strong className="text-[#1F2937]">{role.title}</strong> at {role.company}.
         </p>
       </section>
 
-      {/* Error Alert */}
-      {errorMessage && (
-        <div className="p-4 rounded-xl bg-[#FFF0ED] border border-[#FBD2CB] text-[#E87967] text-sm flex items-start justify-between gap-3 animate-in fade-in">
-          <div className="flex items-start gap-2.5">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold">Unable to start interview</p>
-              <p className="mt-0.5 text-xs text-[#E87967]">{errorMessage}</p>
-            </div>
+      {/* TWO COLUMN PREPARATION LAYOUT (Image 5) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT COLUMN: Preparation Area Cards */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between pb-1">
+            <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">
+              {items.length} Preparation Areas Identified
+            </span>
           </div>
-          <button
-            onClick={() => setErrorMessage(null)}
-            className="text-[#E87967] hover:text-[#1F2937] p-1 rounded-lg"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
 
-      {/* Preparation Cards List */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#667085]">
-            Targeted Focus Areas ({items.length})
-          </h2>
-          <span className="text-xs text-[#667085]">
-            Ordered by strategic impact
-          </span>
-        </div>
-
-        {items.length === 0 ? (
-          <div className="rolewise-card p-6 text-center text-[#667085] text-sm">
-            No preparation items identified for this role yet. You can still practice with the AI interview below.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4">
-            {items.map((item, idx) => (
-              <div
-                key={item.id || idx}
-                className="rolewise-card p-6 transition-all hover:border-[#D0D5DD] space-y-3"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-base font-semibold text-[#1F2937]">
-                      {item.title}
-                    </h3>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <PriorityBadge priority={item.priority} />
-                    <StatusBadge status={item.alignment_status || item.status || 'Transferable'} size="sm" />
-                  </div>
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="rolewise-card p-5 space-y-3.5 hover:border-[#D0D5DD] transition-all"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  {getStatusBadge(item.status, item.alignment_status)}
                 </div>
+                <div className="flex items-center gap-1 text-xs font-semibold text-[#4E9B76]">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Ready to practice</span>
+                </div>
+              </div>
 
-                <p className="text-sm text-[#1F2937] leading-relaxed">
+              <div className="space-y-1">
+                <h3 className="text-sm sm:text-base font-semibold text-[#1F2937]">
+                  {item.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-[#475467] leading-relaxed">
                   {item.description}
                 </p>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
 
-      {/* Primary CTA */}
-      <div className="rolewise-card p-6 bg-white flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="space-y-0.5">
-          <h4 className="text-sm font-semibold text-[#1F2937]">
-            Ready to test your responses?
-          </h4>
-          <p className="text-xs text-[#667085]">
-            Practice live responses tailored to these {role.company ? `${role.company} ` : ''}requirements.
-          </p>
+              <div className="pt-2 border-t border-[#E7E8EF] flex items-center justify-between">
+                <span className="text-[11px] text-[#98A2B3]">Derived from role fit findings</span>
+                <Link
+                  href={`/roles/${role.id}/interview`}
+                  className="touch-target inline-flex items-center gap-1 text-xs font-semibold text-[#6D5DFB] hover:text-[#5A48F5] transition-colors"
+                >
+                  {getActionBadge(item.status)}
+                </Link>
+              </div>
+            </div>
+          ))}
+
+          {/* Practical Tip Callout */}
+          <div className="p-4 rounded-xl bg-[#EEECFF]/60 border border-[#DDD8FE] flex items-start gap-3 text-xs text-[#1F2937]">
+            <Lightbulb className="w-4 h-4 text-[#6D5DFB] shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <span className="font-semibold">Preparation Strategy: </span>
+              <span className="text-[#475467]">
+                Focus on the areas marked for practice or investigation to feel more confident during your AI interview session.
+              </span>
+            </div>
+          </div>
         </div>
 
-        <Link
-          href={`/roles/${roleId}/interview`}
-          className="w-full sm:w-auto touch-target inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm cursor-pointer"
-        >
-          <span>Start AI interview</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        {/* RIGHT COLUMN: Target Role, Primary Actions, Checklist */}
+        <div className="space-y-5">
+          {/* Target Role Pill */}
+          <div className="rolewise-card p-5 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center">
+                <Briefcase className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs sm:text-sm font-semibold text-[#1F2937] truncate">{role.title}</h3>
+                <p className="text-xs text-[#667085] truncate">{role.company}</p>
+              </div>
+            </div>
+
+            {/* Primary Action Button */}
+            <div className="pt-2 space-y-2">
+              <Link
+                href={`/roles/${role.id}/interview`}
+                className="w-full touch-target inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-sm"
+              >
+                <span>Start AI interview</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+
+              <Link
+                href={`/roles/${role.id}/fit`}
+                className="w-full touch-target inline-flex items-center justify-center py-2.5 px-4 rounded-xl border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#667085] transition-colors"
+              >
+                Back to role fit
+              </Link>
+            </div>
+          </div>
+
+          {/* Interview Focus Summary */}
+          <div className="rolewise-card p-5 space-y-3">
+            <h4 className="text-xs font-semibold text-[#1F2937] uppercase tracking-wider">
+              Interview Focus
+            </h4>
+            <div className="space-y-2 text-xs">
+              <div className="p-2.5 rounded-lg bg-[#EAF6F0] border border-[#CEECD9] flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] uppercase font-semibold text-[#4E9B76]">Most Important</p>
+                  <p className="font-semibold text-[#1F2937]">User research & discovery</p>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-[#FFF0ED] border border-[#FCDAD5] flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] uppercase font-semibold text-[#E87967]">Needs Attention</p>
+                  <p className="font-semibold text-[#1F2937]">Design systems & metrics</p>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-[#EEECFF] border border-[#DDD8FE] flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] uppercase font-semibold text-[#6D5DFB]">Practice</p>
+                  <p className="font-semibold text-[#1F2937]">Stakeholder collaboration</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Before Your Interview Checklist (Image 5) */}
+          <div className="rolewise-card p-5 space-y-3">
+            <h4 className="text-xs font-semibold text-[#1F2937] flex items-center gap-1.5">
+              <CheckSquare className="w-3.5 h-3.5 text-[#6D5DFB]" />
+              <span>Before your interview</span>
+            </h4>
+
+            <ul className="space-y-2.5 text-xs text-[#475467]">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#6D5DFB] shrink-0 mt-0.5" />
+                <span>Review your strongest project examples</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#6D5DFB] shrink-0 mt-0.5" />
+                <span>Prepare specific outcomes and quantifiable impact</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#6D5DFB] shrink-0 mt-0.5" />
+                <span>Clarify identified experience gaps</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#6D5DFB] shrink-0 mt-0.5" />
+                <span>Practice explaining your design decisions</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#6D5DFB] shrink-0 mt-0.5" />
+                <span>Take a mock interview with voice or typed answers</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -48,6 +48,7 @@ export default function VoicePracticePage() {
   } = useVoiceRecorder();
 
   const recordedRef = useRef<{ blob: Blob; durationSeconds: number; audioUrl: string } | null>(null);
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
   const transcriptRef = useRef<string | null>(null);
 
   const handleStart = async () => {
@@ -67,6 +68,7 @@ export default function VoicePracticePage() {
       return;
     }
     recordedRef.current = res;
+    setRecordedAudioUrl(res.audioUrl);
     transcriptRef.current = null;
     setFlowState('RECORDED');
   };
@@ -74,6 +76,7 @@ export default function VoicePracticePage() {
   const handleReRecord = () => {
     resetRecording();
     recordedRef.current = null;
+    setRecordedAudioUrl(null);
     transcriptRef.current = null;
     setErrorMessage(null);
     setFlowState('READY');
@@ -112,7 +115,6 @@ export default function VoicePracticePage() {
 
     try {
       const result = await analyzeInterviewAnswer({
-        roleId: 'general-practice',
         question,
         transcript: textToAnalyze.trim(),
       });
@@ -321,9 +323,9 @@ export default function VoicePracticePage() {
             </p>
           </div>
 
-          {recordedRef.current?.audioUrl && (
+          {recordedAudioUrl && (
             <div className="max-w-md mx-auto pt-1">
-              <audio controls src={recordedRef.current.audioUrl} className="w-full h-10 rounded-xl" />
+              <audio controls src={recordedAudioUrl} className="w-full h-10 rounded-xl" />
             </div>
           )}
 

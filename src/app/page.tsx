@@ -4,281 +4,479 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Briefcase,
-  MapPin,
-  Clock,
-  ArrowRight,
+  FileText,
+  Activity,
+  Star,
   Plus,
-  CheckCircle2,
-  Calendar,
-  Layers,
+  ArrowRight,
+  Mic,
+  Video,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
   Sparkles,
+  Layers,
+  Bot,
+  Clock,
+  Compass,
+  CheckCircle2,
+  TrendingUp,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { getUserRoles, getPreparationItems } from '@/services/api';
-import { Role, PreparationItem } from '@/types/database';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import { getUserRoles } from '@/services/api';
+import { Role } from '@/types/database';
 
 export default function DashboardPage() {
   const { userName } = useAuth();
   const [roles, setRoles] = useState<Role[]>([]);
-  const [prepItems, setPrepItems] = useState<PreparationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadDashboard() {
+    async function loadDashboardData() {
       setIsLoading(true);
       try {
-        const data = await getUserRoles();
-        setRoles(data);
-
-        if (data.length > 0) {
-          const prepRes = await getPreparationItems(data[0].id);
-          setPrepItems(prepRes.items || []);
-        }
+        const userRoles = await getUserRoles();
+        setRoles(userRoles);
       } catch (err) {
-        console.error('Error loading roles on dashboard:', err);
+        console.error('Error fetching dashboard roles:', err);
       } finally {
         setIsLoading(false);
       }
     }
-    loadDashboard();
+    loadDashboardData();
   }, []);
 
-  // Primary active role: if roles exist in Supabase, use the latest real role
-  const latestRole = roles.length > 0 ? roles[0] : null;
+  const activeJobCount = roles.length;
 
-  // 1. EMPTY DASHBOARD FOR NEW USER (Requirement 11)
-  if (!isLoading && roles.length === 0) {
-    return (
-      <div className="space-y-8 animate-in fade-in duration-300 max-w-2xl">
-        <section className="space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-[#6D5DFB] uppercase tracking-wider">
-            <span>ROLEWISE COCKPIT</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-[#1F2937] tracking-tight">
-            Good morning, {userName || 'there'}.
-          </h1>
-          <div className="pt-1">
-            <p className="text-xl font-medium text-[#1F2937]">
-              Prepare for the role.
-            </p>
-            <p className="text-lg font-normal text-[#667085]">
-              Not just the interview.
-            </p>
-          </div>
-        </section>
-
-        <div className="rolewise-card p-8 space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-base font-semibold text-[#1F2937]">
-              Your workspace is ready.
-            </h3>
-            <p className="text-sm text-[#667085] leading-relaxed">
-              Add a job to start understanding your fit and building a personalized preparation plan.
-            </p>
-          </div>
-
-          <div>
-            <Link
-              href="/jobs/new"
-              className="touch-target inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              <span>+ Add your first job</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 2. DASHBOARD AFTER A REAL JOB EXISTS (Requirement 12)
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Header Greeting */}
-      <section className="space-y-1">
-        <div className="flex items-center gap-2 text-xs font-medium text-[#667085] uppercase tracking-wider">
-          <span>ROLEWISE COCKPIT</span>
+    <div className="space-y-7 animate-in fade-in duration-300">
+      {/* 1. HERO GREETING BANNER (Image 3) */}
+      <section className="relative overflow-hidden rounded-2xl bg-[#EEECFF]/60 border border-[#E0DCFE] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div className="space-y-1.5 z-10">
+          <p className="text-xs sm:text-sm font-medium text-[#667085]">Good morning,</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1F2937] tracking-tight flex items-center gap-2">
+            <span>{userName ? userName.split(' ')[0] : 'Logesh'}</span>
+            <span>👋</span>
+          </h1>
+          <p className="text-xs sm:text-sm text-[#667085] pt-0.5">
+            Prepare for the role. Not just the interview.
+          </p>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-semibold text-[#1F2937] tracking-tight">
-          Good morning, {userName || 'there'}.
-        </h1>
-        <p className="text-sm text-[#667085]">
-          Here is where you stand with your current role preparation.
-        </p>
+
+        {/* Hero Card Visual */}
+        <div className="hidden sm:flex items-center gap-3 bg-white/90 backdrop-blur border border-[#E7E8EF] px-5 py-3.5 rounded-2xl shadow-xs z-10">
+          <div className="space-y-0.5 text-xs font-semibold text-[#1F2937]">
+            <p className="text-[#6D5DFB]">Practice</p>
+            <p className="text-[#10B981]">Improve</p>
+            <p className="text-[#1F2937]">Get Hired</p>
+          </div>
+          <div className="w-8 h-8 rounded-xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center">
+            <TrendingUp className="w-4 h-4" />
+          </div>
+        </div>
       </section>
 
-      {latestRole && (
-        <>
-          {/* Section: Your next interview */}
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#667085]">
-                Your next interview
-              </h2>
-              <span className="text-xs text-[#667085] flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" /> Active Target
-              </span>
+      {/* 2. STAT SUMMARY COUNTERS (PRD: Truthful, no fake data) */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Link
+          href="/jobs"
+          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#D0D5DD] transition-all group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center">
+              <Briefcase className="w-5 h-5" />
             </div>
-
-            <div className="rolewise-card p-6 transition-all hover:border-[#D0D5DD]">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <span className="w-10 h-10 rounded-xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center font-bold text-sm">
-                      {(latestRole.company || latestRole.title || 'RO').slice(0, 2).toUpperCase()}
-                    </span>
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#1F2937] leading-tight">
-                        {latestRole.title}
-                      </h3>
-                      <p className="text-sm font-medium text-[#667085]">{latestRole.company}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-[#667085] pt-1">
-                    {latestRole.workplace_type && (
-                      <span className="inline-flex items-center gap-1">
-                        <Briefcase className="w-3.5 h-3.5 text-[#667085]" />
-                        {latestRole.workplace_type}
-                      </span>
-                    )}
-                    {latestRole.location && (
-                      <>
-                        {latestRole.workplace_type && <span>·</span>}
-                        <span className="inline-flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-[#667085]" />
-                          {latestRole.location}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 self-start">
-                  <StatusBadge status={latestRole.status || 'Preparing'} />
-                </div>
-              </div>
-
-              <div className="mt-6 pt-5 border-t border-[#E7E8EF] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-2 text-sm text-[#1F2937]">
-                  <span className="font-semibold text-[#6D5DFB]">Preparation</span>
-                  <span className="text-[#667085]">
-                    {prepItems.length > 0 ? `${prepItems.length} targeted focus areas` : 'Tailored to this role'}
-                  </span>
-                </div>
-
-                <Link
-                  href={`/roles/${latestRole.id}/preparation`}
-                  className="touch-target inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm"
-                >
-                  <span>Continue preparation</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
+            <div>
+              <p className="text-xl sm:text-2xl font-bold text-[#1F2937]">{activeJobCount}</p>
+              <p className="text-xs text-[#667085]">Active Jobs</p>
             </div>
-          </section>
+          </div>
+          <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937] transition-colors" />
+        </Link>
 
-          {/* Section: Up next */}
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#667085]">
-                Up next
-              </h2>
+        <Link
+          href={roles.length > 0 ? `/roles/${roles[0].id}/interview` : '/jobs/new'}
+          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#D0D5DD] transition-all group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#F0FDF4] text-[#10B981] flex items-center justify-center">
+              <FileText className="w-5 h-5" />
             </div>
-
-            <div className="rolewise-card p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#EEECFF] text-[#6D5DFB]">
-                      {prepItems[0]?.priority || 'Focus'}
-                    </span>
-                    <h3 className="text-base font-semibold text-[#1F2937]">
-                      {prepItems[0]?.title || 'AI Interview Practice'}
-                    </h3>
-                  </div>
-                  <p className="text-sm text-[#667085]">
-                    {prepItems[0]?.description || `Practice responses tailored to ${latestRole.title} at ${latestRole.company}`}
-                  </p>
-                </div>
-
-                <Link
-                  href={`/roles/${latestRole.id}/interview`}
-                  className="touch-target inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#EEECFF] hover:bg-[#E2DEFD] text-[#6D5DFB] text-sm font-medium transition-colors"
-                >
-                  <span>Practice</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
+            <div>
+              <p className="text-xl sm:text-2xl font-bold text-[#1F2937]">0</p>
+              <p className="text-xs text-[#667085]">Interviews</p>
             </div>
-          </section>
+          </div>
+          <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937] transition-colors" />
+        </Link>
 
-          {/* Section: Recent activity (Strictly real data only, no fake records) */}
-          <section className="space-y-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#667085]">
-              Recent activity
-            </h2>
+        <Link
+          href="/communication-practice"
+          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#D0D5DD] transition-all group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] text-[#8B5CF6] flex items-center justify-center">
+              <Activity className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl sm:text-2xl font-bold text-[#1F2937]">0</p>
+              <p className="text-xs text-[#667085]">Practice Sessions</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937] transition-colors" />
+        </Link>
 
-            <div className="rolewise-card p-5 text-sm text-[#667085]">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#F7F7FB] border border-[#E7E8EF] text-[#667085] flex items-center justify-center">
-                  <Clock className="w-4 h-4" />
-                </div>
+        <Link
+          href="/feedback"
+          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#D0D5DD] transition-all group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#FFF7ED] text-[#F97316] flex items-center justify-center">
+              <Star className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl sm:text-2xl font-bold text-[#1F2937]">0</p>
+              <p className="text-xs text-[#667085]">Feedback Reports</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937] transition-colors" />
+        </Link>
+      </section>
+
+      {/* 3. MAIN WORKSPACE GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left 2 Columns: Jobs & Practice */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Active Job (if exists) or Get Started Empty State */}
+          {roles.length > 0 ? (
+            <div className="rolewise-card p-6 space-y-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-[#1F2937]">Practice sessions tracked here</p>
-                  <p className="text-xs text-[#667085]">Complete an interview or communication practice session to log your feedback history.</p>
+                  <h2 className="text-base font-semibold text-[#1F2937]">Your Active Role</h2>
+                  <p className="text-xs text-[#667085]">Currently connected job and preparation roadmap</p>
                 </div>
+                <Link
+                  href="/jobs/new"
+                  className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#1F2937] transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Another Role</span>
+                </Link>
               </div>
-            </div>
-          </section>
 
-          {/* All Analyzed Roles from Database */}
-          <section className="space-y-3 pt-2">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#667085]">
-                Your Analyzed Roles ({roles.length})
-              </h2>
-              <Link
-                href="/jobs/new"
-                className="text-xs text-[#6D5DFB] font-medium hover:underline flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Add another
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {roles.map((r) => (
-                <div key={r.id} className="rolewise-card p-5 flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <h4 className="font-semibold text-sm text-[#1F2937]">{r.title}</h4>
-                      <StatusBadge status={r.status || 'Active'} size="sm" />
-                    </div>
-                    <p className="text-xs text-[#667085]">{r.company}</p>
+              {roles.map((role) => (
+                <div
+                  key={role.id}
+                  className="p-4 rounded-xl border border-[#E7E8EF] bg-[#F7F7FB] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1">
+                    <span className="inline-block px-2 py-0.5 rounded-md bg-[#EEECFF] text-[#6D5DFB] text-[11px] font-semibold">
+                      Target Role
+                    </span>
+                    <h3 className="text-sm sm:text-base font-semibold text-[#1F2937]">{role.title}</h3>
+                    <p className="text-xs text-[#667085]">
+                      {role.company} · {role.location || 'Remote'} · {role.workplace_type || 'Full-time'}
+                    </p>
                   </div>
 
-                  <div className="pt-4 mt-4 border-t border-[#E7E8EF] flex items-center justify-between text-xs">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Link
-                      href={`/roles/${r.id}/fit`}
-                      className="text-[#6D5DFB] font-medium hover:underline flex items-center gap-1 touch-target"
+                      href={`/roles/${role.id}/fit`}
+                      className="touch-target px-3.5 py-1.5 rounded-lg bg-white border border-[#E7E8EF] hover:border-[#6D5DFB] text-xs font-semibold text-[#1F2937] transition-all"
                     >
-                      View Fit <ArrowRight className="w-3 h-3" />
+                      Role Fit
                     </Link>
                     <Link
-                      href={`/roles/${r.id}/preparation`}
-                      className="text-[#1F2937] font-medium hover:text-[#6D5DFB] touch-target"
+                      href={`/roles/${role.id}/preparation`}
+                      className="touch-target px-3.5 py-1.5 rounded-lg bg-white border border-[#E7E8EF] hover:border-[#6D5DFB] text-xs font-semibold text-[#1F2937] transition-all"
                     >
                       Preparation
+                    </Link>
+                    <Link
+                      href={`/roles/${role.id}/interview`}
+                      className="touch-target px-3.5 py-1.5 rounded-lg bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs font-semibold transition-all shadow-xs"
+                    >
+                      AI Interview →
                     </Link>
                   </div>
                 </div>
               ))}
             </div>
-          </section>
-        </>
-      )}
+          ) : (
+            <div className="rolewise-card p-6 space-y-4">
+              <div>
+                <h2 className="text-base font-semibold text-[#1F2937]">Get Started</h2>
+                <p className="text-xs text-[#667085]">
+                  Add a job role and let AI create a personalized preparation plan for you.
+                </p>
+              </div>
+
+              {/* Dashed Dropzone Card */}
+              <div className="border-2 border-dashed border-[#E7E8EF] rounded-2xl p-6 sm:p-8 text-center space-y-3 bg-[#F9FAFB]/50">
+                <div className="w-12 h-12 rounded-full bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center mx-auto">
+                  <Plus className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold text-[#1F2937]">Add your first job</h3>
+                  <p className="text-xs text-[#667085] max-w-sm mx-auto">
+                    Paste a job description or upload role details to build your requirement fit.
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <Link
+                    href="/jobs/new"
+                    className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>+ Add Job →</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Supporting Communication Practice (PRD: Voice & Video) */}
+          <div className="rolewise-card p-6 space-y-4">
+            <div>
+              <h2 className="text-base font-semibold text-[#1F2937]">Communication Practice</h2>
+              <p className="text-xs text-[#667085]">Build confidence with AI-powered practice.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <Link
+                href="/communication-practice/voice"
+                className="p-4 rounded-xl border border-[#E7E8EF] hover:border-[#6D5DFB] bg-white transition-all group flex items-start gap-3.5"
+              >
+                <div className="w-10 h-10 rounded-xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center shrink-0">
+                  <Mic className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-xs sm:text-sm font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors flex items-center gap-1">
+                    <span>Voice Practice</span>
+                    <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </h3>
+                  <p className="text-xs text-[#667085] leading-relaxed">
+                    Record answers and receive observable clarity & conciseness feedback.
+                  </p>
+                </div>
+              </Link>
+
+              <Link
+                href="/communication-practice/video"
+                className="p-4 rounded-xl border border-[#E7E8EF] hover:border-[#6D5DFB] bg-white transition-all group flex items-start gap-3.5"
+              >
+                <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] text-[#8B5CF6] flex items-center justify-center shrink-0">
+                  <Video className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-xs sm:text-sm font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors flex items-center gap-1">
+                    <span>Video Practice</span>
+                    <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </h3>
+                  <p className="text-xs text-[#667085] leading-relaxed">
+                    Practice with camera & microphone recording with structured content review.
+                  </p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Calendar, Quick Tips, Recent Activity */}
+        <div className="space-y-6">
+          {/* Calendar Widget (September 2026 as shown in Image 3) */}
+          <div className="rolewise-card p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#1F2937]">September 2026</span>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  aria-label="Previous month"
+                  className="p-1 rounded-md text-[#667085] hover:text-[#1F2937] hover:bg-[#F9FAFB]"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next month"
+                  className="p-1 rounded-md text-[#667085] hover:text-[#1F2937] hover:bg-[#F9FAFB]"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Days grid */}
+            <div className="grid grid-cols-7 gap-1 text-center text-[11px]">
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                <span key={i} className="text-[#98A2B3] font-medium py-1">
+                  {d}
+                </span>
+              ))}
+              {/* Previous month filler */}
+              <span className="text-[#D0D5DD] py-1">30</span>
+              <span className="text-[#D0D5DD] py-1">31</span>
+              {/* September dates */}
+              {[...Array(30)].map((_, i) => {
+                const day = i + 1;
+                const isToday = day === 23; // Reference mock current date
+                return (
+                  <span
+                    key={day}
+                    className={`py-1 rounded-md transition-colors ${
+                      isToday
+                        ? 'bg-[#6D5DFB] text-white font-semibold'
+                        : 'text-[#1F2937] hover:bg-[#F7F7FB]'
+                    }`}
+                  >
+                    {day}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Quick Tips */}
+          <div className="rolewise-card p-5 space-y-3">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#C58A2B]">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Quick Tips</span>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <Link
+                href="/jobs/new"
+                className="p-2.5 rounded-lg border border-[#E7E8EF] hover:border-[#6D5DFB] bg-[#F9FAFB] flex items-center justify-between text-[#1F2937] transition-all"
+              >
+                <span>Add a job to get personalized questions</span>
+                <ChevronRight className="w-3.5 h-3.5 text-[#98A2B3]" />
+              </Link>
+              <Link
+                href="/communication-practice"
+                className="p-2.5 rounded-lg border border-[#E7E8EF] hover:border-[#6D5DFB] bg-[#F9FAFB] flex items-center justify-between text-[#1F2937] transition-all"
+              >
+                <span>Practice communication regularly</span>
+                <ChevronRight className="w-3.5 h-3.5 text-[#98A2B3]" />
+              </Link>
+              <Link
+                href="/feedback"
+                className="p-2.5 rounded-lg border border-[#E7E8EF] hover:border-[#6D5DFB] bg-[#F9FAFB] flex items-center justify-between text-[#1F2937] transition-all"
+              >
+                <span>Review feedback and improve</span>
+                <ChevronRight className="w-3.5 h-3.5 text-[#98A2B3]" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Recent Activity (Truthful empty state per PRD) */}
+          <div className="rolewise-card p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#1F2937] flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-[#667085]" />
+                <span>Recent Activity</span>
+              </span>
+              <span className="text-[11px] text-[#98A2B3]">View all</span>
+            </div>
+
+            <div className="py-6 text-center space-y-2 border border-dashed border-[#E7E8EF] rounded-xl bg-[#F9FAFB]/50">
+              <div className="w-8 h-8 rounded-full bg-[#F2F4F7] text-[#98A2B3] flex items-center justify-center mx-auto">
+                <FileText className="w-4 h-4" />
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-xs font-semibold text-[#1F2937]">No activity yet</p>
+                <p className="text-[11px] text-[#667085] max-w-[200px] mx-auto">
+                  Your practice sessions, interviews and feedback will appear here.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. RECOMMENDED FOR YOU (Practice focus shortcuts) */}
+      <section className="space-y-3 pt-2">
+        <div className="space-y-0.5">
+          <h2 className="text-sm sm:text-base font-semibold text-[#1F2937]">Recommended for you</h2>
+          <p className="text-xs text-[#667085]">
+            Start with these key areas to improve your interview readiness.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <Link
+            href="/communication-practice"
+            className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center">
+                <Layers className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
+                  System Design
+                </p>
+                <p className="text-[11px] text-[#667085]">High impact</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937]" />
+          </Link>
+
+          <Link
+            href="/communication-practice/voice"
+            className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#EAF6F0] text-[#10B981] flex items-center justify-center">
+                <MessageSquare className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
+                  Behavioral
+                </p>
+                <p className="text-[11px] text-[#667085]">Commonly asked</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937]" />
+          </Link>
+
+          <Link
+            href="/communication-practice"
+            className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#F5F3FF] text-[#8B5CF6] flex items-center justify-center">
+                <Compass className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
+                  Product Sense
+                </p>
+                <p className="text-[11px] text-[#667085]">Role specific</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937]" />
+          </Link>
+
+          <Link
+            href="/communication-practice"
+            className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] text-[#F97316] flex items-center justify-center">
+                <FileText className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
+                  Case Studies
+                </p>
+                <p className="text-[11px] text-[#667085]">Improve problem solving</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937]" />
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

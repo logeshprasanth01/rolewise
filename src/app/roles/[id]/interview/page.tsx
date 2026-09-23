@@ -102,6 +102,7 @@ export default function InterviewPage() {
 
   // Keep a reference of the recorded audio blob for re-trying transcription if needed
   const recordedBlobRef = useRef<{ blob: Blob; durationSeconds: number; audioUrl: string } | null>(null);
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
 
   // Total questions in an interview session
   const totalQuestions = 5;
@@ -121,11 +122,12 @@ export default function InterviewPage() {
 
         setRole(fetchedRole);
 
-        // Fetch dynamic first question from interview-ai (OpenRouter)
+        // Fetch dynamic first question from interview-ai Edge Function
         try {
           const generated = await generateInterviewQuestion({
             roleId,
             questionNumber: 1,
+            previousQuestions: [],
           });
           if (generated.question) {
             setCurrentQuestion(generated.question);
@@ -171,6 +173,7 @@ export default function InterviewPage() {
     }
 
     recordedBlobRef.current = recorded;
+    setRecordedAudioUrl(recorded.audioUrl);
     setFlowState('RECORDED');
   };
 
@@ -262,7 +265,7 @@ export default function InterviewPage() {
   const handleContinueInterview = async () => {
     if (questionNumber >= totalQuestions || !pendingNext) {
       setFlowState('COMPLETED');
-      // Fetch dynamic final feedback from OpenRouter
+      // Fetch dynamic final feedback from interview-ai Edge Function
       try {
         const finalRes = await getFinalInterviewFeedback({
           roleId,
@@ -288,6 +291,7 @@ export default function InterviewPage() {
     setTypedAnswer('');
     resetRecording();
     recordedBlobRef.current = null;
+    setRecordedAudioUrl(null);
     setErrorMessage(null);
     setFlowState('READY');
   };
@@ -305,10 +309,11 @@ export default function InterviewPage() {
     setTypedAnswer('');
     resetRecording();
     recordedBlobRef.current = null;
+    setRecordedAudioUrl(null);
     setErrorMessage(null);
     setFlowState('READY');
 
-    generateInterviewQuestion({ roleId, questionNumber: 1 })
+    generateInterviewQuestion({ roleId, questionNumber: 1, previousQuestions: [] })
       .then((res) => {
         if (res.question) setCurrentQuestion(res.question);
         if (res.competency) setCurrentCompetency(res.competency);
@@ -803,9 +808,9 @@ export default function InterviewPage() {
             </p>
           </div>
 
-          {recordedBlobRef.current?.audioUrl && (
+          {recordedAudioUrl && (
             <div className="max-w-md mx-auto pt-1">
-              <audio controls src={recordedBlobRef.current.audioUrl} className="w-full h-10 rounded-xl" />
+              <audio controls src={recordedAudioUrl} className="w-full h-10 rounded-xl" />
             </div>
           )}
 

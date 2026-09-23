@@ -129,8 +129,17 @@ export default function VideoPracticePage() {
 
   // Automatically start preview when on READY state
   useEffect(() => {
+    let active = true;
     if (flowState === 'READY') {
-      initCamera();
+      const timer = setTimeout(() => {
+        if (active) {
+          void initCamera();
+        }
+      }, 0);
+      return () => {
+        active = false;
+        clearTimeout(timer);
+      };
     }
   }, [flowState, initCamera]);
 
@@ -258,7 +267,6 @@ export default function VideoPracticePage() {
     // 2. Perform observable communication evaluation
     try {
       const analysisResult = await analyzeInterviewAnswer({
-        roleId: 'general-practice',
         question,
         transcript: transcriptText.trim(),
       });
