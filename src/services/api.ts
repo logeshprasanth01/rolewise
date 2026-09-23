@@ -1,4 +1,4 @@
-import { getSupabaseClient, getSupabaseUrl, getSupabaseAnonKey } from '@/lib/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import {
   AnalyzeRolePayload,
   AnalyzeRoleResponse,
@@ -643,160 +643,192 @@ export async function analyzeCommunication(
 
 /**
  * Invokes the 'interview-ai' Supabase Edge Function directly.
- * Target: /functions/v1/interview-ai
+ * Target: Supabase Edge Function: interview-ai
  * Architecture: Browser -> Supabase authenticated request (JWT) -> interview-ai Edge Function -> Gemini
  */
 export async function invokeInterviewAI<T = unknown>(payload: Record<string, unknown>): Promise<T> {
   const supabase = getSupabaseClient();
-  const supabaseUrl = getSupabaseUrl();
-  const anonKey = getSupabaseAnonKey();
 
-  const requestAction = (payload.action as string) || 'unknown';
-  const roleId = (payload.roleId as string) || '';
-  const questionNumber = typeof payload.questionNumber === 'number' ? payload.questionNumber : undefined;
-
-  // 1. Get authenticated session (verify_jwt=true on Edge Function)
+  // 1. Retrieve current Supabase session (TASK 1)
   const {
-    data: { session },
+    data: { session: initialSession },
+    error: sessionError,
   } = await supabase.auth.getSession();
 
-  // 2. Safe debugging before invocation (Requirement 7)
-  console.log('[Rolewise] interview-ai request:', {
-    action: requestAction,
-    roleId,
-    questionNumber,
-    hasSession: Boolean(session?.access_token),
-  });
-
-  // 3. Verify session access token (Requirement 5)
-  if (!session?.access_token) {
-    console.error('[Rolewise] interview-ai response:', {
-      httpStatus: 401,
-      ok: false,
-      functionName: 'interview-ai',
-      responseText: 'Authentication session expired. Please sign in again.',
-      parsedBody: { error: 'Authentication session expired. Please sign in again.' },
-      requestAction,
-      roleId,
-    });
-    throw new Error('Authentication session expired. Please sign in again.');
+  if (sessionError) {
+    console.error('[Rolewise] session retrieval error:', sessionError);
   }
 
-  // 4. Target endpoint: /functions/v1/interview-ai (Requirement 8)
-  const targetUrl = `${supabaseUrl}/functions/v1/interview-ai`;
+  let session = initialSession;
 
-  let response: Response;
-  try {
-    response = await fetch(targetUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-        ...(anonKey ? { apikey: anonKey } : {}),
-      },
-      body: JSON.stringify(payload),
-    });
-  } catch (networkErr: unknown) {
-    const errorMsg = networkErr instanceof Error ? networkErr.message : String(networkErr);
-    console.error('[Rolewise] interview-ai response:', {
-      httpStatus: 0,
-      ok: false,
-      functionName: 'interview-ai',
-      responseText: `Network invocation error: ${errorMsg}`,
-      parsedBody: null,
-      requestAction,
-      roleId,
-    });
+  // 2. Handle expired sessions before invocation (TASK 10)
+  const nowSec = Math.floor(Date.now() / 1000);
+  const isExpired = Boolean(session?.expires_at && session.expires_at <= nowSec + 30);
+
+  if (session && isExpired) {
+    console.log('[Rolewise] Session token expired or expiring soon, refreshing...');
+    try {
+      const {
+        data: { session: refreshedSession },
+        error: refreshError,
+      } = await supabase.auth.refreshSession();
+
+      if (!refreshError && refreshedSession?.access_token) {
+        session = refreshedSession;
+      } else {
+        console.warn('[Rolewise] Session refresh failed:', refreshError);
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth';
+        }
+        throw new RolewiseApiError(
+          'Please sign in to practice your AI interview and save your progress.',
+          'AUTH_ERROR',
+          { status: 401, functionName: 'interview-ai' }
+        );
+      }
+    } catch (refreshErr) {
+      if (refreshErr instanceof RolewiseApiError) throw refreshErr;
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth';
+      }
+      throw new RolewiseApiError(
+        'Please sign in to practice your AI interview and save your progress.',
+        'AUTH_ERROR',
+        { status: 401, functionName: 'interview-ai', details: refreshErr }
+      );
+    }
+  }
+
+  // 3. Safe temporary diagnostics (TASK 9 - NEVER log actual access token)
+  console.log('[Rolewise] interview-ai auth check:', {
+    hasSession: Boolean(session),
+    hasAccessToken: Boolean(session?.access_token),
+    userId: session?.user?.id ?? null,
+    expiresAt: session?.expires_at ?? null,
+  });
+
+  // 4. Verify session access token exists (TASK 1)
+  if (!session?.access_token) {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/auth';
+    }
     throw new RolewiseApiError(
-      `Failed to reach interview-ai service: ${errorMsg}`,
-      'NETWORK_ERROR',
-      networkErr
+      'Please sign in to practice your AI interview and save your progress.',
+      'AUTH_ERROR',
+      { status: 401, functionName: 'interview-ai' }
     );
   }
 
-  // 5. Read response body BEFORE throwing (Requirement 4)
-  const responseText = await response.text();
+  // 5. Invoke interview-ai Edge Function explicitly forwarding current access token (TASK 2)
+  const { data, error } = await supabase.functions.invoke<T>('interview-ai', {
+    body: payload,
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
 
-  let parsedBody: Record<string, unknown> | null = null;
-  try {
-    parsedBody = responseText ? JSON.parse(responseText) : null;
-  } catch {
-    parsedBody = null;
+  if (!error && data) {
+    return data;
   }
 
-  // 6. Handle errors exposing the REAL response (Requirement 4)
-  if (!response.ok) {
+  if (error) {
+    let httpStatus = 500;
+    let responseText = '';
+    let parsedBody: Record<string, unknown> | null = null;
+
+    if ('context' in error && error.context) {
+      const ctx = error.context as Response;
+      httpStatus = ctx.status || httpStatus;
+      try {
+        responseText = await ctx.clone().text();
+        try {
+          parsedBody = responseText ? JSON.parse(responseText) : null;
+        } catch {
+          parsedBody = null;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
     console.error('[Rolewise] interview-ai response:', {
-      httpStatus: response.status,
-      ok: response.ok,
+      httpStatus,
+      ok: false,
       functionName: 'interview-ai',
-      responseText,
+      responseText: responseText || error.message,
       parsedBody,
-      requestAction,
-      roleId,
+      requestAction: payload.action,
+      roleId: payload.roleId,
     });
 
-    const status = response.status;
+    // TASK 10: Handle expired session / 401 with a single refresh retry
+    if (httpStatus === 401) {
+      console.warn('[Rolewise] Received 401 from interview-ai. Attempting single session refresh...');
+      try {
+        const {
+          data: { session: refreshedSession },
+          error: refreshError,
+        } = await supabase.auth.refreshSession();
+
+        if (!refreshError && refreshedSession?.access_token) {
+          console.log('[Rolewise] Session refresh succeeded, retrying interview-ai once...');
+          const retryRes = await supabase.functions.invoke<T>('interview-ai', {
+            body: payload,
+            headers: {
+              Authorization: `Bearer ${refreshedSession.access_token}`,
+            },
+          });
+
+          if (!retryRes.error && retryRes.data) {
+            return retryRes.data;
+          }
+        }
+      } catch (retryErr) {
+        console.warn('[Rolewise] 401 retry failed:', retryErr);
+      }
+
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth';
+      }
+
+      throw new RolewiseApiError(
+        'Please sign in to practice your AI interview and save your progress.',
+        'AUTH_ERROR',
+        { status: 401, functionName: 'interview-ai', errorBody: parsedBody }
+      );
+    }
+
     const publicMsg =
       (typeof parsedBody?.message === 'string' && parsedBody.message) ||
       (typeof parsedBody?.error === 'string' && parsedBody.error) ||
-      (typeof parsedBody?.msg === 'string' && parsedBody.msg) ||
       responseText ||
-      `HTTP ${status}`;
+      error.message ||
+      `HTTP ${httpStatus}`;
 
-    if (status === 401) {
-      throw new RolewiseApiError(
-        'Authentication session expired or unauthorized. Please sign in again.',
-        'AUTH_ERROR',
-        { httpStatus: status, parsedBody, responseText }
-      );
-    }
-
-    if (status === 404) {
+    if (httpStatus === 404) {
       throw new RolewiseApiError(
         `Role or interview-ai service not found (HTTP 404): ${publicMsg}`,
         'NOT_FOUND',
-        { httpStatus: status, parsedBody, responseText }
+        { status: 404, functionName: 'interview-ai', errorBody: parsedBody }
       );
     }
 
-    if (status === 429) {
+    if (httpStatus === 429) {
       throw new RolewiseApiError(
         'AI rate limit reached (HTTP 429). Please wait a moment and try again.',
         'RATE_LIMIT',
-        { httpStatus: status, parsedBody, responseText }
-      );
-    }
-
-    if (status >= 500) {
-      throw new RolewiseApiError(
-        `AI service error (HTTP ${status}): ${publicMsg}`,
-        'AI_PROVIDER_ERROR',
-        { httpStatus: status, parsedBody, responseText }
+        { status: 429, functionName: 'interview-ai', errorBody: parsedBody }
       );
     }
 
     throw new RolewiseApiError(
-      `interview-ai error (HTTP ${status}): ${publicMsg}`,
-      'API_ERROR',
-      { httpStatus: status, parsedBody, responseText }
+      `interview-ai error (HTTP ${httpStatus}): ${publicMsg}`,
+      'AI_PROVIDER_ERROR',
+      { status: httpStatus, functionName: 'interview-ai', errorBody: parsedBody }
     );
   }
 
-  if (!parsedBody && !responseText) {
-    console.error('[Rolewise] interview-ai response:', {
-      httpStatus: response.status,
-      ok: response.ok,
-      functionName: 'interview-ai',
-      responseText: 'Empty response body returned from Edge Function',
-      parsedBody: null,
-      requestAction,
-      roleId,
-    });
-    throw new RolewiseApiError('AI service returned empty response.', 'EMPTY_RESPONSE');
-  }
-
-  return (parsedBody as unknown) as T;
+  throw new RolewiseApiError('AI service returned empty response.', 'EMPTY_RESPONSE');
 }
 
 /**

@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import {
   ArrowLeft,
   ArrowRight,
@@ -54,6 +55,8 @@ interface CompletedRound {
 
 export default function InterviewPage() {
   const params = useParams();
+  const router = useRouter();
+  const { session, isLoading: isAuthLoading } = useAuth();
 
   const roleId = params?.id as string;
 
@@ -107,13 +110,27 @@ export default function InterviewPage() {
   // Total questions in an interview session
   const totalQuestions = 5;
 
-  // Initialize Role & Initial Question
+  // Initialize Role & Initial Question (TASK 4 & TASK 6: Wait for auth session to be confirmed)
   useEffect(() => {
-    async function init() {
-      if (!roleId) return;
+    // 1. Wait for Supabase auth to finish loading (TASK 4)
+    if (isAuthLoading) return;
 
+    // 2. Unauthenticated check: Redirect immediately to /auth (TASK 6 & 12)
+    if (!session?.access_token) {
+      router.replace('/auth');
+      return;
+    }
+
+    if (!roleId) return;
+
+    let isMounted = true;
+
+    async function init() {
+      setIsLoadingSession(true);
       try {
         const fetchedRole = await getRole(roleId);
+        if (!isMounted) return;
+
         if (!fetchedRole) {
           setRole(null);
           setIsLoadingSession(false);
@@ -122,13 +139,14 @@ export default function InterviewPage() {
 
         setRole(fetchedRole);
 
-        // Fetch dynamic first question from interview-ai Edge Function
+        // 3. Fetch dynamic first question from interview-ai Edge Function with verified token
         try {
           const generated = await generateInterviewQuestion({
             roleId,
             questionNumber: 1,
             previousQuestions: [],
           });
+          if (!isMounted) return;
           if (generated.question) {
             setCurrentQuestion(generated.question);
           }
@@ -136,19 +154,27 @@ export default function InterviewPage() {
             setCurrentCompetency(generated.competency);
           }
         } catch (genErr) {
+          if (!isMounted) return;
           console.error('[InterviewPage] Question generation notice:', genErr);
           const msg = genErr instanceof Error ? genErr.message : 'AI question generation unavailable';
           setErrorMessage(msg);
         }
       } catch (err: unknown) {
+        if (!isMounted) return;
         console.error('Error initializing interview:', err);
       } finally {
-        setIsLoadingSession(false);
+        if (isMounted) {
+          setIsLoadingSession(false);
+        }
       }
     }
 
     init();
-  }, [roleId]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [roleId, session, isAuthLoading, router]);
 
   // Handle Start Recording
   const handleStartRecording = async () => {
@@ -324,13 +350,17 @@ export default function InterviewPage() {
       });
   };
 
-  if (isLoadingSession) {
+  if (isAuthLoading || isLoadingSession) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
         <Loader2 className="w-7 h-7 animate-spin text-[#6D5DFB]" />
         <p className="text-sm font-medium">Setting up interview session…</p>
       </div>
     );
+  }
+
+  if (!session?.access_token) {
+    return null;
   }
 
   if (!role) {

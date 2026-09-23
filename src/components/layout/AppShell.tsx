@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -51,6 +51,13 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     if (href === '/roles') return pathname.includes('/interview');
     return pathname?.startsWith(href);
   };
+
+  // Redirect to /auth when unauthenticated
+  useEffect(() => {
+    if (!isLoading && !session && pathname !== '/auth') {
+      router.replace('/auth');
+    }
+  }, [isLoading, session, pathname, router]);
 
   // If loading session, show clean calm loader
   if (isLoading) {

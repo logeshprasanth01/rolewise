@@ -52,18 +52,24 @@ export const AuthView: React.FC = () => {
       if (mode === 'signin') {
         const { error } = await signIn(email.trim(), password);
         if (error) {
-          // If Supabase credentials fail, offer demo sign-in fallback seamlessly
-          setErrorMessage(error.message || 'Invalid login credentials. You can also use Demo Login below.');
+          setErrorMessage(error.message || 'Invalid login credentials. Please check your email and password.');
+        } else {
+          setSuccessMessage('Signed in successfully! Entering workspace...');
         }
       } else {
-        const { error } = await signUp(email.trim(), password, fullName.trim() || undefined);
+        const { data, error } = await signUp(email.trim(), password, fullName.trim() || undefined);
         if (error) {
-          setErrorMessage(error.message || 'Could not create account. Please check details or try Demo Login.');
+          setErrorMessage(error.message || 'Could not create account. Please try again.');
+        } else if (data?.session) {
+          setSuccessMessage('Account created! Entering workspace...');
         } else {
-          setSuccessMessage('Account created! Logging in...');
-          setTimeout(() => {
-            signInWithDemo(fullName.trim() || 'Logesh Prasanth', email.trim());
-          }, 800);
+          // If Supabase didn't issue an immediate session, attempt signIn
+          const { error: signInErr } = await signIn(email.trim(), password);
+          if (signInErr) {
+            setSuccessMessage('Account created! Please check your email to verify your account, or sign in.');
+          } else {
+            setSuccessMessage('Account created! Entering workspace...');
+          }
         }
       }
     } catch (err: unknown) {

@@ -30,34 +30,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const demoUserJson = localStorage.getItem('rolewise_demo_user');
-        if (demoUserJson) return JSON.parse(demoUserJson).user;
-      } catch {
-        // ignore
-      }
-    }
-    return null;
-  });
-  const [session, setSession] = useState<Session | null>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const demoUserJson = localStorage.getItem('rolewise_demo_user');
-        if (demoUserJson) return JSON.parse(demoUserJson).session;
-      } catch {
-        // ignore
-      }
-    }
-    return null;
-  });
-  const [isLoading, setIsLoading] = useState(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('rolewise_demo_user')) {
-      return false;
-    }
-    return true;
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [anonKey, setAnonKeyState] = useState<string>(() => getSupabaseAnonKey());
   const [isConfigured, setIsConfigured] = useState<boolean>(() => {
     const k = getSupabaseAnonKey();
@@ -67,32 +42,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
 
   useEffect(() => {
-    // If demo session exists, initial state is already set
-    if (typeof window !== 'undefined' && localStorage.getItem('rolewise_demo_user')) {
-      return;
-    }
-
     const supabase = getSupabaseClient();
 
-    // Check active session
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (!error && data?.session) {
-        setSession(data.session);
-        setUser(data.session.user);
+    // 1. Check active Supabase session (TASK 3 & TASK 5: session persistence across routes)
+    supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (!error && data?.session?.access_token) {
+          setSession(data.session);
+          setUser(data.session.user);
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('rolewise_demo_user');
+          }
+        } else {
+          setSession(null);
+          setUser(null);
+        }
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.warn('[Rolewise] getSession notice:', err);
+        setIsLoading(false);
+      });
+
+    // 2. Listen to real Supabase auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      if (currentSession?.access_token) {
+        setSession(currentSession);
+        setUser(currentSession.user ?? null);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('rolewise_demo_user');
+        }
+      } else {
+        setSession(null);
+        setUser(null);
       }
-      setIsLoading(false);
-    }).catch(() => {
       setIsLoading(false);
     });
-
-    // Listen to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        setIsLoading(false);
-      }
-    );
 
     return () => {
       subscription.unsubscribe();
