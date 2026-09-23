@@ -1,26 +1,66 @@
 @import "tailwindcss";
 
+@theme {
+  --color-canvas: #F7F7FB;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #1F2937;
+  --color-text-secondary: #667085;
+  --color-brand: #6D5DFB;
+  --color-brand-soft: #EEECFF;
+  --color-brand-hover: #5A48F5;
+  --color-status-success: #4E9B76;
+  --color-status-success-light: #EAF6F0;
+  --color-status-warning: #C58A2B;
+  --color-status-warning-light: #FFF5DF;
+  --color-status-attention: #E87967;
+  --color-status-attention-light: #FFF0ED;
+  --color-border-subtle: #E7E8EF;
+  --radius-card: 18px;
+  --font-inter: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #F7F7FB;
+  --foreground: #1F2937;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #F7F7FB;
+  color: #1F2937;
+  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 44px min touch targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Subtle card styling adhering strictly to 2026 SaaS aesthetic */
+.rolewise-card {
+  background: #FFFFFF;
+  border: 1px solid #E7E8EF;
+  border-radius: 18px;
+  box-shadow: 0 1px 3px 0 rgba(16, 24, 40, 0.03), 0 1px 2px 0 rgba(16, 24, 40, 0.02);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #E7E8EF;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #D0D5DD;
 }
