@@ -7,20 +7,19 @@ import {
   User,
   Eye,
   EyeOff,
-  Sparkles,
   CheckCircle2,
   AlertCircle,
-  ArrowRight,
   Briefcase,
   Layers,
   Code2,
   Palette,
   Laptop,
 } from 'lucide-react';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 
 export const AuthView: React.FC = () => {
-  const { signIn, signUp, signInWithDemo } = useAuth();
+  const { signIn, signUp } = useAuth();
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
@@ -80,21 +79,27 @@ export const AuthView: React.FC = () => {
     }
   };
 
-  const handleDemoLogin = (roleTitle = 'UI/UX Designer') => {
-    setIsLoading(true);
-    setTimeout(() => {
-      signInWithDemo('Logesh Prasanth', 'logesh@rolewise.io');
-      setIsLoading(false);
-    }, 400);
-  };
-
-  const handleSocialAuth = (provider: 'Google' | 'LinkedIn') => {
+  const handleSocialAuth = async (provider: 'Google' | 'LinkedIn') => {
     setIsLoading(true);
     setErrorMessage(null);
-    setTimeout(() => {
-      signInWithDemo('Logesh Prasanth', `logesh.${provider.toLowerCase()}@rolewise.io`);
+    try {
+      const supabase = getSupabaseClient();
+      const oauthProvider = provider === 'Google' ? 'google' : 'linkedin_oidc';
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: oauthProvider,
+        options: {
+          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth` : undefined,
+        },
+      });
+      if (error) {
+        setErrorMessage(error.message);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Social login failed. Please sign in with email/password.';
+      setErrorMessage(msg);
+    } finally {
       setIsLoading(false);
-    }, 450);
+    }
   };
 
   return (
@@ -215,7 +220,7 @@ export const AuthView: React.FC = () => {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Logesh Prasanth"
+                    placeholder="e.g. Alex Morgan"
                     className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-[#E7E8EF] text-sm text-[#1F2937] placeholder:text-[#98A2B3] focus:outline-none focus:ring-2 focus:ring-[#6D5DFB]/20 focus:border-[#6D5DFB] transition-all bg-white"
                   />
                 </div>
@@ -345,22 +350,6 @@ export const AuthView: React.FC = () => {
                 <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
               </svg>
               <span>Continue with LinkedIn</span>
-            </button>
-          </div>
-
-          {/* Quick Reviewer / Demo Access */}
-          <div className="p-3.5 rounded-xl bg-[#EEECFF] border border-[#DDD8FE] text-center space-y-2">
-            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-[#6D5DFB]">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Reviewer & Evaluator Fast Access</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('UI/UX Designer')}
-              className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs font-semibold transition-all shadow-xs"
-            >
-              <span>Enter MVP as Logesh Prasanth (UI/UX Designer)</span>
-              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 

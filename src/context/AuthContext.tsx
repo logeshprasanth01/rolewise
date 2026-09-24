@@ -17,7 +17,6 @@ interface AuthContextType {
   userName: string;
   signIn: (email: string, password?: string) => Promise<{ data?: { user?: User | null; session?: Session | null } | null; error: Error | null }>;
   signUp: (email: string, password?: string, fullName?: string) => Promise<{ data?: { user?: User | null; session?: Session | null } | null; error: Error | null }>;
-  signInWithDemo: (fullName?: string, email?: string) => void;
   signOut: () => Promise<void>;
   updateAnonKey: (key: string) => void;
   openAuthModal: (mode?: 'signin' | 'signup' | unknown) => void;
@@ -153,33 +152,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signInWithDemo = (fullName = 'Logesh Prasanth', email = 'logesh@rolewise.io') => {
-    const mockUser: User = {
-      id: 'demo-user-logesh',
-      app_metadata: {},
-      user_metadata: { full_name: fullName },
-      aud: 'authenticated',
-      created_at: new Date().toISOString(),
-      email,
-    } as User;
-
-    const mockSession: Session = {
-      access_token: 'demo-access-token-rolewise-mvp',
-      token_type: 'bearer',
-      expires_in: 86400,
-      refresh_token: 'demo-refresh-token',
-      user: mockUser,
-    } as Session;
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('rolewise_demo_user', JSON.stringify({ user: mockUser, session: mockSession }));
-    }
-
-    setUser(mockUser);
-    setSession(mockSession);
-    setIsAuthModalOpen(false);
-  };
-
   const signOut = async () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('rolewise_demo_user');
@@ -220,7 +192,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userName,
         signIn,
         signUp,
-        signInWithDemo,
         signOut,
         updateAnonKey,
         openAuthModal,

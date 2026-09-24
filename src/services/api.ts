@@ -53,13 +53,6 @@ export async function invokeAnalyzeRole(
 
   const session = sessionData?.session;
 
-  // Check if active demo session in localStorage
-  let isDemoSession = false;
-  if (typeof window !== 'undefined') {
-    const rawDemo = localStorage.getItem('rolewise_demo_user');
-    if (rawDemo) isDemoSession = true;
-  }
-
   // Helper to generate realistic role bundle from inputs
   const createSynthesizedRole = (jobDesc: string, resume: string): AnalyzeRoleResponse => {
     const roleId = 'role_' + Math.random().toString(36).substring(2, 9);
@@ -223,7 +216,7 @@ export async function invokeAnalyzeRole(
     };
   };
 
-  if (isDemoSession || !session?.access_token) {
+  if (!session?.access_token) {
     return createSynthesizedRole(payload.jobDescription, payload.resumeText);
   }
 
