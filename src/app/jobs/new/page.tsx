@@ -334,12 +334,15 @@ export default function AddJobPage() {
   const [manualExperienceText, setManualExperienceText] = useState('');
 
   // Submission & Inline Analysis State
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisStatus, setAnalysisStatus] = useState<'idle' | 'analyzing' | 'completed' | 'failed'>('idle');
   const [analysisStep, setAnalysisStep] = useState<number>(0);
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const [createdRoleId, setCreatedRoleId] = useState<string | null>(null);
 
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const jdInputRef = useRef<HTMLInputElement>(null);
+
+  const isAnalyzing = analysisStatus === 'analyzing';
 
   // Validation: Required = jobTitle, company, jobDescription, activeExperience (Requirement 9)
   const activeExperienceText = isManualExperience ? manualExperienceText : resumeText;
@@ -400,11 +403,11 @@ export default function AddJobPage() {
     }
   };
 
-  // Primary Action: Analyze Role & Experience (Requirement 12)
+  // Primary Action: Analyze Role & Experience (Requirement 12 & Part 15 UX)
   const handleAnalyze = async () => {
     if (!isFormValid || isAnalyzing) return;
 
-    setIsAnalyzing(true);
+    setAnalysisStatus('analyzing');
     setGlobalError(null);
     setAnalysisStep(1); // Understanding the role
 
@@ -413,6 +416,7 @@ export default function AddJobPage() {
 
     try {
       const res = await invokeAnalyzeRole({
+        roleId: createdRoleId || undefined,
         jobDescription: `${jobTitle} at ${company}\n\n${jobDescription}`,
         resumeText: activeExperienceText,
         resumeFileName: resumeFileName || 'candidate_profile.pdf',
@@ -427,14 +431,15 @@ export default function AddJobPage() {
       clearTimeout(stepTimer2);
       setAnalysisStep(4); // Finished
 
-      const roleId = res.role_id || res.id || 'role_default';
-      setTimeout(() => {
-        router.push(`/roles/${roleId}/fit`);
-      }, 500);
+      const roleId = res.role_id || res.id || res.role?.id || createdRoleId || '';
+      if (roleId) {
+        setCreatedRoleId(roleId);
+      }
+      setAnalysisStatus('completed');
     } catch (err: unknown) {
       clearTimeout(stepTimer1);
       clearTimeout(stepTimer2);
-      setIsAnalyzing(false);
+      setAnalysisStatus('failed');
       const msg = err instanceof Error ? err.message : 'Unable to complete role analysis. Please try again.';
       setGlobalError(msg);
     }
@@ -712,12 +717,17 @@ export default function AddJobPage() {
         </div>
       </div>
 
-      {/* INLINE ANALYSIS STATE (PRD: Show inline analysis state, do not create separate loading page) */}
-      {isAnalyzing && (
+      {/* INLINE ANALYSIS STATE & RESULTS (Part 15: In-page loading, completed CTA, or retry on failure) */}
+      {analysisStatus === 'analyzing' && (
         <div className="rolewise-card p-6 bg-[#EEECFF]/40 border-[#DDD8FE] space-y-4 animate-in fade-in">
           <div className="flex items-center gap-3">
             <Loader2 className="w-5 h-5 animate-spin text-[#6D5DFB]" />
-            <h3 className="text-sm font-semibold text-[#1F2937]">Analyzing role & experience...</h3>
+            <div>
+              <h3 className="text-sm font-semibold text-[#1F2937]">Analyzing your role</h3>
+              <p className="text-xs text-[#667085]">
+                Understanding the job requirements and comparing them with your experience...
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -775,6 +785,61 @@ export default function AddJobPage() {
         </div>
       )}
 
+      {/* COMPLETED STATE (Part 15: "Analysis complete", [View role fit ->]) */}
+      {analysisStatus === 'completed' && (
+        <div className="rolewise-card p-6 bg-[#EAF6F0] border-[#CEECD9] space-y-4 animate-in fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-[#CEECD9] text-[#4E9B76] flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-[#1F2937]">Analysis complete</h3>
+                <p className="text-xs text-[#475467]">
+                  Role requirements, fit analysis, and preparation roadmap have been generated.
+                </p>
+              </div>
+            </div>
+            {createdRoleId && (
+              <Link
+                href={`/roles/${createdRoleId}/fit`}
+                className="touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
+              >
+                <span>View role fit</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* FAILED STATE (Part 15: "Role analysis couldn't be completed. Your job and resume are saved.", [Try again]) */}
+      {analysisStatus === 'failed' && (
+        <div className="rolewise-card p-6 bg-[#FFF0ED] border-[#FCDAD5] space-y-3 animate-in fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-[#FCDAD5] text-[#E87967] flex items-center justify-center shrink-0">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-[#1F2937]">Role analysis couldn&apos;t be completed.</h3>
+                <p className="text-xs text-[#667085]">
+                  Your job and resume are saved. You can safely try again.{globalError ? ` (${globalError})` : ''}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleAnalyze}
+              className="touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#E87967] hover:bg-[#D66856] text-white text-xs sm:text-sm font-semibold transition-all cursor-pointer"
+            >
+              <span>Try again</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* BOTTOM ACTION BAR */}
       <div className="rolewise-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         {/* Info callout */}
@@ -799,24 +864,44 @@ export default function AddJobPage() {
             Cancel
           </Link>
 
-          <button
-            type="button"
-            onClick={handleAnalyze}
-            disabled={!isFormValid || isAnalyzing}
-            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Analyzing...</span>
-              </>
-            ) : (
-              <>
-                <span>Analyze role & experience</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+          {analysisStatus === 'completed' && createdRoleId ? (
+            <Link
+              href={`/roles/${createdRoleId}/fit`}
+              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
+            >
+              <span>View role fit</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : analysisStatus === 'failed' ? (
+            <button
+              type="button"
+              onClick={handleAnalyze}
+              disabled={!isFormValid || isAnalyzing}
+              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#E87967] hover:bg-[#D66856] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+            >
+              <span>Try again</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleAnalyze}
+              disabled={!isFormValid || isAnalyzing}
+              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <span>Analyze role & experience</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { getSupabaseClient } from '@/lib/supabase/client';
+export { getSupabaseClient };
 import type { User } from '@supabase/supabase-js';
 import {
   AnalyzeRolePayload,
@@ -26,6 +27,25 @@ export class RolewiseApiError extends Error {
     this.details = details;
     this.status = status;
   }
+}
+
+function normalizeRole(r: Record<string, unknown>): Role {
+  const jobTitle = (r.job_title as string) || (r.title as string) || 'Target Role';
+  const workModel = (r.work_model as string) || (r.workplace_type as string) || 'Full-time';
+  return {
+    ...r,
+    id: String(r.id),
+    title: jobTitle,
+    job_title: jobTitle,
+    company: (r.company as string) || 'Target Company',
+    location: (r.location as string) || null,
+    workplace_type: workModel,
+    work_model: workModel,
+    status: (r.status as string) || 'ready',
+    job_description: (r.job_description as string) || '',
+    created_at: (r.created_at as string) || new Date().toISOString(),
+    updated_at: (r.updated_at as string) || new Date().toISOString(),
+  } as Role;
 }
 
 /**
@@ -61,10 +81,19 @@ export async function invokeAnalyzeRole(
     throw new RolewiseApiError('You must be signed in to analyze a job role.', 'AUTH_ERROR');
   }
 
+  // Safe request logging (Part 1 requirement)
+  console.log('[Rolewise] analyze-role request', {
+    roleId: payload.roleId || 'new',
+    authenticatedUserExists: Boolean(session?.user?.id),
+    jobDescriptionLength: payload.jobDescription.length,
+    resumeTextAvailable: Boolean(payload.resumeText && payload.resumeText.trim().length > 0),
+  });
+
   try {
     // 3. Edge function invocation
     const { data, error } = await supabase.functions.invoke<AnalyzeRoleResponse>('analyze-role', {
       body: {
+        roleId: payload.roleId,
         jobDescription: payload.jobDescription.trim(),
         resumeText: payload.resumeText.trim(),
         resumeFileName: payload.resumeFileName || 'resume.pdf',
@@ -76,29 +105,59 @@ export async function invokeAnalyzeRole(
       },
     });
 
-    if (error || !data) {
+    if (error) {
+      let status = 500;
+      let errorBody: Record<string, unknown> | null = null;
+      let detailedMessage = error.message;
+
+      if ('context' in error && error.context) {
+        const ctx = error.context as Response;
+        status = ctx.status || status;
+        try {
+          errorBody = (await ctx.clone().json()) as Record<string, unknown>;
+          detailedMessage =
+            (errorBody?.message as string) ||
+            (errorBody?.error as string) ||
+            (errorBody?.detail as string) ||
+            detailedMessage;
+        } catch {
+          try {
+            detailedMessage = (await ctx.clone().text()) || detailedMessage;
+          } catch {
+            // ignore
+          }
+        }
+      }
+
+      console.error('[Rolewise] analyze-role response', {
+        status,
+        errorName: error.name,
+        errorMessage: detailedMessage,
+        sanitizedResponseBody: errorBody,
+      });
+
       throw new RolewiseApiError(
-        error?.message || 'Failed to analyze job role on server.',
+        detailedMessage || 'Failed to analyze job role on server.',
         'SERVER_ERROR',
-        error
+        errorBody || error,
+        status
       );
     }
 
-    const roleId = data.role_id || data.roleId || data.id || data.role?.id;
-
-    // Ensure the exact user-provided role details are saved to the database record
-    if (roleId && (payload.jobTitle || payload.company || payload.location || payload.workModel)) {
-      try {
-        const updates: Record<string, string | null> = {};
-        if (payload.jobTitle?.trim()) updates.job_title = payload.jobTitle.trim();
-        if (payload.company?.trim()) updates.company = payload.company.trim();
-        if (payload.location?.trim()) updates.location = payload.location.trim();
-        if (payload.workModel?.trim()) updates.work_model = payload.workModel.trim();
-        await supabase.from('roles').update(updates).eq('id', roleId);
-      } catch (dbErr) {
-        console.warn('[Rolewise] Notice updating exact role details:', dbErr);
-      }
+    if (!data) {
+      throw new RolewiseApiError(
+        'Empty response received from role analysis service.',
+        'SERVER_ERROR'
+      );
     }
+
+    console.log('[Rolewise] analyze-role response', {
+      status: 200,
+      roleId: data.role_id || data.id,
+      success: true,
+    });
+
+    const roleId = data.role_id || data.roleId || data.id || data.role?.id;
 
     return {
       ...data,
@@ -180,7 +239,7 @@ export async function getRole(roleId: string): Promise<Role | null> {
     return null;
   }
 
-  return data as Role;
+  return normalizeRole(data as Record<string, unknown>);
 }
 
 /**
@@ -191,7 +250,6 @@ export async function getRole(roleId: string): Promise<Role | null> {
 export async function getUserRoles(): Promise<Role[]> {
   const supabase = getSupabaseClient();
 
-  // Verify authenticated session exists before querying to respect RLS
   const { data: sessionData } = await supabase.auth.getSession();
   const session = sessionData?.session;
 
@@ -210,7 +268,7 @@ export async function getUserRoles(): Promise<Role[]> {
     return [];
   }
 
-  return data as Role[];
+  return (data as Record<string, unknown>[]).map(normalizeRole);
 }
 
 /**
@@ -245,6 +303,7 @@ export async function removeRole(roleId: string): Promise<boolean> {
       localStorage.removeItem(`rolewise_fit_${roleId}`);
       localStorage.removeItem(`rolewise_prep_${roleId}`);
       sessionStorage.removeItem(`rolewise-interview-${roleId}`);
+      sessionStorage.removeItem(`rolewise:interview:${roleId}`);
     } catch (e) {
       console.warn('[Rolewise] Notice clearing local role cache:', e);
     }
@@ -254,118 +313,100 @@ export async function removeRole(roleId: string): Promise<boolean> {
 }
 
 /**
- * Fetch Role Fit data (role_requirements + fit_analysis)
+ * Fetch Role Fit data (role_requirements + fit_analysis) strictly from Supabase.
+ * Scoped strictly to the role and authenticated user.
+ * No hardcoded or generic fallback content.
  */
 export async function getRoleFit(roleId: string): Promise<{
   role: Role | null;
   requirements: RoleRequirement[];
   fitAnalysis: FitAnalysis[];
 }> {
+  const role = await getRole(roleId);
+  if (!role) {
+    return {
+      role: null,
+      requirements: [],
+      fitAnalysis: [],
+    };
+  }
+
   const supabase = getSupabaseClient();
 
   try {
-    const [roleRes, reqRes, fitRes] = await Promise.all([
-      supabase.from('roles').select('*').eq('id', roleId).single(),
-      supabase.from('role_requirements').select('*').eq('role_id', roleId),
-      supabase.from('fit_analysis').select('*').eq('role_id', roleId),
+    const [reqRes, fitRes] = await Promise.all([
+      supabase.from('role_requirements').select('*').eq('role_id', roleId).order('created_at', { ascending: true }),
+      supabase.from('fit_analysis').select('*').eq('role_id', roleId).order('created_at', { ascending: true }),
     ]);
 
-    const role = roleRes.data ? (roleRes.data as Role) : null;
     const requirements = (reqRes.data || []) as RoleRequirement[];
     const fitAnalysis = (fitRes.data || []) as FitAnalysis[];
 
-    if (role && (requirements.length > 0 || fitAnalysis.length > 0)) {
-      const pairedFitAnalysis = fitAnalysis.map((item) => {
-        const matchingReq = requirements.find((r) => r.id === item.requirement_id);
-        return {
-          ...item,
-          requirement_title:
-            item.requirement_title ||
-            matchingReq?.requirement ||
-            matchingReq?.title ||
-            'Role Requirement',
-          requirement_detail: matchingReq || null,
-        };
-      });
-
+    const pairedFitAnalysis = fitAnalysis.map((item) => {
+      const matchingReq = requirements.find((r) => r.id === item.requirement_id);
       return {
-        role,
-        requirements,
-        fitAnalysis: pairedFitAnalysis,
+        ...item,
+        requirement_title:
+          item.requirement_title ||
+          matchingReq?.requirement ||
+          matchingReq?.title ||
+          'Role Requirement',
+        requirement_detail: matchingReq || null,
       };
-    }
+    });
+
+    return {
+      role,
+      requirements,
+      fitAnalysis: pairedFitAnalysis,
+    };
   } catch (err) {
-    console.warn('Database role fit query notice:', err);
+    console.error('[Rolewise] Database getRoleFit error:', err);
+    return {
+      role,
+      requirements: [],
+      fitAnalysis: [],
+    };
   }
-
-  // Fallback to local storage
-  const role = await getRole(roleId);
-  let requirements: RoleRequirement[] = [];
-  let fitAnalysis: FitAnalysis[] = [];
-
-  if (typeof window !== 'undefined') {
-    try {
-      const rawReq = localStorage.getItem(`rolewise_reqs_${roleId}`);
-      if (rawReq) requirements = JSON.parse(rawReq);
-      const rawFit = localStorage.getItem(`rolewise_fit_${roleId}`);
-      if (rawFit) fitAnalysis = JSON.parse(rawFit);
-    } catch {
-      // ignore
-    }
-  }
-
-  return {
-    role,
-    requirements,
-    fitAnalysis,
-  };
 }
 
 /**
- * Fetch Preparation Items for a role
+ * Fetch Preparation Items for a role strictly from Supabase.
+ * Scoped strictly to the role and authenticated user.
+ * No hardcoded or generic fallback content.
  */
 export async function getPreparationItems(roleId: string): Promise<{
   role: Role | null;
   items: PreparationItem[];
 }> {
+  const role = await getRole(roleId);
+  if (!role) {
+    return {
+      role: null,
+      items: [],
+    };
+  }
+
   const supabase = getSupabaseClient();
 
   try {
-    const [roleRes, itemsRes] = await Promise.all([
-      supabase.from('roles').select('*').eq('id', roleId).single(),
-      supabase
-        .from('preparation_items')
-        .select('*')
-        .eq('role_id', roleId)
-        .order('created_at', { ascending: true }),
-    ]);
+    const itemsRes = await supabase
+      .from('preparation_items')
+      .select('*')
+      .eq('role_id', roleId)
+      .order('created_at', { ascending: true });
 
-    if (roleRes.data && itemsRes.data && itemsRes.data.length > 0) {
-      return {
-        role: roleRes.data as Role,
-        items: itemsRes.data as PreparationItem[],
-      };
-    }
+    return {
+      role,
+      items: (itemsRes.data || []) as PreparationItem[],
+    };
   } catch (err) {
-    console.warn('Database prep items query notice:', err);
+    console.error('[Rolewise] Database getPreparationItems error:', err);
+    return {
+      role,
+      items: [],
+    };
   }
-
-  // Local fallback
-  const role = await getRole(roleId);
-  let items: PreparationItem[] = [];
-  if (typeof window !== 'undefined') {
-    try {
-      const rawPrep = localStorage.getItem(`rolewise_prep_${roleId}`);
-      if (rawPrep) items = JSON.parse(rawPrep);
-    } catch {
-      // ignore
-    }
-  }
-
-  return {
-    role,
-    items,
-  };
 }
 
 

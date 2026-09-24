@@ -8,16 +8,16 @@ const corsHeaders = {
 };
 
 type FitStatus =
-  | "strong_alignment"
-  | "transferable"
-  | "needs_investigation"
-  | "not_demonstrated";
+  | "Strong alignment"
+  | "Transferable"
+  | "Needs investigation"
+  | "Not demonstrated";
 
-type Priority = "high" | "medium" | "low";
+type Priority = "High" | "Medium" | "Low";
 type Importance = "high" | "medium" | "low";
 type Confidence = "high" | "medium" | "low";
 
-type Analysis = {
+interface AnalysisOutput {
   role: {
     job_title: string;
     company: string | null;
@@ -31,7 +31,7 @@ type Analysis = {
   }>;
   fit_analysis: Array<{
     requirement: string;
-    status: FitStatus;
+    status: string;
     evidence: string | null;
     explanation: string;
     confidence: Confidence;
@@ -42,82 +42,13 @@ type Analysis = {
     description: string;
     priority: Priority;
   }>;
-};
+}
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-}
-
-function getSupabaseClient(req: Request) {
-  const url = Deno.env.get("SUPABASE_URL") ?? "";
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const secretKeysRaw = Deno.env.get("SUPABASE_SECRET_KEYS");
-  let secretKey = serviceRoleKey;
-  if (!secretKey && secretKeysRaw) {
-    try {
-      const parsed = JSON.parse(secretKeysRaw);
-      secretKey = parsed.default;
-    } catch {
-      // ignore JSON parse error
-    }
-  }
-
-  if (secretKey) {
-    return createClient(url, secretKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-  }
-
-  // Fallback to anon client with request auth header
-  const authHeader = req.headers.get("Authorization");
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-  return createClient(url, anonKey, {
-    global: authHeader ? { headers: { Authorization: authHeader } } : undefined,
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
-
-async function getUserId(req: Request): Promise<string | null> {
-  const auth = req.headers.get("Authorization");
-  if (!auth?.startsWith("Bearer ")) return null;
-
-  const token = auth.slice("Bearer ".length);
-  const url = Deno.env.get("SUPABASE_URL");
-  if (!url) return null;
-
-  let anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!anonKey) {
-    const pubKeys = Deno.env.get("SUPABASE_PUBLISHABLE_KEYS");
-    if (pubKeys) {
-      try {
-        anonKey = JSON.parse(pubKeys).default;
-      } catch {
-        // ignore
-      }
-    }
-  }
-
-  if (!anonKey) {
-    // Try service role key if available
-    anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  }
-
-  if (!anonKey) return null;
-
-  const supabase = createClient(url, anonKey, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-
-  const { data, error } = await supabase.auth.getUser(token);
-  if (error || !data.user) {
-    console.error("Auth user retrieval failed:", error);
-    return null;
-  }
-  return data.user.id;
 }
 
 function cleanJsonText(rawText: string): string {
@@ -133,78 +64,70 @@ function cleanJsonText(rawText: string): string {
   return cleaned.trim();
 }
 
-async function callOpenRouter(
-  openrouterKey: string,
-  systemPrompt: string,
-  userPrompt: string
-): Promise<{ content: string; status: number; modelUsed: string }> {
-  const endpoint = "https://openrouter.ai/api/v1/chat/completions";
-  const candidateModels = [
-    "openrouter/free",
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "mistralai/mistral-7b-instruct:free",
-  ];
-
-  let lastStatus = 500;
-  let lastErrorMsg = "OpenRouter request failed";
+async function callGemini(key: string, systemPrompt: string, userPrompt: string): Promise<any> {
+  // Candidate Gemini models for robust fallback
+  const candidateModels = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-flash"];
+  let lastStatus = 503;
+  let lastMessage = "Gemini service is temporarily unavailable.";
 
   for (const model of candidateModels) {
-    console.log(`[analyze-role] Calling OpenRouter model: ${model}`);
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${openrouterKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://rolewise.app",
-          "X-Title": "Rolewise Role Analysis",
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          response_format: { type: "json_object" },
-          temperature: 0.2,
-        }),
-      });
+      console.log(`[analyze-role] Calling Gemini model: ${model}`);
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": key,
+          },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0.2,
+            },
+          }),
+        }
+      );
 
+      const raw = await res.text();
       lastStatus = res.status;
 
       if (!res.ok) {
-        const errorText = await res.text();
-        console.warn(`[analyze-role] Model ${model} returned error status ${res.status}:`, errorText);
+        let msg = raw;
         try {
-          const parsed = JSON.parse(errorText);
-          lastErrorMsg = parsed.error?.message || parsed.message || errorText;
-        } catch {
-          lastErrorMsg = errorText;
-        }
-        // If 429 or 503, try next candidate model
-        if (res.status === 429 || res.status === 503 || res.status === 502) {
-          continue;
-        }
-        // For other client errors (like auth), break early
-        break;
+          const parsed = JSON.parse(raw);
+          msg = parsed.error?.message || parsed.message || raw;
+        } catch {}
+        console.warn(`[analyze-role] Model ${model} returned error status ${res.status}:`, msg);
+        lastMessage = msg;
+        if ([429, 500, 502, 503, 504].includes(res.status)) continue;
+        throw new Error(msg);
       }
 
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content;
-      if (!content || !content.trim()) {
-        console.warn(`[analyze-role] Model ${model} returned empty content choices`);
-        lastErrorMsg = "OpenRouter returned empty choices in completion response";
+      const data = JSON.parse(raw);
+      const content = data.candidates?.[0]?.content?.parts
+        ?.map((p: any) => p.text ?? "")
+        .join("")
+        .trim();
+
+      if (!content) {
+        lastStatus = 502;
+        lastMessage = "Gemini returned an empty response.";
         continue;
       }
 
-      return { content, status: 200, modelUsed: model };
+      const parsedJson = JSON.parse(cleanJsonText(content));
+      return parsedJson;
     } catch (err: unknown) {
-      console.warn(`[analyze-role] Network error with model ${model}:`, err);
-      lastErrorMsg = err instanceof Error ? err.message : String(err);
+      console.warn(`[analyze-role] Error with model ${model}:`, err);
+      lastMessage = err instanceof Error ? err.message : String(err);
     }
   }
 
-  throw { status: lastStatus, message: lastErrorMsg };
+  throw new Error(`Gemini failure (${lastStatus}): ${lastMessage}`);
 }
 
 Deno.serve(async (req: Request) => {
@@ -212,17 +135,48 @@ Deno.serve(async (req: Request) => {
 
   try {
     // 1. Verify user authentication
-    const userId = await getUserId(req);
-    if (!userId) {
-      return json({ error: "Unauthorized: Missing or invalid Supabase user session." }, 401);
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return json({ error: "Unauthorized: Missing Authorization header." }, 401);
     }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    // Client for auth check
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    const { data: { user }, error: userError } = await authClient.auth.getUser(token);
+    if (userError || !user) {
+      console.error("[analyze-role] Auth user retrieval failed:", userError);
+      return json({ error: "Unauthorized: Invalid Supabase user session." }, 401);
+    }
+    const userId = user.id;
+
+    // Database client (using service role key if available for safe schema operations)
+    const db = serviceRoleKey
+      ? createClient(supabaseUrl, serviceRoleKey, {
+          auth: { autoRefreshToken: false, persistSession: false },
+        })
+      : authClient;
 
     // 2. Validate input payload
     const body = await req.json().catch(() => ({}));
+    const existingRoleId = body?.roleId ? String(body.roleId).trim() : null;
     const jobDescription = String(body?.jobDescription ?? "").trim();
     const resumeText = String(body?.resumeText ?? "").trim();
-    const resumeFileName = body?.resumeFileName ? String(body.resumeFileName) : "resume.txt";
-    const resumeMimeType = body?.resumeMimeType ? String(body.resumeMimeType) : "text/plain";
+    const resumeFileName = body?.resumeFileName ? String(body.resumeFileName) : "resume.pdf";
+    const resumeMimeType = body?.resumeMimeType ? String(body.resumeMimeType) : "application/pdf";
+
+    const userJobTitle = body?.jobTitle ? String(body.jobTitle).trim() : "";
+    const userCompany = body?.company ? String(body.company).trim() : "";
+    const userLocation = body?.location ? String(body.location).trim() : "";
+    const userWorkModel = body?.workModel ? String(body.workModel).trim() : "";
 
     if (!jobDescription) return json({ error: "Job description is required." }, 400);
     if (!resumeText) return json({ error: "Resume or experience text is required." }, 400);
@@ -230,134 +184,133 @@ Deno.serve(async (req: Request) => {
     if (jobDescription.length > 60000) {
       return json({ error: "Job description is too long. Please provide a shorter version." }, 400);
     }
-
     if (resumeText.length > 60000) {
       return json({ error: "Resume text is too long. Please provide a shorter version." }, 400);
     }
 
-    // 3. Read OpenRouter API key from Edge Function secrets
-    const openrouterKey = Deno.env.get("OPENROUTER_API_KEY");
-    if (!openrouterKey || !openrouterKey.trim()) {
-      console.error("[analyze-role] OPENROUTER_API_KEY is not configured in Supabase Edge Function secrets");
+    // 3. Read Gemini API key
+    const geminiKey = Deno.env.get("GEMINI_API_KEY")?.trim();
+    if (!geminiKey) {
+      console.error("[analyze-role] GEMINI_API_KEY is not configured in Supabase Edge Function secrets");
       return json(
         {
           error: "AI_PROVIDER_ERROR",
-          provider: "openrouter",
-          status: 500,
-          message: "OPENROUTER_API_KEY is not configured",
+          message: "GEMINI_API_KEY is not configured in Edge Function secrets.",
         },
-        500
+        503
       );
     }
 
-    // 4. Construct prompt for OpenRouter
-    const systemPrompt = `You are the role analysis engine for ROLEWISE, an AI interview preparation product.
+    // 4. Construct Gemini prompt for full role analysis
+    const systemPrompt = `You are the role analysis engine for ROLEWISE, an AI career preparation platform.
 
-Goal:
-Connect one candidate's supplied experience to one specific job opportunity and produce evidence-grounded role fit plus a preparation plan.
+GOAL:
+Read the FULL submitted job description and compare it against the candidate's actual resume/experience text.
+Produce a tailored, evidence-grounded role fit analysis and a preparation plan.
 
-EVIDENCE RULES:
-- Use ONLY evidence explicitly present in the supplied resume/experience text.
-- Never invent employers, projects, years of experience, tools, responsibilities, outcomes, certifications, or skills.
-- A requirement can be "strong_alignment" only when the supplied experience clearly demonstrates it.
-- Use "transferable" when the experience does not exactly match the requirement but clearly supports a reasonable adjacent capability.
-- Use "needs_investigation" when the supplied evidence is insufficient to determine whether the candidate has the capability. This is NOT a negative judgment; it signifies missing evidence.
-- Use "not_demonstrated" only when the supplied experience clearly fails to demonstrate the requirement after considering reasonable transferable evidence.
-- Evidence must quote or faithfully summarize only what the candidate supplied.
-- Keep requirements specific and deduplicate overlapping requirements.
-- Focus on requirements that materially affect interview preparation.
-- Do NOT produce numeric fit scores, hiring probabilities, or readiness scores.
-- Preparation items must be derived from the actual requirements and fit analysis.
-- Return concise, useful explanations suitable for a product UI.
+CRITICAL RULES:
+1. REQUIREMENTS MUST COME DIRECTLY FROM THE SUBMITTED JOB DESCRIPTION:
+   - Do NOT use generic predefined Product Designer requirements unless they are explicitly present in the submitted JD.
+   - Extract 5 to 8 concrete requirements that reflect the role's actual demands (e.g., domain expertise, technical skills, ownership level, B2B/consumer focus, collaboration, tools, system complexity).
+   - Only include requirements supported by the submitted JD. Do not invent requirements.
+
+2. EVIDENCE-BASED FIT EVALUATION:
+   For every requirement, evaluate the candidate's supplied resume and assign one of four statuses:
+   - "Strong alignment": The supplied resume clearly demonstrates relevant, direct experience.
+   - "Transferable": The supplied experience is related or adjacent, but not an exact match.
+   - "Needs investigation": The supplied information is insufficient to determine whether the candidate has the experience. IMPORTANT: "Needs investigation" does NOT mean the candidate lacks the skill; never infer lack of ability from missing resume text.
+   - "Not demonstrated": The supplied experience does not demonstrate the requirement after considering transferable capabilities.
+
+3. EVIDENCE & EXPLANATIONS:
+   - "evidence": Quote or faithfully summarize ONLY what is explicitly stated in the candidate's resume. If no evidence exists, provide null.
+   - "explanation": Explain clearly and objectively how the candidate's background connects (or where information is needed).
+   - Never invent candidate companies, years of experience, metrics, or accomplishments.
+
+4. PREPARATION PLAN DERIVATION:
+   - Generate 3 to 5 actionable preparation items directly tied to the analyzed requirements and fit findings.
+   - If an area is "Needs investigation": focus on clarifying or articulating experience in that domain.
+   - If an area is "Strong alignment": focus on preparing a standout, structured project story.
+   - If an area is "Transferable": focus on effectively framing related experience.
+   - If an area is "Not demonstrated": focus on addressing domain gaps thoughtfully without claiming impossible qualifications.
+   - Set priority to "High", "Medium", or "Low".
+
+5. NO NUMERICAL SCORES:
+   - Do NOT produce numerical match scores, hiring percentages, or readiness ratings.
 
 OUTPUT FORMAT:
 Return ONLY valid JSON matching this exact structure:
 {
   "role": {
-    "job_title": "string",
-    "company": "string or null",
-    "location": "string or null",
-    "work_model": "string or null"
+    "job_title": "Extracted or confirmed role title",
+    "company": "Company name or null",
+    "location": "Location or null",
+    "work_model": "Work model (e.g. Remote, Hybrid, On-site) or null"
   },
   "requirements": [
     {
-      "requirement": "string",
+      "requirement": "Specific requirement text from the JD",
       "importance": "high" | "medium" | "low",
-      "category": "string"
+      "category": "Domain Expertise" | "Technical Execution" | "Leadership & Ownership" | "Collaboration" | "Strategy"
     }
   ],
   "fit_analysis": [
     {
-      "requirement": "string",
-      "status": "strong_alignment" | "transferable" | "needs_investigation" | "not_demonstrated",
-      "evidence": "string or null",
-      "explanation": "string",
+      "requirement": "Must match the exact text of one requirement from the requirements list",
+      "status": "Strong alignment" | "Transferable" | "Needs investigation" | "Not demonstrated",
+      "evidence": "Actual candidate experience quote/summary, or null",
+      "explanation": "Clear rationale connecting candidate experience to requirement",
       "confidence": "high" | "medium" | "low"
     }
   ],
   "preparation": [
     {
-      "requirement": "string",
-      "title": "string",
-      "description": "string",
-      "priority": "high" | "medium" | "low"
+      "requirement": "Must match the exact text of one requirement from the requirements list",
+      "title": "Clear actionable preparation action",
+      "description": "Specific guidance on what to prepare or practice",
+      "priority": "High" | "Medium" | "Low"
     }
   ]
 }`;
 
-    const userPrompt = `JOB DESCRIPTION:
-${jobDescription}
+    const userPrompt = JSON.stringify({
+      userProvidedDetails: {
+        jobTitle: userJobTitle || null,
+        company: userCompany || null,
+        location: userLocation || null,
+        workModel: userWorkModel || null,
+      },
+      jobDescription,
+      candidateResume: resumeText,
+    });
 
-CANDIDATE EXPERIENCE / RESUME:
-${resumeText}`;
+    console.log("[analyze-role] Sending prompt to Gemini...");
+    const analysis: AnalysisOutput = await callGemini(geminiKey, systemPrompt, userPrompt);
 
-    // 5. Call OpenRouter
-    let rawContent: string;
-    try {
-      const openRouterResult = await callOpenRouter(openrouterKey, systemPrompt, userPrompt);
-      rawContent = openRouterResult.content;
-    } catch (err: any) {
-      console.error("[analyze-role] OpenRouter invocation error:", err);
+    if (!analysis || !Array.isArray(analysis.requirements) || !Array.isArray(analysis.fit_analysis)) {
+      console.error("[analyze-role] Invalid structured output from Gemini:", analysis);
       return json(
         {
           error: "AI_PROVIDER_ERROR",
-          provider: "openrouter",
-          status: err.status || 502,
-          message: err.message || "Failed to communicate with OpenRouter",
-        },
-        err.status >= 400 && err.status < 600 ? err.status : 502
-      );
-    }
-
-    // 6. Parse structured JSON analysis
-    let analysis: Analysis;
-    try {
-      const cleaned = cleanJsonText(rawContent);
-      analysis = JSON.parse(cleaned);
-      if (!analysis.role || !Array.isArray(analysis.requirements) || !Array.isArray(analysis.fit_analysis)) {
-        throw new Error("Missing required top-level analysis keys");
-      }
-      if (!analysis.role.job_title) {
-        analysis.role.job_title = "Role Specialist";
-      }
-    } catch (parseError) {
-      console.error("[analyze-role] Invalid structured output from OpenRouter:", rawContent, parseError);
-      return json(
-        {
-          error: "AI_PROVIDER_ERROR",
-          provider: "openrouter",
-          status: 502,
-          message: `AI returned an invalid structured JSON format: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
+          message: "Gemini returned incomplete analysis structure.",
         },
         502
       );
     }
 
-    // 7. Save into Supabase Database
-    const supabase = getSupabaseClient(req);
+    console.log("[analyze-role] Gemini analysis completed successfully.", {
+      requirementsCount: analysis.requirements.length,
+      fitCount: analysis.fit_analysis.length,
+      prepCount: (analysis.preparation || []).length,
+    });
 
-    // 7a. Insert resume record first (resumes table has NO role_id column)
-    const { data: resume, error: resumeError } = await supabase
+    // 5. Finalize role metadata prioritizing user-provided details
+    const finalJobTitle = userJobTitle || analysis.role?.job_title || "Target Role";
+    const finalCompany = userCompany || analysis.role?.company || "Target Company";
+    const finalLocation = userLocation || analysis.role?.location || null;
+    const finalWorkModel = userWorkModel || analysis.role?.work_model || null;
+
+    // 6. Save Resume record
+    const { data: resume, error: resumeError } = await db
       .from("resumes")
       .insert({
         user_id: userId,
@@ -371,85 +324,103 @@ ${resumeText}`;
 
     if (resumeError || !resume) {
       console.error("[analyze-role] Resume insert failed:", resumeError);
-      return json(
-        {
-          error: "Could not save resume record",
-          detail: resumeError?.message ?? "Database error",
-        },
-        500
-      );
+      return json({ error: "Could not save resume record", detail: resumeError?.message }, 500);
     }
 
-    // 7b. Insert role record linked to resume via roles.resume_id
-    const { data: role, error: roleError } = await supabase
-      .from("roles")
-      .insert({
-        user_id: userId,
-        job_title: analysis.role.job_title,
-        company: analysis.role.company,
-        location: analysis.role.location,
-        work_model: analysis.role.work_model,
-        job_description: jobDescription,
-        status: "ready",
-        resume_id: resume.id,
-      })
-      .select("id")
-      .single();
+    // 7. Save Role record (Update if re-running for existing roleId, else Insert new)
+    let roleId = existingRoleId;
+    if (existingRoleId) {
+      // Re-run: verify ownership first
+      const { data: existingRole, error: roleCheckError } = await db
+        .from("roles")
+        .select("id")
+        .eq("id", existingRoleId)
+        .eq("user_id", userId)
+        .maybeSingle();
 
-    if (roleError || !role) {
-      console.error("[analyze-role] Role insert failed:", roleError);
-      // Clean up orphaned resume record
-      await supabase.from("resumes").delete().eq("id", resume.id);
-      return json(
-        {
-          error: "Could not save role record",
-          detail: roleError?.message ?? "Database error",
-        },
-        500
-      );
+      if (roleCheckError || !existingRole) {
+        return json({ error: "Existing role not found or access denied." }, 404);
+      }
+
+      // Clean up previous requirements, fit analysis, and preparation items for re-analysis
+      await db.from("fit_analysis").delete().eq("role_id", existingRoleId);
+      await db.from("preparation_items").delete().eq("role_id", existingRoleId);
+      await db.from("role_requirements").delete().eq("role_id", existingRoleId);
+
+      const { error: roleUpdateError } = await db
+        .from("roles")
+        .update({
+          job_title: finalJobTitle,
+          company: finalCompany,
+          location: finalLocation,
+          work_model: finalWorkModel,
+          job_description: jobDescription,
+          status: "analyzing",
+          resume_id: resume.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingRoleId);
+
+      if (roleUpdateError) {
+        console.error("[analyze-role] Role update failed:", roleUpdateError);
+        return json({ error: "Could not update role record", detail: roleUpdateError.message }, 500);
+      }
+    } else {
+      // New role creation
+      const { data: newRole, error: roleInsertError } = await db
+        .from("roles")
+        .insert({
+          user_id: userId,
+          job_title: finalJobTitle,
+          company: finalCompany,
+          location: finalLocation,
+          work_model: finalWorkModel,
+          job_description: jobDescription,
+          status: "analyzing",
+          resume_id: resume.id,
+        })
+        .select("id")
+        .single();
+
+      if (roleInsertError || !newRole) {
+        console.error("[analyze-role] Role insert failed:", roleInsertError);
+        await db.from("resumes").delete().eq("id", resume.id);
+        return json({ error: "Could not save role record", detail: roleInsertError?.message }, 500);
+      }
+      roleId = newRole.id;
     }
 
-    // 7d. Insert role requirements
+    // 8. Insert role requirements
     const requirementRows = analysis.requirements.map((r) => ({
-      role_id: role.id,
+      role_id: roleId,
       requirement: r.requirement,
-      importance: r.importance,
-      category: r.category,
+      importance: r.importance || "medium",
+      category: r.category || "Core Responsibility",
     }));
 
-    const { data: insertedRequirements, error: reqError } = await supabase
+    const { data: insertedRequirements, error: reqError } = await db
       .from("role_requirements")
       .insert(requirementRows)
       .select("id, requirement");
 
     if (reqError || !insertedRequirements) {
       console.error("[analyze-role] Requirements insert failed:", reqError);
-      return json(
-        {
-          error: "Could not save role requirements",
-          detail: reqError?.message ?? "Database error",
-        },
-        500
-      );
+      await db.from("roles").update({ status: "analysis_failed" }).eq("id", roleId);
+      return json({ error: "Could not save role requirements", detail: reqError?.message, role_id: roleId }, 500);
     }
 
+    // Map requirement text to database UUID
     const requirementByText = new Map(
-      insertedRequirements.map((r: { id: string; requirement: string }) => [r.requirement, r.id])
-    );
-    const requirementByNormalized = new Map(
       insertedRequirements.map((r: { id: string; requirement: string }) => [r.requirement.trim().toLowerCase(), r.id])
     );
 
     function resolveRequirementId(reqText: string | undefined, index: number): string {
       if (reqText) {
-        const exact = requirementByText.get(reqText);
+        const lower = reqText.trim().toLowerCase();
+        const exact = requirementByText.get(lower);
         if (exact) return exact;
 
-        const lower = reqText.trim().toLowerCase();
-        const norm = requirementByNormalized.get(lower);
-        if (norm) return norm;
-
-        for (const [key, id] of requirementByNormalized.entries()) {
+        for (const [key, id] of requirementByText.entries()) {
           if (key.includes(lower) || lower.includes(key)) {
             return id;
           }
@@ -462,87 +433,89 @@ ${resumeText}`;
     }
 
     function normalizeFitStatus(status: string | undefined): string {
-      const s = (status || "").toLowerCase().trim().replace(/[\s-]+/g, "_");
-      if (s === "strong_alignment" || s === "strong") return "strong_alignment";
-      if (s === "transferable") return "transferable";
-      if (s === "needs_investigation" || s === "investigation") return "needs_investigation";
-      if (s === "not_demonstrated" || s === "none") return "not_demonstrated";
-      return "needs_investigation";
+      const s = (status || "").toLowerCase().trim();
+      if (s.includes("strong")) return "Strong alignment";
+      if (s.includes("transferable")) return "Transferable";
+      if (s.includes("investigation")) return "Needs investigation";
+      if (s.includes("not demonstrated") || s.includes("not_demonstrated")) return "Not demonstrated";
+      return "Needs investigation";
     }
 
-    function normalizeConfidence(confidence: string | undefined): string {
-      const c = (confidence || "").toLowerCase().trim();
-      if (c === "high" || c === "medium" || c === "low") return c;
-      return "medium";
+    function normalizePriority(priority: string | undefined): Priority {
+      const p = (priority || "").toLowerCase().trim();
+      if (p.includes("high")) return "High";
+      if (p.includes("low")) return "Low";
+      return "Medium";
     }
 
-    // 7e. Insert fit analysis (NO requirement_title column in public.fit_analysis)
+    // 9. Insert fit analysis (strictly adhering to schema: id, role_id, requirement_id, status, evidence, explanation, confidence)
     const fitRows = analysis.fit_analysis.map((f, idx) => ({
-      role_id: role.id,
+      role_id: roleId,
       requirement_id: resolveRequirementId(f.requirement, idx),
       status: normalizeFitStatus(f.status),
       evidence: f.evidence || null,
       explanation: f.explanation || "",
-      confidence: normalizeConfidence(f.confidence),
+      confidence: f.confidence || "medium",
     }));
 
-    const { error: fitError } = await supabase.from("fit_analysis").insert(fitRows);
+    const { error: fitError } = await db.from("fit_analysis").insert(fitRows);
     if (fitError) {
       console.error("[analyze-role] Fit analysis insert failed:", fitError);
-      return json(
-        {
-          error: "Could not save role fit analysis",
-          detail: fitError?.message ?? "Database error",
-        },
-        500
-      );
+      await db.from("roles").update({ status: "analysis_failed" }).eq("id", roleId);
+      return json({ error: "Could not save role fit analysis", detail: fitError.message, role_id: roleId }, 500);
     }
 
-    // 7f. Insert preparation items
+    // 10. Insert preparation items (strictly adhering to schema: id, role_id, requirement_id, title, description, priority, status)
+    // NEVER invent non-existent columns like order_index or requirement_title!
     const prepRows = (analysis.preparation || []).map((p, idx) => ({
-      role_id: role.id,
+      role_id: roleId,
       requirement_id: resolveRequirementId(p.requirement, idx),
       title: p.title,
       description: p.description,
-      priority: p.priority || "medium",
+      priority: normalizePriority(p.priority),
       status: "not_started",
-      order_index: idx,
     }));
 
     if (prepRows.length > 0) {
-      const { error: prepError } = await supabase.from("preparation_items").insert(prepRows);
+      const { error: prepError } = await db.from("preparation_items").insert(prepRows);
       if (prepError) {
-        console.error("[analyze-role] Preparation plan insert failed:", prepError);
-        return json(
-          {
-            error: "Could not save preparation plan",
-            detail: prepError?.message ?? "Database error",
-          },
-          500
-        );
+        console.error("[analyze-role] Preparation items insert failed:", prepError);
+        await db.from("roles").update({ status: "analysis_failed" }).eq("id", roleId);
+        return json({ error: "Could not save preparation items", detail: prepError.message, role_id: roleId }, 500);
       }
     }
 
-    // 8. Return successful response
+    // 11. Mark role as ready now that all downstream items are successfully saved
+    await db
+      .from("roles")
+      .update({
+        status: "ready",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", roleId);
+
+    // 12. Return successful response
     return json({
       success: true,
-      role_id: role.id,
+      role_id: roleId,
       resume_id: resume.id,
       role: {
-        id: role.id,
-        job_title: analysis.role.job_title,
-        company: analysis.role.company,
+        id: roleId,
+        job_title: finalJobTitle,
+        company: finalCompany,
+        location: finalLocation,
+        work_model: finalWorkModel,
       },
       requirements: analysis.requirements,
       fit_analysis: analysis.fit_analysis,
       preparation: analysis.preparation,
-      analysis,
     });
   } catch (error) {
     console.error("[analyze-role] Unexpected error:", error);
     return json(
       {
-        error: error instanceof Error ? error.message : "Unexpected server error.",
+        error: "SERVER_ERROR",
+        message: error instanceof Error ? error.message : "Unexpected server error during role analysis.",
       },
       500
     );

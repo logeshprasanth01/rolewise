@@ -51,19 +51,21 @@ export async function POST(req: NextRequest) {
 
     const role: Role = roleData;
 
-    // 2. Fetch Requirements, Fit, Prep Items, Resume
+    // 2. Fetch Requirements, Fit, Prep Items, Resume (via roles.resume_id)
     const [reqRes, fitRes, prepRes, resumeRes] = await Promise.all([
       supabase.from('role_requirements').select('*').eq('role_id', roleId),
       supabase.from('fit_analysis').select('*').eq('role_id', roleId),
       supabase.from('preparation_items').select('*').eq('role_id', roleId),
-      supabase.from('resumes').select('*').eq('role_id', roleId).limit(1),
+      roleData.resume_id
+        ? supabase.from('resumes').select('resume_text').eq('id', roleData.resume_id).maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
 
     const requirements = (reqRes.data || []) as RoleRequirement[];
     const fitAnalysis = (fitRes.data || []) as FitAnalysis[];
     const preparationItems: PreparationItem[] = (prepRes.data || []) as PreparationItem[];
 
-    const resumeText = resumeRes.data?.[0]?.resume_text || null;
+    const resumeText = resumeRes.data?.resume_text || null;
 
     // 3. Generate first question using role context
     const generated = await generateFirstQuestion({

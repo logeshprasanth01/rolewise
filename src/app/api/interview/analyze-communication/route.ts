@@ -65,25 +65,29 @@ export async function POST(req: NextRequest) {
     let candidateExperience: string | null = null;
 
     if (roleId) {
-      const [roleRes, reqRes, prepRes, resumeRes] = await Promise.all([
-        supabase.from('roles').select('*').eq('id', roleId).maybeSingle(),
-        supabase.from('role_requirements').select('requirement, title').eq('role_id', roleId),
-        supabase.from('preparation_items').select('title, description').eq('role_id', roleId),
-        supabase.from('resumes').select('resume_text').eq('role_id', roleId).maybeSingle(),
-      ]);
+      const { data: roleData } = await supabase.from('roles').select('*').eq('id', roleId).maybeSingle();
 
-      if (roleRes.data) {
-        roleTitle = roleRes.data.title || roleTitle;
-        companyName = roleRes.data.company || companyName;
-      }
-      if (reqRes.data && reqRes.data.length > 0) {
-        requirementsList = reqRes.data.map((r) => r.requirement || r.title).filter(Boolean);
-      }
-      if (prepRes.data && prepRes.data.length > 0) {
-        preparationItemsList = prepRes.data.map((p) => `${p.title}: ${p.description}`).filter(Boolean);
-      }
-      if (resumeRes.data?.resume_text) {
-        candidateExperience = resumeRes.data.resume_text;
+      if (roleData) {
+        roleTitle = roleData.job_title || roleData.title || roleTitle;
+        companyName = roleData.company || companyName;
+
+        const [reqRes, prepRes, resumeRes] = await Promise.all([
+          supabase.from('role_requirements').select('requirement, title').eq('role_id', roleId),
+          supabase.from('preparation_items').select('title, description').eq('role_id', roleId),
+          roleData.resume_id
+            ? supabase.from('resumes').select('resume_text').eq('id', roleData.resume_id).maybeSingle()
+            : Promise.resolve({ data: null }),
+        ]);
+
+        if (reqRes.data && reqRes.data.length > 0) {
+          requirementsList = reqRes.data.map((r) => r.requirement || r.title).filter(Boolean);
+        }
+        if (prepRes.data && prepRes.data.length > 0) {
+          preparationItemsList = prepRes.data.map((p) => `${p.title}: ${p.description}`).filter(Boolean);
+        }
+        if (resumeRes.data?.resume_text) {
+          candidateExperience = resumeRes.data.resume_text;
+        }
       }
     }
 

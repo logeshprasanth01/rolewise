@@ -59,31 +59,7 @@ export async function POST(req: NextRequest) {
 
     const requirements = (reqRes.data || []) as RoleRequirement[];
     const fitAnalysis = (fitRes.data || []) as FitAnalysis[];
-    const preparationItems: PreparationItem[] = (prepRes.data && prepRes.data.length > 0)
-      ? (prepRes.data as PreparationItem[])
-      : [
-          {
-            id: 'prep-1',
-            role_id: targetRoleId,
-            title: 'Design systems',
-            description: 'Scale component token architectures.',
-            priority: 'High',
-          },
-          {
-            id: 'prep-2',
-            role_id: targetRoleId,
-            title: 'Stakeholder collaboration',
-            description: 'Handling feedback and conflicting priorities.',
-            priority: 'Medium',
-          },
-          {
-            id: 'prep-3',
-            role_id: targetRoleId,
-            title: 'User research',
-            description: 'Usability testing validation.',
-            priority: 'High',
-          },
-        ];
+    const preparationItems: PreparationItem[] = (prepRes.data || []) as PreparationItem[];
 
     // 2. Evaluate answer and synthesize next question
     const result = await analyzeAnswerAndGenerateNext({

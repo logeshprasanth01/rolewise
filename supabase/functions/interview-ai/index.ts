@@ -212,23 +212,33 @@ Schema:
     if (action === 'analyze_answer') {
       if (!transcript.trim()) return json({ error: 'Transcript is required' }, 400);
 
-      const systemPrompt = `You are an expert interviewer and communication coach evaluating one interview response for "${roleTitle}".
+      const systemPrompt = `You are an expert interviewer and communication coach evaluating an interview response for the target role "${roleTitle}" at "${companyName}".
 
+Target Role Requirements:
+${requirementsList.length ? requirementsList.map(r => `- ${r}`).join('\n') : '- Core professional competency and domain alignment'}
+
+Job Description Context:
+${jobDescription.slice(0, 2000)}
+
+Candidate Context:
+${candidateExperience || 'Candidate profile on file.'}
+
+Evaluation Objective:
+Evaluate how well the candidate's answer addresses the specific question and demonstrates the competency and skills required for this role.
 Evaluate only observable answer/content qualities:
-- relevance
-- clarity
-- structure
-- specificity
-- personal actions
-- outcome/result
+- relevance to the specific question and target role
+- clarity and structure
+- specificity and concrete evidence from experience
+- personal actions and ownership
+- measurable outcome/result
 - conciseness
 - obvious filler-word patterns when present in the transcript
 
 Do not judge intelligence, personality, mental state, confidence, or hiring probability.
 Do not create numerical scores.
 
-If the answer is incomplete, create one targeted follow-up question.
-If it is complete, create a dynamic next question for another relevant competency.
+If the answer is incomplete, suggest a targeted follow-up question.
+If it is complete, suggest a dynamic next question targeting another relevant role requirement.
 If question number is 5 or greater, next_question must be null.
 
 Return only valid JSON:
@@ -259,16 +269,21 @@ Return only valid JSON:
     }
 
     if (action === 'final_feedback') {
-      const systemPrompt = `You are an expert communication coach reviewing a completed interview for "${roleTitle}".
+      const systemPrompt = `You are an expert communication coach reviewing a completed interview for the role "${roleTitle}" at "${companyName}".
 
-Use only the actual answers supplied.
+Target Role Requirements:
+${requirementsList.length ? requirementsList.map(r => `- ${r}`).join('\n') : '- Core professional competency'}
+
+Job Description Context:
+${jobDescription.slice(0, 1500)}
+
+Use only the actual answers supplied and evaluate alignment with this specific role.
 Give qualitative feedback on:
 - clarity
 - structure
-- specificity
+- specificity and concrete evidence
 - conciseness
-- concrete evidence
-- outcomes
+- role alignment and outcomes
 
 Do not provide readiness scores, hiring probability, personality judgments, or intelligence judgments.
 

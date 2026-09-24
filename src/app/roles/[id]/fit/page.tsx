@@ -18,7 +18,7 @@ import {
   Info,
   Loader2,
 } from 'lucide-react';
-import { getRoleFit } from '@/services/api';
+import { getRoleFit, invokeAnalyzeRole, getSupabaseClient } from '@/services/api';
 import { FitAnalysis, Role, RoleRequirement } from '@/types/database';
 
 export default function RoleFitPage() {
@@ -30,6 +30,8 @@ export default function RoleFitPage() {
   const [requirements, setRequirements] = useState<RoleRequirement[]>([]);
   const [fitAnalysis, setFitAnalysis] = useState<FitAnalysis[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
 
   // Expanded card tracking
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
@@ -69,6 +71,54 @@ export default function RoleFitPage() {
     loadData();
   }, [roleId]);
 
+  const handleTryAgain = async () => {
+    if (!role || isRetrying) return;
+    setIsRetrying(true);
+    setRetryError(null);
+
+    try {
+      let resumeText = '';
+      let resumeFileName = 'candidate_resume.pdf';
+
+      if (role.resume_id) {
+        const supabase = getSupabaseClient();
+        const { data: resume } = await supabase
+          .from('resumes')
+          .select('resume_text, file_name')
+          .eq('id', role.resume_id)
+          .maybeSingle();
+
+        if (resume?.resume_text) {
+          resumeText = resume.resume_text;
+          resumeFileName = resume.file_name || resumeFileName;
+        }
+      }
+
+      await invokeAnalyzeRole({
+        roleId: role.id,
+        jobDescription: role.job_description || `${role.title} at ${role.company}`,
+        resumeText: resumeText || `Candidate applying for ${role.title} with relevant background experience.`,
+        resumeFileName,
+        resumeMimeType: 'application/pdf',
+        jobTitle: role.title,
+        company: role.company,
+        location: role.location || undefined,
+        workModel: role.workplace_type || undefined,
+      });
+
+      // Reload fresh role fit
+      const data = await getRoleFit(roleId);
+      setRole(data.role);
+      setRequirements(data.requirements || []);
+      setFitAnalysis(data.fitAnalysis || []);
+    } catch (err: unknown) {
+      console.error('[RoleFit] Re-analysis failed:', err);
+      setRetryError(err instanceof Error ? err.message : 'Role analysis could not be completed.');
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => ({
       ...prev,
@@ -102,6 +152,43 @@ export default function RoleFitPage() {
           <span>Add a job</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
+      </div>
+    );
+  }
+
+  // Part 5: If role analysis has no requirements/fit items or failed, show required retry state
+  if (fitAnalysis.length === 0) {
+    return (
+      <div className="rolewise-card p-8 max-w-lg mx-auto text-center space-y-4 my-12 animate-in fade-in">
+        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#E87967] flex items-center justify-center mx-auto">
+          <AlertCircle className="w-6 h-6" />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold text-[#1F2937]">Role analysis couldn&apos;t be completed.</h2>
+          <p className="text-xs text-[#667085]">
+            Your job and experience are saved. Try analyzing again.{retryError ? ` (${retryError})` : ''}
+          </p>
+        </div>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <button
+            type="button"
+            onClick={handleTryAgain}
+            disabled={isRetrying}
+            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+          >
+            {isRetrying ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Analyzing role...</span>
+              </>
+            ) : (
+              <>
+                <span>Try again</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
+        </div>
       </div>
     );
   }

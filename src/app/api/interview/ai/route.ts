@@ -84,29 +84,33 @@ export async function POST(req: NextRequest) {
     let candidateExperience = '';
 
     if (roleId) {
-      const [roleRes, reqRes, prepRes, fitRes, resumeRes] = await Promise.all([
-        supabase.from('roles').select('*').eq('id', roleId).maybeSingle(),
-        supabase.from('role_requirements').select('requirement, title, category').eq('role_id', roleId),
-        supabase.from('preparation_items').select('title, description, priority').eq('role_id', roleId),
-        supabase.from('fit_analysis').select('status, explanation').eq('role_id', roleId),
-        supabase.from('resumes').select('resume_text').eq('role_id', roleId).maybeSingle(),
-      ]);
+      const { data: roleData } = await supabase.from('roles').select('*').eq('id', roleId).maybeSingle();
 
-      if (roleRes.data) {
-        roleTitle = roleRes.data.title || roleTitle;
-        companyName = roleRes.data.company || companyName;
-      }
-      if (reqRes.data && reqRes.data.length > 0) {
-        requirementsList = reqRes.data.map((r: { requirement?: string; title?: string }) => r.requirement || r.title || '').filter(Boolean);
-      }
-      if (prepRes.data && prepRes.data.length > 0) {
-        preparationItemsList = prepRes.data.map((p: { title?: string; description?: string }) => `${p.title}: ${p.description}`).filter(Boolean);
-      }
-      if (fitRes.data && fitRes.data.length > 0) {
-        fitAnalysisList = fitRes.data.map((f: { status?: string; explanation?: string }) => `${f.status}: ${f.explanation}`).filter(Boolean);
-      }
-      if (resumeRes.data?.resume_text) {
-        candidateExperience = resumeRes.data.resume_text.slice(0, 1000);
+      if (roleData) {
+        roleTitle = roleData.job_title || roleData.title || roleTitle;
+        companyName = roleData.company || companyName;
+
+        const [reqRes, prepRes, fitRes, resumeRes] = await Promise.all([
+          supabase.from('role_requirements').select('requirement, title, category').eq('role_id', roleId),
+          supabase.from('preparation_items').select('title, description, priority').eq('role_id', roleId),
+          supabase.from('fit_analysis').select('status, explanation').eq('role_id', roleId),
+          roleData.resume_id
+            ? supabase.from('resumes').select('resume_text').eq('id', roleData.resume_id).maybeSingle()
+            : Promise.resolve({ data: null }),
+        ]);
+
+        if (reqRes.data && reqRes.data.length > 0) {
+          requirementsList = reqRes.data.map((r: { requirement?: string; title?: string }) => r.requirement || r.title || '').filter(Boolean);
+        }
+        if (prepRes.data && prepRes.data.length > 0) {
+          preparationItemsList = prepRes.data.map((p: { title?: string; description?: string }) => `${p.title}: ${p.description}`).filter(Boolean);
+        }
+        if (fitRes.data && fitRes.data.length > 0) {
+          fitAnalysisList = fitRes.data.map((f: { status?: string; explanation?: string }) => `${f.status}: ${f.explanation}`).filter(Boolean);
+        }
+        if (resumeRes.data?.resume_text) {
+          candidateExperience = resumeRes.data.resume_text.slice(0, 1000);
+        }
       }
     }
 

@@ -18,10 +18,13 @@ export interface Role {
   id: string;
   user_id?: string | null;
   title: string;
+  job_title?: string;
   company: string;
   location?: string | null;
   workplace_type?: string | null;
+  work_model?: string | null;
   status?: string | null;
+  resume_id?: string | null;
   job_description?: string | null;
   created_at?: string;
   updated_at?: string;
@@ -62,6 +65,7 @@ export interface FitAnalysis {
 export interface PreparationItem {
   id: string;
   role_id: string;
+  requirement_id?: string | null;
   title: string;
   description: string;
   priority: PreparationPriority | string;
@@ -72,6 +76,7 @@ export interface PreparationItem {
 }
 
 export interface AnalyzeRolePayload {
+  roleId?: string;
   jobDescription: string;
   resumeText: string;
   resumeFileName: string;

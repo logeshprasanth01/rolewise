@@ -133,6 +133,60 @@ export default function PreparationPage() {
     );
   };
 
+  // Derive dynamic focus areas from the actual preparation items
+  const highPriorityItem = items.find(
+    (i) =>
+      i.priority?.toLowerCase() === 'high' ||
+      i.alignment_status?.toLowerCase().includes('investigation') ||
+      i.alignment_status?.toLowerCase().includes('attention')
+  ) || items[0];
+
+  const practiceItem = items.find(
+    (i) =>
+      i !== highPriorityItem &&
+      (i.alignment_status?.toLowerCase().includes('transferable') ||
+        i.priority?.toLowerCase() === 'medium')
+  ) || items[1] || items[0];
+
+  const strengthItem = items.find(
+    (i) =>
+      i !== highPriorityItem &&
+      i !== practiceItem &&
+      (i.alignment_status?.toLowerCase().includes('strong') ||
+        i.priority?.toLowerCase() === 'low')
+  ) || items[2] || items[1];
+
+  const focusAreas = [
+    highPriorityItem ? { label: 'Needs Attention', item: highPriorityItem, color: 'text-[#E87967]', bg: 'bg-[#FFF0ED]', border: 'border-[#FCDAD5]' } : null,
+    practiceItem && practiceItem.id !== highPriorityItem?.id ? { label: 'Practice & Frame', item: practiceItem, color: 'text-[#6D5DFB]', bg: 'bg-[#EEECFF]', border: 'border-[#DDD8FE]' } : null,
+    strengthItem && strengthItem.id !== highPriorityItem?.id && strengthItem.id !== practiceItem?.id ? { label: 'Key Strength', item: strengthItem, color: 'text-[#4E9B76]', bg: 'bg-[#EAF6F0]', border: 'border-[#CEECD9]' } : null,
+  ].filter(Boolean) as { label: string; item: PreparationItem; color: string; bg: string; border: string }[];
+
+  if (items.length === 0) {
+    return (
+      <div className="rolewise-card p-8 max-w-lg mx-auto text-center space-y-4 my-12 animate-in fade-in">
+        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#E87967] flex items-center justify-center mx-auto">
+          <AlertCircle className="w-6 h-6" />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold text-[#1F2937]">Role preparation couldn&apos;t be loaded.</h2>
+          <p className="text-xs text-[#667085]">
+            Role analysis may still be processing or requires re-analysis.
+          </p>
+        </div>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <Link
+            href={`/roles/${role.id}/fit`}
+            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+          >
+            <span>Go to Role Fit</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in duration-300 pb-16">
       {/* Breadcrumb Back */}
@@ -246,34 +300,27 @@ export default function PreparationPage() {
             </div>
           </div>
 
-          {/* Interview Focus Summary */}
-          <div className="rolewise-card p-5 space-y-3">
-            <h4 className="text-xs font-semibold text-[#1F2937] uppercase tracking-wider">
-              Interview Focus
-            </h4>
-            <div className="space-y-2 text-xs">
-              <div className="p-2.5 rounded-lg bg-[#EAF6F0] border border-[#CEECD9] flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] uppercase font-semibold text-[#4E9B76]">Most Important</p>
-                  <p className="font-semibold text-[#1F2937]">User research & discovery</p>
-                </div>
-              </div>
-
-              <div className="p-2.5 rounded-lg bg-[#FFF0ED] border border-[#FCDAD5] flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] uppercase font-semibold text-[#E87967]">Needs Attention</p>
-                  <p className="font-semibold text-[#1F2937]">Design systems & metrics</p>
-                </div>
-              </div>
-
-              <div className="p-2.5 rounded-lg bg-[#EEECFF] border border-[#DDD8FE] flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] uppercase font-semibold text-[#6D5DFB]">Practice</p>
-                  <p className="font-semibold text-[#1F2937]">Stakeholder collaboration</p>
-                </div>
+          {/* Dynamic Interview Focus Summary */}
+          {focusAreas.length > 0 && (
+            <div className="rolewise-card p-5 space-y-3">
+              <h4 className="text-xs font-semibold text-[#1F2937] uppercase tracking-wider">
+                Interview Focus
+              </h4>
+              <div className="space-y-2 text-xs">
+                {focusAreas.map((f, idx) => (
+                  <div
+                    key={f.item.id || idx}
+                    className={`p-2.5 rounded-lg ${f.bg} border ${f.border} flex items-center justify-between`}
+                  >
+                    <div>
+                      <p className={`text-[10px] uppercase font-semibold ${f.color}`}>{f.label}</p>
+                      <p className="font-semibold text-[#1F2937] truncate max-w-[200px]">{f.item.title}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          )}
 
           {/* Before Your Interview Checklist (Image 5) */}
           <div className="rolewise-card p-5 space-y-3">
