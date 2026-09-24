@@ -510,39 +510,77 @@ Return ONLY valid JSON matching this exact structure:
 
     function normalizeFitStatus(status: string | undefined): string {
       const s = (status || "").toLowerCase().trim();
-      if (s.includes("strong")) return "Strong alignment";
-      if (s.includes("transferable")) return "Transferable";
-      if (s.includes("investigation")) return "Needs investigation";
-      if (s.includes("not demonstrated") || s.includes("not_demonstrated")) return "Not demonstrated";
-      return "Needs investigation";
+      if (s.includes("strong")) return "strong_alignment";
+      if (s.includes("transferable")) return "transferable";
+      if (s.includes("investigation")) return "needs_investigation";
+      if (s.includes("not demonstrated") || s.includes("not_demonstrated") || s.includes("not")) return "not_demonstrated";
+      return "needs_investigation";
     }
 
-    function normalizePriority(priority: string | undefined): Priority {
+    function normalizeConfidence(confidence: string | undefined): string {
+      const c = (confidence || "").toLowerCase().trim();
+      if (c.includes("high")) return "high";
+      if (c.includes("low")) return "low";
+      return "medium";
+    }
+
+    function normalizePriority(priority: string | undefined): string {
       const p = (priority || "").toLowerCase().trim();
-      if (p.includes("high")) return "High";
-      if (p.includes("low")) return "Low";
-      return "Medium";
+      if (p.includes("high")) return "high";
+      if (p.includes("low")) return "low";
+      return "medium";
     }
 
-    // 9. Insert fit analysis (strictly adhering to schema: id, role_id, requirement_id, status, evidence, explanation, confidence)
-    const fitRows = analysis.fit_analysis.map((f, idx) => ({
-      role_id: roleId,
-      requirement_id: resolveRequirementId(f.requirement, idx),
-      status: normalizeFitStatus(f.status),
-      evidence: f.evidence || null,
-      explanation: f.explanation || "",
-      confidence: f.confidence || "medium",
-    }));
+    // 9. Insert fit analysis respecting UNIQUE (role_id, requirement_id) constraint
+    const usedRequirementIds = new Set<string>();
+    const fitRows = [];
+
+    for (let idx = 0; idx < analysis.fit_analysis.length; idx++) {
+      const f = analysis.fit_analysis[idx];
+      let reqId = resolveRequirementId(f.requirement, idx);
+      if (usedRequirementIds.has(reqId)) {
+        const unused = insertedRequirements.find((r) => !usedRequirementIds.has(r.id));
+        if (unused) {
+          reqId = unused.id;
+        } else {
+          continue;
+        }
+      }
+      usedRequirementIds.add(reqId);
+
+      fitRows.push({
+        role_id: roleId,
+        requirement_id: reqId,
+        status: normalizeFitStatus(f.status),
+        evidence: f.evidence || null,
+        explanation: f.explanation || "",
+        confidence: normalizeConfidence(f.confidence),
+      });
+    }
+
+    // Guarantee all requirements have a fit analysis record
+    for (const req of insertedRequirements) {
+      if (!usedRequirementIds.has(req.id)) {
+        usedRequirementIds.add(req.id);
+        fitRows.push({
+          role_id: roleId,
+          requirement_id: req.id,
+          status: "needs_investigation",
+          evidence: null,
+          explanation: "Candidate evidence requires further review during role preparation.",
+          confidence: "medium",
+        });
+      }
+    }
 
     const { error: fitError } = await db.from("fit_analysis").insert(fitRows);
     if (fitError) {
       console.error("[analyze-role] Fit analysis insert failed:", fitError);
-      await db.from("roles").update({ status: "analysis_failed" }).eq("id", roleId);
+      await db.from("roles").update({ status: "draft" }).eq("id", roleId);
       return json({ error: "Could not save role fit analysis", detail: fitError.message, role_id: roleId }, 500);
     }
 
     // 10. Insert preparation items (strictly adhering to schema: id, role_id, requirement_id, title, description, priority, status)
-    // NEVER invent non-existent columns like order_index or requirement_title!
     const prepRows = (analysis.preparation || []).map((p, idx) => ({
       role_id: roleId,
       requirement_id: resolveRequirementId(p.requirement, idx),
@@ -556,7 +594,7 @@ Return ONLY valid JSON matching this exact structure:
       const { error: prepError } = await db.from("preparation_items").insert(prepRows);
       if (prepError) {
         console.error("[analyze-role] Preparation items insert failed:", prepError);
-        await db.from("roles").update({ status: "analysis_failed" }).eq("id", roleId);
+        await db.from("roles").update({ status: "draft" }).eq("id", roleId);
         return json({ error: "Could not save preparation items", detail: prepError.message, role_id: roleId }, 500);
       }
     }
