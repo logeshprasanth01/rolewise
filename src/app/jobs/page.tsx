@@ -113,13 +113,15 @@ export default function MyJobsPage() {
           </p>
         </div>
 
-        <Link
-          href="/jobs/new"
-          className="touch-target inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add new job</span>
-        </Link>
+        {!isLoading && roles.length > 0 && (
+          <Link
+            href="/jobs/new"
+            className="touch-target inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add new job</span>
+          </Link>
+        )}
       </div>
 
       {/* Loading Skeleton */}
@@ -239,10 +241,11 @@ export default function MyJobsPage() {
           <div className="pt-2">
             <Link
               href="/jobs/new"
+              aria-label="+ Add job"
               className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
             >
               <Plus className="w-4 h-4" />
-              <span>Add new job</span>
+              <span>Add job</span>
             </Link>
           </div>
         </div>

@@ -208,13 +208,15 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
           {/* Right Header Actions */}
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <Link
-              href="/jobs/new"
-              className="touch-target inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Job</span>
-            </Link>
+            {pathname !== '/jobs' && pathname !== '/jobs/' && (
+              <Link
+                href="/jobs/new"
+                className="touch-target inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Job</span>
+              </Link>
+            )}
 
             <button
               title="Notifications"
