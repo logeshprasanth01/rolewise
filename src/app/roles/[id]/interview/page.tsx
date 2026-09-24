@@ -45,7 +45,7 @@ interface CompletedRound {
 interface QuestionErrorState {
   title: string;
   description: string;
-  isAuth: boolean;
+  type: 'AUTH_ERROR' | 'ROLE_NOT_FOUND' | 'AI_GENERATION_ERROR';
 }
 
 interface StoredInterviewSession {
@@ -62,16 +62,25 @@ interface StoredInterviewSession {
   aiFinalFeedback: FinalFeedbackOutput | null;
 }
 
-const getStorageKey = (id: string) => `rolewise-interview-${id}`;
+const getStorageKey = (id: string) => `rolewise:interview:${id}`;
 
 function loadStoredSession(id: string): StoredInterviewSession | null {
   if (typeof window === 'undefined' || !id) return null;
   try {
-    const raw = sessionStorage.getItem(getStorageKey(id));
+    const primaryKey = `rolewise:interview:${id}`;
+    let raw = sessionStorage.getItem(primaryKey);
+    if (!raw) {
+      raw = sessionStorage.getItem(`rolewise-interview-${id}`);
+    }
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (parsed && parsed.roleId === id && parsed.currentQuestion) {
       return parsed;
+    } else {
+      // Discard stale or mismatched interview session
+      console.warn('[AI INTERVIEW] Discarding stale interview session for role:', parsed?.roleId || id);
+      sessionStorage.removeItem(primaryKey);
+      sessionStorage.removeItem(`rolewise-interview-${id}`);
     }
   } catch (e) {
     console.warn('[InterviewPage] Failed to load stored session:', e);
@@ -97,7 +106,8 @@ function saveStoredSession(id: string, data: Partial<StoredInterviewSession>) {
 function clearStoredSession(id: string) {
   if (typeof window === 'undefined' || !id) return;
   try {
-    sessionStorage.removeItem(getStorageKey(id));
+    sessionStorage.removeItem(`rolewise:interview:${id}`);
+    sessionStorage.removeItem(`rolewise-interview-${id}`);
   } catch (e) {
     console.warn('[InterviewPage] Failed to clear stored session:', e);
   }
@@ -112,6 +122,7 @@ export default function InterviewPage() {
 
   // Session & question state restored immediately from sessionStorage if available (Requirements 5 & 6)
   const [role, setRole] = useState<Role | null>(null);
+  const [isRoleNotFound, setIsRoleNotFound] = useState<boolean>(false);
 
   const [questionNumber, setQuestionNumber] = useState<number>(() => {
     const saved = loadStoredSession(roleId);
@@ -255,7 +266,7 @@ export default function InterviewPage() {
         setQuestionError({
           title: 'AI question generation is taking longer than expected.',
           description: 'Please try again.',
-          isAuth: false,
+          type: 'AI_GENERATION_ERROR',
         });
       }, 15000);
 
@@ -337,36 +348,36 @@ export default function InterviewPage() {
           (err instanceof RolewiseApiError && err.code === 'AUTH_ERROR') ||
           (err instanceof Error && /sign in|session|unauthorized|jwt|401/i.test(err.message));
 
+        const isNotFound =
+          (err instanceof RolewiseApiError && (err.code === 'NOT_FOUND' || err.status === 404)) ||
+          (err instanceof Error && /not found|404/i.test(err.message));
+
         if (isAuth) {
           setQuestionError({
             title: 'Your session has expired. Please sign in again.',
             description: 'Sign in to your account to practice your interview.',
-            isAuth: true,
+            type: 'AUTH_ERROR',
+          });
+        } else if (isNotFound) {
+          setIsRoleNotFound(true);
+          setQuestionError({
+            title: 'Role not found',
+            description: 'Please select an active role from My Jobs.',
+            type: 'ROLE_NOT_FOUND',
           });
         } else {
-          const isNotFound =
-            (err instanceof RolewiseApiError && err.code === 'NOT_FOUND') ||
-            (err instanceof Error && /not found|404/i.test(err.message));
-
-          if (isNotFound) {
-            setQuestionError({
-              title: 'Role not found.',
-              description: 'The selected role could not be found. Please select an active job from My Jobs.',
-              isAuth: false,
-            });
-          } else {
-            setQuestionError({
-              title: 'AI question generation is temporarily unavailable.',
-              description: err instanceof Error ? err.message : 'Please try again.',
-              isAuth: false,
-            });
-          }
+          setQuestionError({
+            title: 'AI question generation is temporarily unavailable.',
+            description: err instanceof Error ? err.message : 'Please try again.',
+            type: 'AI_GENERATION_ERROR',
+          });
         }
       } finally {
         if (questionTimeoutRef.current) {
           clearTimeout(questionTimeoutRef.current);
           questionTimeoutRef.current = null;
         }
+        setIsLoadingSession(false);
         setIsGeneratingQuestion(false);
         isGeneratingRef.current = false;
       }
@@ -394,24 +405,35 @@ export default function InterviewPage() {
 
     async function init() {
       try {
-        console.log('[AI INTERVIEW] loading role data', { roleId });
+        console.log(`[AI INTERVIEW] route roleId: ${roleId}`);
+        console.log(`[AI INTERVIEW] authenticated user: ${session?.user?.id || 'none'}`);
+        console.log('[AI INTERVIEW] loading role: started');
+
         const fetchedRole = await getRole(roleId);
+        const roleFound = Boolean(fetchedRole && fetchedRole.status !== 'archived');
+        console.log(`[AI INTERVIEW] role found: ${roleFound}`);
+
         if (isCancelled) return;
 
-        if (!fetchedRole) {
+        if (!roleFound || !fetchedRole) {
           setRole(null);
+          setIsRoleNotFound(true);
           setIsLoadingSession(false);
+          setIsGeneratingQuestion(false);
+          isGeneratingRef.current = false;
+          clearStoredSession(roleId);
           setQuestionError({
-            title: 'Role not found.',
-            description: 'This role does not exist in your account. Please select a valid role from My Jobs.',
-            isAuth: false,
+            title: 'Role not found',
+            description: 'Please select an active role from My Jobs.',
+            type: 'ROLE_NOT_FOUND',
           });
           return;
         }
 
+        setIsRoleNotFound(false);
         setRole(fetchedRole);
 
-        // Check whether an existing valid interview state exists in sessionStorage
+        // Check whether an existing valid interview state exists in sessionStorage for this role
         const saved = loadStoredSession(roleId);
         if (saved?.currentQuestion && saved.currentQuestion.trim()) {
           console.log('[AI INTERVIEW] restoring existing session from storage', {
@@ -449,11 +471,14 @@ export default function InterviewPage() {
       } catch (err) {
         console.error('[AI INTERVIEW] error during session setup:', err);
         if (!isCancelled) {
+          setIsRoleNotFound(true);
           setIsLoadingSession(false);
+          setIsGeneratingQuestion(false);
+          isGeneratingRef.current = false;
           setQuestionError({
-            title: 'Failed to set up interview session.',
-            description: err instanceof Error ? err.message : 'Please try again.',
-            isAuth: false,
+            title: 'Role not found',
+            description: 'Please select an active role from My Jobs.',
+            type: 'ROLE_NOT_FOUND',
           });
         }
       }
@@ -722,7 +747,7 @@ export default function InterviewPage() {
     return null;
   }
 
-  if (!role && !hasExistingSession) {
+  if (isRoleNotFound || (!role && !hasExistingSession)) {
     return (
       <div className="space-y-6 max-w-xl mx-auto py-12 text-center animate-in fade-in">
         <div className="rolewise-card p-8 space-y-4">
@@ -731,15 +756,15 @@ export default function InterviewPage() {
           </div>
           <div className="space-y-1">
             <h2 className="text-xl font-semibold text-[#1F2937]">Role not found</h2>
-            <p className="text-sm text-[#667085]">Return to your roles and select a valid role.</p>
+            <p className="text-sm text-[#667085]">Please select an active role from My Jobs.</p>
           </div>
           <div className="pt-2">
             <Link
-              href="/"
+              href="/jobs"
               className="touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Return to Dashboard</span>
+              <span>Back to My Jobs</span>
             </Link>
           </div>
         </div>
@@ -1146,13 +1171,21 @@ export default function InterviewPage() {
               </div>
             </div>
             <div>
-              {questionError.isAuth ? (
+              {questionError.type === 'AUTH_ERROR' ? (
                 <Link
                   href="/auth"
                   className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs font-medium transition-colors shadow-sm"
                 >
                   <span>Sign in again</span>
                   <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              ) : questionError.type === 'ROLE_NOT_FOUND' ? (
+                <Link
+                  href="/jobs"
+                  className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs font-medium transition-colors shadow-sm"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Back to My Jobs</span>
                 </Link>
               ) : (
                 <button

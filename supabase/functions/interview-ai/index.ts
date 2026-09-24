@@ -138,7 +138,7 @@ serve(async (req) => {
         supabase.from('fit_analysis').select('status, explanation').eq('role_id', roleId),
       ]);
 
-      if (!roleRes.data) return json({ error: 'Role not found' }, 404);
+      if (!roleRes.data || roleRes.data.status === 'archived') return json({ error: 'Role not found' }, 404);
 
       roleTitle = roleRes.data.job_title || roleTitle;
       companyName = roleRes.data.company || companyName;

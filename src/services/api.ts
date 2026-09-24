@@ -16,13 +16,15 @@ import {
 
 export class RolewiseApiError extends Error {
   code: string;
+  status?: number;
   details?: unknown;
 
-  constructor(message: string, code = 'API_ERROR', details?: unknown) {
+  constructor(message: string, code = 'API_ERROR', details?: unknown, status?: number) {
     super(message);
     this.name = 'RolewiseApiError';
     this.code = code;
     this.details = details;
+    this.status = status;
   }
 }
 
@@ -55,161 +57,8 @@ export async function invokeAnalyzeRole(
 
   const session = sessionData?.session;
 
-  // Helper to generate realistic role bundle from inputs
-  const createSynthesizedRole = (): AnalyzeRoleResponse => {
-    const roleId = 'role_' + Math.random().toString(36).substring(2, 9);
-    
-    // Use user-provided details (Requirements 11 & 12: no fake defaults or Acme Technologies)
-    const title = payload.jobTitle?.trim() || 'Target Role';
-    const company = payload.company?.trim() || 'Target Company';
-    const location = payload.location?.trim() || null;
-    const workplace_type = payload.workModel?.trim() || null;
-
-    const newRole: Role = {
-      id: roleId,
-      title,
-      company,
-      location,
-      workplace_type,
-      status: 'active',
-      job_description: payload.jobDescription,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    const requirements: RoleRequirement[] = [
-      {
-        id: `req_1_${roleId}`,
-        role_id: roleId,
-        title: 'User research & qualitative problem discovery',
-        requirement: 'Experience planning and conducting generative user interviews and synthesizing insights into actionable problem statements.',
-      },
-      {
-        id: `req_2_${roleId}`,
-        role_id: roleId,
-        title: 'Interactive prototyping & design systems',
-        requirement: 'Proficiency crafting responsive UI component libraries, scalable tokens, and high-fidelity interactive prototypes.',
-      },
-      {
-        id: `req_3_${roleId}`,
-        role_id: roleId,
-        title: 'Cross-functional stakeholder collaboration',
-        requirement: 'Collaborating closely with engineering leads, product managers, and executive stakeholders to align on technical feasibility.',
-      },
-      {
-        id: `req_4_${roleId}`,
-        role_id: roleId,
-        title: 'Accessibility compliance & WCAG 2.1 AA standards',
-        requirement: 'Implementing accessible contrast, keyboard navigation flow, and semantic ARIA standards across core product journeys.',
-      },
-      {
-        id: `req_5_${roleId}`,
-        role_id: roleId,
-        title: 'Quantitative product analytics & experimentation',
-        requirement: 'Defining event tracking taxonomies, interpreting funnel conversion cohorts, and validating design decisions with A/B testing.',
-      },
-    ];
-
-    const fitAnalysis: FitAnalysis[] = [
-      {
-        id: `fit_1_${roleId}`,
-        role_id: roleId,
-        requirement_id: requirements[0].id,
-        requirement_title: requirements[0].title,
-        status: 'Strong alignment',
-        explanation: 'Your submitted background demonstrates concrete ownership of exploratory discovery interviews and translating user research into product specifications.',
-        evidence: 'Candidate experience highlights leading user discovery sessions, concept testing, and synthesizing feedback into prioritized roadmap initiatives.',
-      },
-      {
-        id: `fit_2_${roleId}`,
-        role_id: roleId,
-        requirement_id: requirements[1].id,
-        requirement_title: requirements[1].title,
-        status: 'Strong alignment',
-        explanation: 'Direct evidence of architecting reusable component libraries, design tokens, and high-fidelity interactive prototypes.',
-        evidence: 'Experience includes establishing unified design systems across web and mobile products, reducing engineering handoff friction.',
-      },
-      {
-        id: `fit_3_${roleId}`,
-        role_id: roleId,
-        requirement_id: requirements[2].id,
-        requirement_title: requirements[2].title,
-        status: 'Transferable',
-        explanation: 'Cross-functional partner experience aligns well with role demands; collaborative habits transfer smoothly across technical teams.',
-        evidence: 'Demonstrated history of sprint rituals, backlog refinement, and engineering pairing on complex requirements.',
-      },
-      {
-        id: `fit_4_${roleId}`,
-        role_id: roleId,
-        requirement_id: requirements[3].id,
-        requirement_title: requirements[3].title,
-        status: 'Needs investigation',
-        explanation: 'Insufficient evidence in the provided materials regarding formal WCAG 2.1 AA compliance audits or assistive tech testing.',
-        evidence: 'No specific mention of automated accessibility scanning or screen reader validation in the supplied resume.',
-      },
-      {
-        id: `fit_5_${roleId}`,
-        role_id: roleId,
-        requirement_id: requirements[4].id,
-        requirement_title: requirements[4].title,
-        status: 'Not demonstrated',
-        explanation: 'The supplied experience does not demonstrate SQL-based analytics or quantitative event instrumentation (does not infer lack of ability).',
-        evidence: 'No quantitative funnel analytics, instrumentation specs, or experimentation frameworks found in supplied context.',
-      },
-    ];
-
-    const prepItems: PreparationItem[] = [
-      {
-        id: `prep_1_${roleId}`,
-        role_id: roleId,
-        title: 'User research & Discovery Methodology',
-        description: 'Prepare your strongest example. Be ready to explain how you identified a core user problem, what research you conducted, and how findings influenced final product decisions.',
-        priority: 'High',
-        status: 'Ready to practice',
-        alignment_status: 'Strong alignment',
-      },
-      {
-        id: `prep_2_${roleId}`,
-        role_id: roleId,
-        title: 'Prototyping & Design Systems',
-        description: 'Prepare a project example explaining how you moved from early concepts to an interactive prototype and what tradeoffs were made during implementation.',
-        priority: 'High',
-        status: 'Ready to practice',
-        alignment_status: 'Strong alignment',
-      },
-      {
-        id: `prep_3_${roleId}`,
-        role_id: roleId,
-        title: 'Design Systems Governance',
-        description: 'Review role requirements and identify relevant experience with reusable components, design tokens, and governance workflows.',
-        priority: 'Medium',
-        status: 'Needs attention',
-        alignment_status: 'Needs investigation',
-      },
-      {
-        id: `prep_4_${roleId}`,
-        role_id: roleId,
-        title: 'Stakeholder Collaboration',
-        description: 'Prepare one concrete example where you handled competing priorities, technical constraints, or disagreements with product or engineering leads.',
-        priority: 'Medium',
-        status: 'Ready to practice',
-        alignment_status: 'Transferable',
-      },
-    ];
-
-    saveLocalRoleBundle(newRole, requirements, fitAnalysis, prepItems);
-
-    return {
-      role_id: roleId,
-      id: roleId,
-      role: newRole,
-      success: true,
-      message: 'Role and experience analyzed successfully.',
-    };
-  };
-
   if (!session?.access_token) {
-    return createSynthesizedRole();
+    throw new RolewiseApiError('You must be signed in to analyze a job role.', 'AUTH_ERROR');
   }
 
   try {
@@ -228,8 +77,11 @@ export async function invokeAnalyzeRole(
     });
 
     if (error || !data) {
-      console.warn('[Rolewise] Edge function invocation fell back to local synthesis:', error);
-      return createSynthesizedRole();
+      throw new RolewiseApiError(
+        error?.message || 'Failed to analyze job role on server.',
+        'SERVER_ERROR',
+        error
+      );
     }
 
     const roleId = data.role_id || data.roleId || data.id || data.role?.id;
@@ -253,8 +105,12 @@ export async function invokeAnalyzeRole(
       role_id: roleId,
     };
   } catch (err: unknown) {
-    console.warn('[Rolewise] Edge function error fell back to local synthesis:', err);
-    return createSynthesizedRole();
+    if (err instanceof RolewiseApiError) throw err;
+    throw new RolewiseApiError(
+      err instanceof Error ? err.message : 'Error analyzing job role.',
+      'SERVER_ERROR',
+      err
+    );
   }
 }
 
@@ -297,30 +153,40 @@ export function saveLocalRoleBundle(
 }
 
 /**
- * Fetch a single role by ID from Supabase or local fallback
+ * Fetch a single role by ID strictly from Supabase for the authenticated user.
+ * Confirms ownership (user_id = session.user.id) and active status (status != 'archived').
+ * Never uses stale fallback/local roles.
  */
 export async function getRole(roleId: string): Promise<Role | null> {
+  if (!roleId || typeof roleId !== 'string') return null;
   const supabase = getSupabaseClient();
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
+
+  if (!session?.user?.id) {
+    return null;
+  }
+
   const { data, error } = await supabase
     .from('roles')
     .select('*')
     .eq('id', roleId)
-    .single();
+    .eq('user_id', session.user.id)
+    .neq('status', 'archived')
+    .maybeSingle();
 
-  if (!error && data) {
-    if (data.status === 'archived') return null;
-    return data as Role;
+  if (error || !data) {
+    return null;
   }
 
-  // Local fallback
-  const local = getLocalRoles().find((r) => r.id === roleId);
-  if (local?.status === 'archived') return null;
-  return local || null;
+  return data as Role;
 }
 
 /**
- * Fetch all active roles (for current session or recent).
+ * Fetch all active roles for the current authenticated user.
  * Filters out archived roles.
+ * Never merges stale or synthetic local roles.
  */
 export async function getUserRoles(): Promise<Role[]> {
   const supabase = getSupabaseClient();
@@ -329,29 +195,22 @@ export async function getUserRoles(): Promise<Role[]> {
   const { data: sessionData } = await supabase.auth.getSession();
   const session = sessionData?.session;
 
-  let dbRoles: Role[] = [];
-  if (session?.user) {
-    const { data } = await supabase
-      .from('roles')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .neq('status', 'archived')
-      .order('created_at', { ascending: false });
-    if (data) {
-      dbRoles = data as Role[];
-    }
+  if (!session?.user?.id) {
+    return [];
   }
 
-  const localRoles = getLocalRoles().filter((r) => r.status !== 'archived');
-  const combinedMap = new Map<string, Role>();
-  dbRoles.forEach((r) => {
-    if (r.status !== 'archived') combinedMap.set(r.id, r);
-  });
-  localRoles.forEach((r) => {
-    if (!combinedMap.has(r.id) && r.status !== 'archived') combinedMap.set(r.id, r);
-  });
+  const { data, error } = await supabase
+    .from('roles')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .neq('status', 'archived')
+    .order('created_at', { ascending: false });
 
-  return Array.from(combinedMap.values());
+  if (error || !data) {
+    return [];
+  }
+
+  return data as Role[];
 }
 
 /**
@@ -857,7 +716,8 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
         status: 404,
         functionName: 'interview-ai',
         errorBody,
-      }
+      },
+      404
     );
   }
 
@@ -868,7 +728,8 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
       status,
       functionName: 'interview-ai',
       errorBody,
-    }
+    },
+    status
   );
 }
 
