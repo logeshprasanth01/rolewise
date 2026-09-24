@@ -11,37 +11,30 @@ import {
   ArrowRight,
   Mic,
   Video,
-  Calendar as CalendarIcon,
-  ChevronLeft,
   ChevronRight,
   Sparkles,
   Layers,
-  Bot,
   Clock,
   Compass,
-  CheckCircle2,
   TrendingUp,
   MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { getUserRoles } from '@/services/api';
 import { Role } from '@/types/database';
+import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 
 export default function DashboardPage() {
   const { userName } = useAuth();
   const [roles, setRoles] = useState<Role[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadDashboardData() {
-      setIsLoading(true);
       try {
         const userRoles = await getUserRoles();
         setRoles(userRoles);
       } catch (err) {
         console.error('Error fetching dashboard roles:', err);
-      } finally {
-        setIsLoading(false);
       }
     }
     loadDashboardData();
@@ -285,57 +278,8 @@ export default function DashboardPage() {
 
         {/* Right Column: Calendar, Quick Tips, Recent Activity */}
         <div className="space-y-6">
-          {/* Calendar Widget (September 2026 as shown in Image 3) */}
-          <div className="rolewise-card p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#1F2937]">September 2026</span>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  aria-label="Previous month"
-                  className="p-1 rounded-md text-[#667085] hover:text-[#1F2937] hover:bg-[#F9FAFB]"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Next month"
-                  className="p-1 rounded-md text-[#667085] hover:text-[#1F2937] hover:bg-[#F9FAFB]"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Days grid */}
-            <div className="grid grid-cols-7 gap-1 text-center text-[11px]">
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                <span key={i} className="text-[#98A2B3] font-medium py-1">
-                  {d}
-                </span>
-              ))}
-              {/* Previous month filler */}
-              <span className="text-[#D0D5DD] py-1">30</span>
-              <span className="text-[#D0D5DD] py-1">31</span>
-              {/* September dates */}
-              {[...Array(30)].map((_, i) => {
-                const day = i + 1;
-                const isToday = day === 23; // Reference mock current date
-                return (
-                  <span
-                    key={day}
-                    className={`py-1 rounded-md transition-colors ${
-                      isToday
-                        ? 'bg-[#6D5DFB] text-white font-semibold'
-                        : 'text-[#1F2937] hover:bg-[#F7F7FB]'
-                    }`}
-                  >
-                    {day}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
+          {/* Functional Calendar Widget (Requirements 1-11) */}
+          <CalendarWidget roles={roles} />
 
           {/* Quick Tips */}
           <div className="rolewise-card p-5 space-y-3">
