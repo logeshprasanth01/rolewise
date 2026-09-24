@@ -225,7 +225,7 @@ export interface CommunicationAnalysisPayload {
 }
 
 export interface CommunicationAnalysisResponse {
-  answer_quality: 'strong' | 'developing' | 'needs_work';
+  answer_quality?: 'strong' | 'developing' | 'needs_work';
   strengths: string[];
   improvements: string[];
   missing_elements: string[];
@@ -237,9 +237,10 @@ export interface CommunicationAnalysisResponse {
   };
   follow_up_needed: boolean;
   follow_up_reason?: string;
-  next_question?: string;
+  next_question?: string | null;
   next_competency?: string;
   question_number?: number;
+  fallback?: boolean;
 }
 
 export interface FinalFeedbackOutput {
@@ -252,6 +253,7 @@ export interface FinalFeedbackOutput {
     conciseness: string;
   };
   practice_exercises: string[];
+  fallback?: boolean;
 }
 
 

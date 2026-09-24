@@ -593,6 +593,301 @@ export async function analyzeCommunication(
 }
 
 /**
+ * Local fallback question generator for interview practice when provider is unavailable.
+ */
+function generateFallbackQuestion(payload: Record<string, unknown>): {
+  question: string;
+  competency: string;
+  questionNumber: number;
+  fallback: true;
+} {
+  const qNum =
+    typeof payload.questionNumber === 'number' && payload.questionNumber > 0
+      ? payload.questionNumber
+      : 1;
+
+  const roleTitle =
+    typeof payload.roleTitle === 'string' && payload.roleTitle.trim()
+      ? payload.roleTitle.trim()
+      : '';
+  const companyName =
+    typeof payload.companyName === 'string' && payload.companyName.trim()
+      ? payload.companyName.trim()
+      : '';
+
+  const target = roleTitle
+    ? companyName
+      ? `${roleTitle} at ${companyName}`
+      : roleTitle
+    : 'this role';
+
+  const questionBank = [
+    {
+      question: `Can you walk me through your relevant background and how your hands-on experience prepares you for the responsibilities of ${target}?`,
+      competency: 'Role Alignment & Experience',
+    },
+    {
+      question: `Describe a complex technical or project challenge you tackled recently in your work. What specific constraints or trade-offs did you navigate, and what was the outcome?`,
+      competency: 'Technical Problem Solving',
+    },
+    {
+      question: `Tell me about a situation where you had to balance competing priorities, tight timelines, or technical debt while maintaining quality. How did you decide what to prioritize?`,
+      competency: 'Execution & Prioritization',
+    },
+    {
+      question: `Can you describe a scenario where you had to collaborate with a cross-functional partner or resolve a disagreement on an architectural decision? How did you build alignment?`,
+      competency: 'Stakeholder Communication',
+    },
+    {
+      question: `Reflecting on a recent major initiative you delivered, what is one key decision or approach you would change in hindsight, and what did you learn from the experience?`,
+      competency: 'Continuous Learning & Impact',
+    },
+  ];
+
+  const previousQuestions = Array.isArray(payload.previousQuestions)
+    ? (payload.previousQuestions as string[])
+    : [];
+
+  const found =
+    questionBank.find(
+      (item) =>
+        !previousQuestions.some(
+          (pq) =>
+            typeof pq === 'string' &&
+            pq.toLowerCase().includes(item.competency.toLowerCase())
+        )
+    ) || questionBank[(qNum - 1) % questionBank.length];
+
+  return {
+    question: found.question,
+    competency: found.competency,
+    questionNumber: qNum,
+    fallback: true,
+  };
+}
+
+/**
+ * Local fallback answer analysis evaluating the candidate's actual transcript.
+ * Never uses fake candidate information; evaluates real transcript metrics.
+ */
+function generateFallbackAnalysis(payload: Record<string, unknown>): CommunicationAnalysisResponse {
+  const transcript = typeof payload.transcript === 'string' ? payload.transcript.trim() : '';
+  const words = transcript ? transcript.split(/\s+/).filter(Boolean) : [];
+  const wordCount = words.length;
+
+  const strengths: string[] = [];
+  const improvements: string[] = [];
+  const missingElements: string[] = [];
+
+  // Evaluate candidate's actual answer content
+  if (wordCount >= 50) {
+    strengths.push(
+      'Delivered a comprehensive response that provided substantial context and walked through the situation systematically.'
+    );
+  } else if (wordCount >= 20) {
+    strengths.push(
+      'Clear, focused response that directly addressed the core question without unnecessary filler.'
+    );
+  } else if (wordCount > 0) {
+    strengths.push('Provided a direct initial response to the question prompt.');
+  } else {
+    strengths.push('Completed answer submission for the question round.');
+  }
+
+  // Check for action verbs indicating ownership in the actual transcript
+  const actionRegex =
+    /\b(built|designed|implemented|led|managed|created|developed|analyzed|solved|delivered|improved|optimized|coordinated|refactored|launched|automated|architected)\b/i;
+  if (actionRegex.test(transcript)) {
+    strengths.push(
+      'Demonstrated direct ownership and agency by emphasizing specific actions taken throughout the initiative.'
+    );
+  } else if (wordCount >= 30) {
+    strengths.push(
+      'Maintained consistent professional framing and logical progression of ideas.'
+    );
+  }
+
+  // Check for metrics or quantifiable outcomes in the actual transcript
+  const metricsRegex =
+    /\b(\d+|%|percent|scale|users|latency|revenue|growth|reduced|increased|doubled|timeline|saving|budget)\b/i;
+  if (metricsRegex.test(transcript)) {
+    strengths.push(
+      'Effectively grounded the narrative with concrete indicators or measurable outcomes.'
+    );
+  } else {
+    strengths.push(
+      'Communicated clearly with an authentic, conversational delivery tone.'
+    );
+  }
+
+  // Actionable improvements based on the user's actual transcript
+  if (!metricsRegex.test(transcript)) {
+    improvements.push(
+      'Incorporate quantifiable metrics or measurable business outcomes (e.g., percentages, scale, or team efficiency gains) to reinforce the impact of your actions.'
+    );
+  }
+
+  if (wordCount < 35) {
+    improvements.push(
+      'Elaborate further on the specific technical methodology, constraints faced, or steps you personally orchestrated.'
+    );
+  } else if (wordCount > 180) {
+    improvements.push(
+      'Practice concise delivery by distilling background context and concluding promptly on key results.'
+    );
+  } else {
+    improvements.push(
+      'Structure the narrative explicitly with the STAR framework (Situation, Task, Action, Result) to make each phase unmistakable.'
+    );
+  }
+
+  // Missing elements
+  if (!metricsRegex.test(transcript)) {
+    missingElements.push('Quantifiable metrics or tangible outcomes demonstrating measurable success.');
+  }
+  const challengesRegex =
+    /\b(challenge|difficulty|tradeoff|constraint|risk|problem|obstacle|bottleneck)\b/i;
+  if (!challengesRegex.test(transcript)) {
+    missingElements.push('Explicit discussion of constraints, technical risks, or trade-offs navigated.');
+  }
+  if (missingElements.length === 0) {
+    missingElements.push('Longer-term reflections or organizational learnings gained following the project.');
+  }
+
+  // Communication dimensions evaluated from actual transcript properties
+  const hasMultiSentence = (transcript.match(/[.!?]/g) || []).length >= 2;
+  const clarity = wordCount >= 30 ? 'Strong' : wordCount >= 15 ? 'Developing' : 'Needs more detail';
+  const structure =
+    hasMultiSentence && wordCount >= 25 ? 'Strong' : wordCount >= 15 ? 'Developing' : 'Needs more detail';
+  const specificity =
+    metricsRegex.test(transcript) || actionRegex.test(transcript)
+      ? 'Strong'
+      : wordCount >= 20
+        ? 'Developing'
+        : 'Needs more detail';
+  const conciseness = wordCount >= 20 && wordCount <= 160 ? 'Strong' : 'Developing';
+
+  const answerQuality: 'strong' | 'developing' | 'needs_work' =
+    wordCount >= 40 && (actionRegex.test(transcript) || metricsRegex.test(transcript))
+      ? 'strong'
+      : wordCount >= 20
+        ? 'developing'
+        : 'needs_work';
+
+  return {
+    answer_quality: answerQuality,
+    strengths: strengths.slice(0, 3),
+    improvements: improvements.slice(0, 2),
+    missing_elements: missingElements.slice(0, 2),
+    communication_feedback: {
+      clarity,
+      structure,
+      specificity,
+      conciseness,
+    },
+    follow_up_needed: false,
+    follow_up_reason: '',
+    next_question: null,
+    fallback: true,
+  };
+}
+
+/**
+ * Local fallback final feedback synthesis using the candidate's actual answers.
+ */
+function generateFallbackFinalFeedback(payload: Record<string, unknown>): FinalFeedbackOutput {
+  const answers = Array.isArray(payload.answers)
+    ? (payload.answers as Array<{
+        question?: string;
+        transcript?: string;
+        analysis?: CommunicationAnalysisResponse;
+      }>)
+    : [];
+
+  const roundStrengths: string[] = [];
+  const roundImprovements: string[] = [];
+  let strongClarityCount = 0;
+  let strongStructureCount = 0;
+  let strongSpecificityCount = 0;
+  let strongConcisenessCount = 0;
+
+  for (const item of answers) {
+    if (item.analysis?.strengths) {
+      roundStrengths.push(...item.analysis.strengths);
+    }
+    if (item.analysis?.improvements) {
+      roundImprovements.push(...item.analysis.improvements);
+    }
+    const comm = item.analysis?.communication_feedback;
+    if (comm?.clarity === 'Strong') strongClarityCount++;
+    if (comm?.structure === 'Strong') strongStructureCount++;
+    if (comm?.specificity === 'Strong') strongSpecificityCount++;
+    if (comm?.conciseness === 'Strong') strongConcisenessCount++;
+  }
+
+  const uniqueStrengths = Array.from(new Set(roundStrengths));
+  const uniqueImprovements = Array.from(new Set(roundImprovements));
+  const totalRounds = Math.max(answers.length, 1);
+
+  const claritySummary =
+    strongClarityCount >= totalRounds / 2
+      ? 'Direct and articulate throughout responses. Ideas were communicated clearly with confident, steady delivery.'
+      : 'Ideas were conveyed, with occasional digressions before returning to the central question.';
+
+  const structureSummary =
+    strongStructureCount >= totalRounds / 2
+      ? 'Consistent logical framing across answers. Maintained a clear progression from context to action to resolution.'
+      : 'Tendency to jump directly into implementation without establishing initial context and stakeholder constraints.';
+
+  const specificitySummary =
+    strongSpecificityCount >= totalRounds / 2
+      ? 'Concrete details were highlighted effectively, referencing explicit tools, decisions, and outcomes.'
+      : 'Answers relied more on general descriptions. Grounding responses in specific metrics and artifacts will strengthen impact.';
+
+  const concisenessSummary =
+    strongConcisenessCount >= totalRounds / 2
+      ? 'Paced and concise delivery. Avoided rambling and kept responses focused on core contributions.'
+      : 'Responses occasionally became verbose. Practice condensing background context to highlight final results.';
+
+  const strengths =
+    uniqueStrengths.length >= 2
+      ? uniqueStrengths.slice(0, 4)
+      : [
+          'Demonstrated relevant practical knowledge and communicated project experiences authentically.',
+          'Maintained a constructive, professional tone and stayed focused on the competencies addressed.',
+          'Exhibited clear ownership when describing personal responsibilities and project deliverables.',
+        ];
+
+  const areasToImprove =
+    uniqueImprovements.length >= 2
+      ? uniqueImprovements.slice(0, 4)
+      : [
+          'Quantify outcomes more consistently by incorporating specific metrics, performance numbers, or timeline savings.',
+          'Adopt the STAR (Situation, Task, Action, Result) storytelling framework to make every narrative response crisp.',
+          'Explicitly highlight trade-offs and alternative solutions evaluated before arriving at your final decision.',
+        ];
+
+  const practiceExercises = [
+    'Practice delivering 2-minute STAR responses focusing specifically on quantifiable metrics and outcomes.',
+    'Prepare 2-3 deep-dive examples covering architectural trade-offs, technical constraints, and risk mitigation.',
+    'Rehearse executive summary introductions that clearly state the problem and the end result upfront.',
+  ];
+
+  return {
+    strengths,
+    areas_to_improve: areasToImprove,
+    communication: {
+      clarity: claritySummary,
+      structure: structureSummary,
+      specificity: specificitySummary,
+      conciseness: concisenessSummary,
+    },
+    practice_exercises: practiceExercises,
+    fallback: true,
+  };
+}
+
+/**
  * Invokes the 'interview-ai' Supabase Edge Function directly.
  * Target: Supabase Edge Function: interview-ai
  * Architecture: Browser -> Supabase authenticated request (JWT) -> interview-ai Edge Function -> Gemini
@@ -647,12 +942,25 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
   }
 
   // 5. Invoke interview-ai Edge Function forwarding user access token (TASK 2 & 5)
-  const { data, error } = await supabase.functions.invoke<T>('interview-ai', {
-    body: payload,
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-    },
-  });
+  let data: T | null = null;
+  let error: (Error & { context?: Response }) | null = null;
+
+  try {
+    const res = await supabase.functions.invoke<T>('interview-ai', {
+      body: payload,
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+    data = res.data;
+    error = res.error as (Error & { context?: Response }) | null;
+  } catch (invokeErr: unknown) {
+    console.error('[Rolewise] interview-ai invocation threw error:', invokeErr);
+    error =
+      invokeErr instanceof Error
+        ? (invokeErr as Error & { context?: Response })
+        : new Error(String(invokeErr));
+  }
 
   if (!error && data) {
     return data;
@@ -705,6 +1013,28 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
     requestAction: payload.action,
     roleId: payload.roleId,
   });
+
+  // Intercept 5xx and 429 errors for interview actions to guarantee uninterrupted practice
+  const action = typeof payload.action === 'string' ? payload.action : '';
+  const isInterviewAction =
+    action === 'generate_question' ||
+    action === 'analyze_answer' ||
+    action === 'final_feedback';
+
+  if ((status >= 500 || status === 429 || !data) && isInterviewAction) {
+    console.warn(
+      `[Rolewise] interview-ai provider unavailable (status ${status}). Returning local fallback for action "${action}".`
+    );
+    if (action === 'generate_question') {
+      return generateFallbackQuestion(payload) as unknown as T;
+    }
+    if (action === 'analyze_answer') {
+      return generateFallbackAnalysis(payload) as unknown as T;
+    }
+    if (action === 'final_feedback') {
+      return generateFallbackFinalFeedback(payload) as unknown as T;
+    }
+  }
 
   // 8. Preserved user-facing error handling (TASK 16)
   if (status === 401) {
@@ -785,8 +1115,8 @@ export async function generateInterviewQuestion(params: {
   previousQuestions?: string[];
   roleTitle?: string;
   companyName?: string;
-}): Promise<{ question: string; competency: string; questionNumber: number }> {
-  return invokeInterviewAI<{ question: string; competency: string; questionNumber: number }>({
+}): Promise<{ question: string; competency: string; questionNumber: number; fallback?: boolean }> {
+  return invokeInterviewAI<{ question: string; competency: string; questionNumber: number; fallback?: boolean }>({
     action: 'generate_question',
     roleId: params.roleId,
     questionNumber: params.questionNumber,
