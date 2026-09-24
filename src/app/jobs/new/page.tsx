@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -14,22 +14,309 @@ import {
   CheckCircle2,
   Loader2,
   Info,
-  Sparkles,
+  ChevronDown,
+  Search,
+  Check,
+  Plus,
 } from 'lucide-react';
 import { extractResumeText } from '@/lib/extractor';
 import { invokeAnalyzeRole } from '@/services/api';
-import { useAuth } from '@/context/AuthContext';
+
+// Common job roles (Requirement 1)
+const JOB_TITLE_OPTIONS = [
+  'Product Designer',
+  'UX Designer',
+  'UI/UX Designer',
+  'UI Designer',
+  'User Experience Designer',
+  'Product Manager',
+  'Software Engineer',
+  'Frontend Developer',
+  'Backend Developer',
+  'Full Stack Developer',
+  'Data Analyst',
+  'Data Scientist',
+  'Business Analyst',
+  'Marketing Manager',
+  'Graphic Designer',
+  'Video Editor',
+  'Other',
+];
+
+// Popular / suggested companies (Requirement 2)
+const COMPANY_OPTIONS = [
+  'Google',
+  'Microsoft',
+  'Amazon',
+  'Apple',
+  'Meta',
+  'Adobe',
+  'Accenture',
+  'Deloitte',
+  'IBM',
+  'Infosys',
+  'TCS',
+  'Wipro',
+  'Cognizant',
+  'Zoho',
+  'Freshworks',
+  'Other company',
+];
+
+// Location options (Requirement 3)
+const LOCATION_OPTIONS = ['Remote', 'Hybrid', 'On-site', 'Other'];
+
+// Work model options (Requirement 4)
+const WORK_MODEL_OPTIONS = [
+  'Full-time',
+  'Part-time',
+  'Contract',
+  'Freelance',
+  'Internship',
+  'Temporary',
+  'Other',
+];
+
+interface SearchableDropdownProps {
+  label: string;
+  required?: boolean;
+  value: string;
+  onChange: (val: string) => void;
+  options: string[];
+  placeholder: string;
+  searchPlaceholder?: string;
+  otherOptionLabel?: string;
+  customInputPlaceholder?: string;
+}
+
+function SearchableDropdown({
+  label,
+  required,
+  value,
+  onChange,
+  options,
+  placeholder,
+  searchPlaceholder = 'Search...',
+  otherOptionLabel = 'Other',
+  customInputPlaceholder = 'Enter custom value...',
+}: SearchableDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [isCustomMode, setIsCustomMode] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const customInputRef = useRef<HTMLInputElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  // Focus search input when dropdown opens
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isOpen]);
+
+  // Focus custom input when entering custom mode
+  useEffect(() => {
+    if (isCustomMode && customInputRef.current) {
+      customInputRef.current.focus();
+    }
+  }, [isCustomMode]);
+
+  const handleSelectOption = (opt: string) => {
+    if (opt === otherOptionLabel) {
+      setIsCustomMode(true);
+      onChange('');
+      setIsOpen(false);
+      setSearch('');
+    } else {
+      onChange(opt);
+      setIsOpen(false);
+      setSearch('');
+    }
+  };
+
+  const handleAddCustom = (customVal: string) => {
+    onChange(customVal.trim());
+    setIsCustomMode(true);
+    setIsOpen(false);
+    setSearch('');
+  };
+
+  const handleRevertToList = () => {
+    setIsCustomMode(false);
+    onChange('');
+    setIsOpen(true);
+  };
+
+  // Filtered options based on search query
+  const trimmedSearch = search.trim().toLowerCase();
+  const filteredOptions = options.filter((opt) => {
+    if (opt === otherOptionLabel) return true; // keep "Other" visible
+    return opt.toLowerCase().includes(trimmedSearch);
+  });
+
+  const hasMatchingPreset = options.some(
+    (opt) => opt.toLowerCase() === trimmedSearch && opt !== otherOptionLabel.toLowerCase()
+  );
+
+  return (
+    <div ref={dropdownRef} className="space-y-1 relative">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-semibold text-[#1F2937]">
+          {label} {required && <span className="text-[#E87967]">*</span>}
+        </label>
+        {isCustomMode && (
+          <button
+            type="button"
+            onClick={handleRevertToList}
+            className="text-[11px] text-[#6D5DFB] hover:underline cursor-pointer"
+          >
+            ← Choose from list
+          </button>
+        )}
+      </div>
+
+      {isCustomMode ? (
+        <div className="relative">
+          <input
+            ref={customInputRef}
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={customInputPlaceholder}
+            className="w-full px-3 py-2 rounded-xl border border-[#E7E8EF] text-xs text-[#1F2937] placeholder:text-[#98A2B3] focus:outline-none focus:border-[#6D5DFB] focus:ring-2 focus:ring-[#6D5DFB]/20 bg-white"
+          />
+          {value && (
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#1F2937] p-1 cursor-pointer"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className={`w-full touch-target px-3.5 py-2.5 rounded-xl border text-xs text-left flex items-center justify-between transition-colors bg-white cursor-pointer ${
+              isOpen
+                ? 'border-[#6D5DFB] ring-2 ring-[#6D5DFB]/20'
+                : value
+                ? 'border-[#E7E8EF] text-[#1F2937]'
+                : 'border-[#E7E8EF] text-[#98A2B3] hover:border-[#6D5DFB]/40'
+            }`}
+          >
+            <span className="truncate">{value || placeholder}</span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-[#667085] transition-transform duration-200 shrink-0 ml-2 ${
+                isOpen ? 'rotate-180 text-[#6D5DFB]' : ''
+              }`}
+            />
+          </button>
+
+          {isOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E7E8EF] rounded-xl shadow-lg z-50 p-2 space-y-1 animate-in fade-in zoom-in-95 duration-150">
+              {/* Search Bar */}
+              <div className="relative mb-1">
+                <Search className="w-3.5 h-3.5 text-[#98A2B3] absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-[#E7E8EF] text-xs text-[#1F2937] placeholder:text-[#98A2B3] focus:outline-none focus:border-[#6D5DFB] bg-[#F9FAFB]"
+                />
+              </div>
+
+              {/* Options List */}
+              <div className="max-h-52 overflow-y-auto space-y-0.5 pr-0.5">
+                {filteredOptions.length > 0 ? (
+                  filteredOptions.map((opt) => {
+                    const isSelected = value === opt;
+                    const isOther = opt === otherOptionLabel;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => handleSelectOption(opt)}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#EEECFF] text-[#6D5DFB] font-semibold'
+                            : isOther
+                            ? 'text-[#667085] hover:bg-[#F9FAFB] hover:text-[#1F2937] border-t border-[#E7E8EF]/60 mt-1 font-medium'
+                            : 'text-[#1F2937] hover:bg-[#F9FAFB]'
+                        }`}
+                      >
+                        <span className="truncate">{opt}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-[#6D5DFB] shrink-0" />}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="p-3 text-center text-xs text-[#667085] space-y-2">
+                    <p>No matching result</p>
+                    {search.trim().length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleAddCustom(search)}
+                        className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#EEECFF] text-[#6D5DFB] hover:bg-[#DDD8FE] text-xs font-semibold transition-colors cursor-pointer w-full justify-center"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Add &ldquo;{search.trim()}&rdquo; as custom</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* If user typed something not matching any option exactly and there are results, offer custom add button */}
+                {trimmedSearch.length > 0 && !hasMatchingPreset && filteredOptions.length > 0 && (
+                  <div className="pt-1 border-t border-[#E7E8EF]">
+                    <button
+                      type="button"
+                      onClick={() => handleAddCustom(search)}
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs text-[#6D5DFB] hover:bg-[#EEECFF]/40 font-medium flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>Add &ldquo;{search.trim()}&rdquo; as custom</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AddJobPage() {
   const router = useRouter();
-  const { session } = useAuth();
 
-  // Form State
+  // Form State: strictly start completely empty (Requirement 5 & 11)
   const [jobDescription, setJobDescription] = useState('');
-  const [jobTitle, setJobTitle] = useState('UI/UX Designer');
-  const [company, setCompany] = useState('Acme Technologies');
-  const [location, setLocation] = useState('Remote');
-  const [workModel, setWorkModel] = useState('Full-time');
+  const [jobTitle, setJobTitle] = useState('');
+  const [company, setCompany] = useState('');
+  const [location, setLocation] = useState('');
+  const [workModel, setWorkModel] = useState('');
 
   // Resume Upload State: Idle | Uploading | Uploaded | Error
   const [resumeUploadState, setResumeUploadState] = useState<'idle' | 'uploading' | 'uploaded' | 'error'>('idle');
@@ -54,9 +341,11 @@ export default function AddJobPage() {
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const jdInputRef = useRef<HTMLInputElement>(null);
 
-  // Check if candidate context is provided via resume OR manual input
+  // Validation: Required = jobTitle, company, jobDescription, activeExperience (Requirement 9)
   const activeExperienceText = isManualExperience ? manualExperienceText : resumeText;
   const isFormValid =
+    jobTitle.trim().length > 0 &&
+    company.trim().length > 0 &&
     jobDescription.trim().length >= 20 &&
     activeExperienceText.trim().length >= 20;
 
@@ -111,7 +400,7 @@ export default function AddJobPage() {
     }
   };
 
-  // Primary Action: Analyze Role & Experience
+  // Primary Action: Analyze Role & Experience (Requirement 12)
   const handleAnalyze = async () => {
     if (!isFormValid || isAnalyzing) return;
 
@@ -128,6 +417,10 @@ export default function AddJobPage() {
         resumeText: activeExperienceText,
         resumeFileName: resumeFileName || 'candidate_profile.pdf',
         resumeMimeType: 'application/pdf',
+        jobTitle: jobTitle.trim(),
+        company: company.trim(),
+        location: location.trim() || undefined,
+        workModel: workModel.trim() || undefined,
       });
 
       clearTimeout(stepTimer1);
@@ -174,7 +467,7 @@ export default function AddJobPage() {
         </div>
       )}
 
-      {/* TWO COLUMN WORKSPACE (Image 2) */}
+      {/* TWO COLUMN WORKSPACE */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* LEFT CARD: Job Description */}
         <div className="rolewise-card p-6 space-y-5 flex flex-col justify-between">
@@ -222,7 +515,7 @@ export default function AddJobPage() {
                       setJdUploadState('idle');
                       setJdFileName('');
                     }}
-                    className="p-1 hover:text-[#1F2937]"
+                    className="p-1 hover:text-[#1F2937] cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -231,7 +524,7 @@ export default function AddJobPage() {
                 <button
                   type="button"
                   onClick={() => jdInputRef.current?.click()}
-                  className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#1F2937] transition-all"
+                  className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#1F2937] transition-all cursor-pointer"
                 >
                   <Upload className="w-3.5 h-3.5 text-[#667085]" />
                   <span>Upload JD</span>
@@ -241,51 +534,57 @@ export default function AddJobPage() {
               {jdError && <p className="text-xs text-[#E87967]">{jdError}</p>}
             </div>
 
-            {/* Metadata Fields (Job title, Company, Location, Work model) */}
+            {/* Metadata Fields: Searchable Selectors (Requirements 1, 2, 3, 4, 5, 6, 7, 8, 10, 13) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#1F2937]">Job title</label>
-                <input
-                  type="text"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  placeholder="e.g. UI/UX Designer"
-                  className="w-full px-3 py-2 rounded-lg border border-[#E7E8EF] text-xs text-[#1F2937] focus:outline-none focus:border-[#6D5DFB]"
-                />
-              </div>
+              {/* Job title */}
+              <SearchableDropdown
+                label="Job title"
+                required
+                value={jobTitle}
+                onChange={setJobTitle}
+                options={JOB_TITLE_OPTIONS}
+                placeholder="Select a job title"
+                searchPlaceholder="Search job titles..."
+                otherOptionLabel="Other"
+                customInputPlaceholder="Enter your job title..."
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#1F2937]">Company</label>
-                <input
-                  type="text"
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  placeholder="e.g. Acme Technologies"
-                  className="w-full px-3 py-2 rounded-lg border border-[#E7E8EF] text-xs text-[#1F2937] focus:outline-none focus:border-[#6D5DFB]"
-                />
-              </div>
+              {/* Company */}
+              <SearchableDropdown
+                label="Company"
+                required
+                value={company}
+                onChange={setCompany}
+                options={COMPANY_OPTIONS}
+                placeholder="Search or select a company"
+                searchPlaceholder="Search companies..."
+                otherOptionLabel="Other company"
+                customInputPlaceholder="Enter company name..."
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#1F2937]">Location</label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g. Remote"
-                  className="w-full px-3 py-2 rounded-lg border border-[#E7E8EF] text-xs text-[#1F2937] focus:outline-none focus:border-[#6D5DFB]"
-                />
-              </div>
+              {/* Location */}
+              <SearchableDropdown
+                label="Location"
+                value={location}
+                onChange={setLocation}
+                options={LOCATION_OPTIONS}
+                placeholder="Select location"
+                searchPlaceholder="Search location..."
+                otherOptionLabel="Other"
+                customInputPlaceholder="Enter location (e.g. San Francisco, CA)..."
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#1F2937]">Work model</label>
-                <input
-                  type="text"
-                  value={workModel}
-                  onChange={(e) => setWorkModel(e.target.value)}
-                  placeholder="e.g. Full-time"
-                  className="w-full px-3 py-2 rounded-lg border border-[#E7E8EF] text-xs text-[#1F2937] focus:outline-none focus:border-[#6D5DFB]"
-                />
-              </div>
+              {/* Work model */}
+              <SearchableDropdown
+                label="Work model"
+                value={workModel}
+                onChange={setWorkModel}
+                options={WORK_MODEL_OPTIONS}
+                placeholder="Select work model"
+                searchPlaceholder="Search work model..."
+                otherOptionLabel="Other"
+                customInputPlaceholder="Enter work model..."
+              />
             </div>
           </div>
         </div>
@@ -332,7 +631,7 @@ export default function AddJobPage() {
                         setResumeFileName('');
                         setResumeText('');
                       }}
-                      className="p-1 text-[#667085] hover:text-[#E87967]"
+                      className="p-1 text-[#667085] hover:text-[#E87967] cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -374,7 +673,7 @@ export default function AddJobPage() {
                   <button
                     type="button"
                     onClick={() => setIsManualExperience(true)}
-                    className="text-xs text-[#6D5DFB] font-medium hover:underline inline-flex items-center gap-1"
+                    className="text-xs text-[#6D5DFB] font-medium hover:underline inline-flex items-center gap-1 cursor-pointer"
                   >
                     <span>Don&apos;t have a resume? Add your experience manually</span>
                     <ArrowRight className="w-3 h-3" />
@@ -389,7 +688,7 @@ export default function AddJobPage() {
                   <button
                     type="button"
                     onClick={() => setIsManualExperience(false)}
-                    className="text-xs text-[#6D5DFB] font-medium hover:underline"
+                    className="text-xs text-[#6D5DFB] font-medium hover:underline cursor-pointer"
                   >
                     ← Switch back to Resume upload
                   </button>
@@ -476,7 +775,7 @@ export default function AddJobPage() {
         </div>
       )}
 
-      {/* BOTTOM ACTION BAR (Image 2) */}
+      {/* BOTTOM ACTION BAR */}
       <div className="rolewise-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         {/* Info callout */}
         <div className="flex items-center gap-2.5 text-xs text-[#667085]">

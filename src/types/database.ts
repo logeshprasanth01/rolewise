@@ -76,6 +76,10 @@ export interface AnalyzeRolePayload {
   resumeText: string;
   resumeFileName: string;
   resumeMimeType: string;
+  jobTitle?: string;
+  company?: string;
+  location?: string;
+  workModel?: string;
 }
 
 export interface AnalyzeRoleResponse {

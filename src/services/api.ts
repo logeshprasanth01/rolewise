@@ -57,28 +57,18 @@ export async function invokeAnalyzeRole(
   const createSynthesizedRole = (jobDesc: string, resume: string): AnalyzeRoleResponse => {
     const roleId = 'role_' + Math.random().toString(36).substring(2, 9);
     
-    // Extract title & company heuristic
-    let title = 'Product Designer';
-    const company = 'Acme Technologies';
-    
-    const lines = jobDesc.split('\n').map((l) => l.trim()).filter(Boolean);
-    if (lines.length > 0) {
-      const firstLine = lines[0];
-      if (firstLine.toLowerCase().includes('engineer') || firstLine.toLowerCase().includes('developer')) {
-        title = firstLine.length < 50 ? firstLine : 'Software Engineer';
-      } else if (firstLine.toLowerCase().includes('manager')) {
-        title = firstLine.length < 50 ? firstLine : 'Product Manager';
-      } else if (firstLine.length < 40) {
-        title = firstLine;
-      }
-    }
+    // Use user-provided details (Requirements 11 & 12: no fake defaults or Acme Technologies)
+    const title = payload.jobTitle?.trim() || 'Target Role';
+    const company = payload.company?.trim() || 'Target Company';
+    const location = payload.location?.trim() || null;
+    const workplace_type = payload.workModel?.trim() || null;
 
     const newRole: Role = {
       id: roleId,
       title,
       company,
-      location: 'Remote',
-      workplace_type: 'Full-time',
+      location,
+      workplace_type,
       status: 'active',
       job_description: jobDesc,
       created_at: new Date().toISOString(),
@@ -228,6 +218,10 @@ export async function invokeAnalyzeRole(
         resumeText: payload.resumeText.trim(),
         resumeFileName: payload.resumeFileName || 'resume.pdf',
         resumeMimeType: payload.resumeMimeType || 'application/pdf',
+        jobTitle: payload.jobTitle?.trim(),
+        company: payload.company?.trim(),
+        location: payload.location?.trim(),
+        workModel: payload.workModel?.trim(),
       },
     });
 
@@ -237,6 +231,21 @@ export async function invokeAnalyzeRole(
     }
 
     const roleId = data.role_id || data.roleId || data.id || data.role?.id;
+
+    // Ensure the exact user-provided role details are saved to the database record
+    if (roleId && (payload.jobTitle || payload.company || payload.location || payload.workModel)) {
+      try {
+        const updates: Record<string, string | null> = {};
+        if (payload.jobTitle?.trim()) updates.job_title = payload.jobTitle.trim();
+        if (payload.company?.trim()) updates.company = payload.company.trim();
+        if (payload.location?.trim()) updates.location = payload.location.trim();
+        if (payload.workModel?.trim()) updates.work_model = payload.workModel.trim();
+        await supabase.from('roles').update(updates).eq('id', roleId);
+      } catch (dbErr) {
+        console.warn('[Rolewise] Notice updating exact role details:', dbErr);
+      }
+    }
+
     return {
       ...data,
       role_id: roleId,
