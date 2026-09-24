@@ -48,6 +48,61 @@ interface QuestionErrorState {
   isAuth: boolean;
 }
 
+interface StoredInterviewSession {
+  roleId: string;
+  questionNumber: number;
+  currentQuestion: string;
+  currentCompetency: string;
+  answerText: string;
+  lastRecordedDuration?: string;
+  flowState: InterviewFlowState;
+  completedRounds: CompletedRound[];
+  currentAnalysis: CommunicationAnalysisResponse | null;
+  pendingNext: { question: string; competency: string } | null;
+  aiFinalFeedback: FinalFeedbackOutput | null;
+}
+
+const getStorageKey = (id: string) => `rolewise-interview-${id}`;
+
+function loadStoredSession(id: string): StoredInterviewSession | null {
+  if (typeof window === 'undefined' || !id) return null;
+  try {
+    const raw = sessionStorage.getItem(getStorageKey(id));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.roleId === id && parsed.currentQuestion) {
+      return parsed;
+    }
+  } catch (e) {
+    console.warn('[InterviewPage] Failed to load stored session:', e);
+  }
+  return null;
+}
+
+function saveStoredSession(id: string, data: Partial<StoredInterviewSession>) {
+  if (typeof window === 'undefined' || !id) return;
+  try {
+    const existing = loadStoredSession(id) || ({} as StoredInterviewSession);
+    const updated: StoredInterviewSession = {
+      ...existing,
+      ...data,
+      roleId: id,
+    };
+    sessionStorage.setItem(getStorageKey(id), JSON.stringify(updated));
+  } catch (e) {
+    console.warn('[InterviewPage] Failed to save stored session:', e);
+  }
+}
+
+function clearStoredSession(id: string) {
+  if (typeof window === 'undefined' || !id) return;
+  try {
+    sessionStorage.removeItem(getStorageKey(id));
+  } catch (e) {
+    console.warn('[InterviewPage] Failed to clear stored session:', e);
+  }
+}
+
 export default function InterviewPage() {
   const params = useParams();
   const router = useRouter();
@@ -55,25 +110,38 @@ export default function InterviewPage() {
 
   const roleId = params?.id as string;
 
-  // Role details
+  // Session & question state restored immediately from sessionStorage if available (Requirements 5 & 6)
   const [role, setRole] = useState<Role | null>(null);
-  const [isLoadingSession, setIsLoadingSession] = useState<boolean>(true);
 
-  // Question State
-  const [questionNumber, setQuestionNumber] = useState<number>(1);
-  const [currentQuestion, setCurrentQuestion] = useState<string>('');
-  const [currentCompetency, setCurrentCompetency] = useState<string>('');
+  const [questionNumber, setQuestionNumber] = useState<number>(() => {
+    const saved = loadStoredSession(roleId);
+    return saved?.questionNumber || 1;
+  });
+  const [currentQuestion, setCurrentQuestion] = useState<string>(() => {
+    const saved = loadStoredSession(roleId);
+    return saved?.currentQuestion || '';
+  });
+  const [currentCompetency, setCurrentCompetency] = useState<string>(() => {
+    const saved = loadStoredSession(roleId);
+    return saved?.currentCompetency || '';
+  });
   const [isGeneratingQuestion, setIsGeneratingQuestion] = useState<boolean>(false);
   const [questionTimeoutOccurred, setQuestionTimeoutOccurred] = useState<boolean>(false);
   const [questionError, setQuestionError] = useState<QuestionErrorState | null>(null);
 
   // Single Unified Answer State
-  const [answerText, setAnswerText] = useState<string>('');
+  const [answerText, setAnswerText] = useState<string>(() => {
+    const saved = loadStoredSession(roleId);
+    return saved?.answerText || '';
+  });
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Recording & Playback State
   const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
-  const [lastRecordedDuration, setLastRecordedDuration] = useState<string>('');
+  const [lastRecordedDuration, setLastRecordedDuration] = useState<string>(() => {
+    const saved = loadStoredSession(roleId);
+    return saved?.lastRecordedDuration || '';
+  });
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const recordedBlobRef = useRef<{ blob: Blob; durationSeconds: number; audioUrl: string } | null>(null);
@@ -83,22 +151,46 @@ export default function InterviewPage() {
   const [transcriptionError, setTranscriptionError] = useState<boolean>(false);
 
   // Flow & Evaluation State
-  const [flowState, setFlowState] = useState<InterviewFlowState>('READY');
+  const [flowState, setFlowState] = useState<InterviewFlowState>(() => {
+    const saved = loadStoredSession(roleId);
+    return saved?.flowState || 'READY';
+  });
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const [currentAnalysis, setCurrentAnalysis] = useState<CommunicationAnalysisResponse | null>(null);
+  const [currentAnalysis, setCurrentAnalysis] = useState<CommunicationAnalysisResponse | null>(() => {
+    const saved = loadStoredSession(roleId);
+    return saved?.currentAnalysis || null;
+  });
   const [generalError, setGeneralError] = useState<string | null>(null);
 
   // Completed rounds & Final Feedback
-  const [completedRounds, setCompletedRounds] = useState<CompletedRound[]>([]);
-  const [aiFinalFeedback, setAiFinalFeedback] = useState<FinalFeedbackOutput | null>(null);
+  const [completedRounds, setCompletedRounds] = useState<CompletedRound[]>(() => {
+    const saved = loadStoredSession(roleId);
+    return saved?.completedRounds || [];
+  });
+  const [aiFinalFeedback, setAiFinalFeedback] = useState<FinalFeedbackOutput | null>(() => {
+    const saved = loadStoredSession(roleId);
+    return saved?.aiFinalFeedback || null;
+  });
 
   // Preloaded Next Question
   const [pendingNext, setPendingNext] = useState<{
     question: string;
     competency: string;
-  } | null>(null);
+  } | null>(() => {
+    const saved = loadStoredSession(roleId);
+    return saved?.pendingNext || null;
+  });
 
-  // Timeout reference for question loading (Requirement 9: 10-12s timeout)
+  // Loading Session: false immediately if session is already restored (Requirement 7)
+  const [isLoadingSession, setIsLoadingSession] = useState<boolean>(() => {
+    const saved = loadStoredSession(roleId);
+    return !saved?.currentQuestion;
+  });
+
+  // Lifecycle guards to prevent duplicate execution (Requirements 1, 2, 3, 13, 14)
+  const initializedRef = useRef<boolean>(false);
+  const isGeneratingRef = useRef<boolean>(false);
+  const activeRequestIdRef = useRef<string>('');
   const questionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Total questions in an interview session
@@ -125,9 +217,16 @@ export default function InterviewPage() {
     };
   }, []);
 
-  // Fetch question with 11-second timeout & zero fake fallback (Requirements 8, 9, 10, 11, 12)
+  // Fetch question with 11-second timeout & zero fake fallback (Requirements 8, 9, 10, 11, 12, 13, 14)
   const fetchFirstQuestion = useCallback(async () => {
     if (!roleId) return;
+
+    // Guard against duplicate concurrent calls (Requirement 13)
+    if (isGeneratingRef.current) return;
+    isGeneratingRef.current = true;
+
+    const requestId = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+    activeRequestIdRef.current = requestId;
 
     setIsGeneratingQuestion(true);
     setQuestionTimeoutOccurred(false);
@@ -139,7 +238,9 @@ export default function InterviewPage() {
 
     // 11s timeout
     questionTimeoutRef.current = setTimeout(() => {
-      setQuestionTimeoutOccurred(true);
+      if (activeRequestIdRef.current === requestId) {
+        setQuestionTimeoutOccurred(true);
+      }
     }, 11000);
 
     try {
@@ -149,6 +250,11 @@ export default function InterviewPage() {
         previousQuestions: [],
       });
 
+      // Guard against stale responses (Requirement 14)
+      if (activeRequestIdRef.current !== requestId) {
+        return;
+      }
+
       if (questionTimeoutRef.current) {
         clearTimeout(questionTimeoutRef.current);
       }
@@ -156,11 +262,17 @@ export default function InterviewPage() {
 
       if (generated.question) {
         setCurrentQuestion(generated.question);
+        saveStoredSession(roleId, {
+          currentQuestion: generated.question,
+          currentCompetency: generated.competency || 'Role Competency',
+          questionNumber: 1,
+        });
       }
       if (generated.competency) {
         setCurrentCompetency(generated.competency);
       }
     } catch (err: unknown) {
+      if (activeRequestIdRef.current !== requestId) return;
       if (questionTimeoutRef.current) {
         clearTimeout(questionTimeoutRef.current);
       }
@@ -184,11 +296,14 @@ export default function InterviewPage() {
         });
       }
     } finally {
-      setIsGeneratingQuestion(false);
+      if (activeRequestIdRef.current === requestId) {
+        setIsGeneratingQuestion(false);
+        isGeneratingRef.current = false;
+      }
     }
   }, [roleId]);
 
-  // Initial mount: load role and preload Question 1 immediately (Requirement 11)
+  // Initial mount: initialize ONLY ONCE per session (Requirements 1, 2, 3, 6, 11)
   useEffect(() => {
     if (isAuthLoading) return;
 
@@ -199,10 +314,15 @@ export default function InterviewPage() {
 
     if (!roleId) return;
 
+    // Requirement 2 & 3: Initialization guard prevents re-running on tab switch / window focus
+    if (initializedRef.current) {
+      return;
+    }
+    initializedRef.current = true;
+
     let isMounted = true;
 
     async function init() {
-      setIsLoadingSession(true);
       try {
         const fetchedRole = await getRole(roleId);
         if (!isMounted) return;
@@ -214,9 +334,30 @@ export default function InterviewPage() {
         }
 
         setRole(fetchedRole);
+
+        // Requirement 6: Check whether an existing interview state exists.
+        // If it exists: restore immediately and DO NOT generate another question!
+        const saved = loadStoredSession(roleId);
+        if (saved?.currentQuestion) {
+          setCurrentQuestion(saved.currentQuestion);
+          setCurrentCompetency(saved.currentCompetency || '');
+          setQuestionNumber(saved.questionNumber || 1);
+          setAnswerText(saved.answerText || '');
+          setFlowState(saved.flowState || 'READY');
+          setCompletedRounds(saved.completedRounds || []);
+          setCurrentAnalysis(saved.currentAnalysis || null);
+          setPendingNext(saved.pendingNext || null);
+          setAiFinalFeedback(saved.aiFinalFeedback || null);
+          if (saved.lastRecordedDuration) {
+            setLastRecordedDuration(saved.lastRecordedDuration);
+          }
+          setIsLoadingSession(false);
+          return;
+        }
+
         setIsLoadingSession(false);
 
-        // Preload question immediately
+        // Preload Question 1 only if no session already exists
         fetchFirstQuestion();
       } catch (err) {
         console.error('Error fetching role:', err);
@@ -231,7 +372,8 @@ export default function InterviewPage() {
     return () => {
       isMounted = false;
     };
-  }, [roleId, session, isAuthLoading, router, fetchFirstQuestion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally exclude session object to prevent re-initialization on tab switch / token refresh
+  }, [roleId, isAuthLoading, router, fetchFirstQuestion]);
 
   // Handle Start Recording (Requirement 2 & 3: Decoupled client-side recording)
   const handleStartRecording = async () => {
@@ -241,7 +383,6 @@ export default function InterviewPage() {
 
     const success = await startRecording();
     if (!success) {
-      // Handled by isPermissionDenied inside hook
       return;
     }
   };
@@ -256,7 +397,9 @@ export default function InterviewPage() {
       if (response?.transcript && response.transcript.trim()) {
         setAnswerText((prev) => {
           const trimmed = prev.trim();
-          return trimmed ? `${trimmed} ${response.transcript.trim()}` : response.transcript.trim();
+          const next = trimmed ? `${trimmed} ${response.transcript.trim()}` : response.transcript.trim();
+          saveStoredSession(roleId, { answerText: next });
+          return next;
         });
       }
     } catch (err: unknown) {
@@ -278,6 +421,7 @@ export default function InterviewPage() {
     recordedBlobRef.current = recorded;
     setRecordedAudioUrl(recorded.audioUrl);
     setLastRecordedDuration(formattedDuration);
+    saveStoredSession(roleId, { lastRecordedDuration: formattedDuration });
 
     // Run transcription in background
     runTranscription(recorded.blob, recorded.durationSeconds);
@@ -310,6 +454,7 @@ export default function InterviewPage() {
     setLastRecordedDuration('');
     setTranscriptionError(false);
     setIsPlayingAudio(false);
+    saveStoredSession(roleId, { lastRecordedDuration: '' });
   };
 
   // Retry transcription with preserved audio blob (Requirement 7)
@@ -321,6 +466,7 @@ export default function InterviewPage() {
 
   // Retry Question Generation
   const handleRetryQuestionGeneration = () => {
+    isGeneratingRef.current = false;
     fetchFirstQuestion();
   };
 
@@ -331,6 +477,7 @@ export default function InterviewPage() {
     setIsAnalyzing(true);
     setFlowState('ANALYZING');
     setGeneralError(null);
+    saveStoredSession(roleId, { flowState: 'ANALYZING', answerText });
 
     const previousAnswers = completedRounds.map((r) => r.transcript);
     const type: 'voice' | 'text' = recordedBlobRef.current ? 'voice' : 'text';
@@ -355,19 +502,26 @@ export default function InterviewPage() {
         analysis: analysisResult,
       };
 
-      setCompletedRounds((prev) => [...prev, newRound]);
+      const nextCompleted = [...completedRounds, newRound];
+      setCompletedRounds(nextCompleted);
 
       // Preload next question from backend analysis response (Requirement 11)
-      if (analysisResult.next_question) {
-        setPendingNext({
-          question: analysisResult.next_question,
-          competency: analysisResult.next_competency || currentCompetency,
-        });
-      } else {
-        setPendingNext(null);
-      }
+      const nextStaged = analysisResult.next_question
+        ? {
+            question: analysisResult.next_question,
+            competency: analysisResult.next_competency || currentCompetency,
+          }
+        : null;
 
+      setPendingNext(nextStaged);
       setFlowState('REVIEWED');
+
+      saveStoredSession(roleId, {
+        flowState: 'REVIEWED',
+        currentAnalysis: analysisResult,
+        completedRounds: nextCompleted,
+        pendingNext: nextStaged,
+      });
     } catch (err: unknown) {
       console.error('Answer analysis error:', err);
       const msg =
@@ -375,8 +529,8 @@ export default function InterviewPage() {
           ? err.message
           : 'AI feedback is temporarily unavailable. Please try again.';
       setGeneralError(msg);
-      // Preserve answer text and recording (Requirement 18)
       setFlowState('READY');
+      saveStoredSession(roleId, { flowState: 'READY' });
     } finally {
       setIsAnalyzing(false);
     }
@@ -386,6 +540,7 @@ export default function InterviewPage() {
   const handleContinueInterview = async () => {
     if (questionNumber >= totalQuestions || !pendingNext) {
       setFlowState('COMPLETED');
+      saveStoredSession(roleId, { flowState: 'COMPLETED' });
       try {
         const finalRes = await getFinalInterviewFeedback({
           roleId,
@@ -396,16 +551,20 @@ export default function InterviewPage() {
           })),
         });
         setAiFinalFeedback(finalRes);
+        saveStoredSession(roleId, { aiFinalFeedback: finalRes });
       } catch (err) {
         console.warn('[InterviewPage] Final feedback synthesis notice:', err);
       }
       return;
     }
 
-    // Advance to next question immediately
-    setQuestionNumber((prev) => prev + 1);
-    setCurrentQuestion(pendingNext.question);
-    setCurrentCompetency(pendingNext.competency);
+    const nextQNum = questionNumber + 1;
+    const nextQ = pendingNext.question;
+    const nextComp = pendingNext.competency;
+
+    setQuestionNumber(nextQNum);
+    setCurrentQuestion(nextQ);
+    setCurrentCompetency(nextComp);
     setPendingNext(null);
     setCurrentAnalysis(null);
     setAnswerText('');
@@ -416,10 +575,26 @@ export default function InterviewPage() {
     setTranscriptionError(false);
     setGeneralError(null);
     setFlowState('READY');
+
+    saveStoredSession(roleId, {
+      questionNumber: nextQNum,
+      currentQuestion: nextQ,
+      currentCompetency: nextComp,
+      pendingNext: null,
+      currentAnalysis: null,
+      answerText: '',
+      flowState: 'READY',
+      lastRecordedDuration: '',
+    });
   };
 
   // Practice again (restart session)
   const handlePracticeAgain = () => {
+    clearStoredSession(roleId);
+    initializedRef.current = false;
+    isGeneratingRef.current = false;
+    activeRequestIdRef.current = '';
+
     setQuestionNumber(1);
     setCurrentQuestion('');
     setCurrentCompetency('');
@@ -438,7 +613,9 @@ export default function InterviewPage() {
     fetchFirstQuestion();
   };
 
-  if (isAuthLoading || isLoadingSession) {
+  // Only show the initial setup loader if we truly have NO question or session yet (Requirements 7, 8, 20)
+  const hasExistingSession = Boolean(currentQuestion || completedRounds.length > 0);
+  if ((isAuthLoading || isLoadingSession) && !hasExistingSession) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
         <Loader2 className="w-7 h-7 animate-spin text-[#6D5DFB]" />
@@ -451,7 +628,7 @@ export default function InterviewPage() {
     return null;
   }
 
-  if (!role) {
+  if (!role && !hasExistingSession) {
     return (
       <div className="space-y-6 max-w-xl mx-auto py-12 text-center animate-in fade-in">
         <div className="rolewise-card p-8 space-y-4">
@@ -550,8 +727,8 @@ export default function InterviewPage() {
 
         <section className="space-y-1">
           <div className="flex items-center gap-2 text-xs font-medium text-[#667085]">
-            <span className="font-semibold text-[#1F2937]">{role.title}</span>
-            {role.company && (
+            <span className="font-semibold text-[#1F2937]">{role?.title || 'Target Role'}</span>
+            {role?.company && (
               <>
                 <span>·</span>
                 <span>{role.company}</span>
@@ -731,8 +908,8 @@ export default function InterviewPage() {
       {/* Role Header */}
       <section className="space-y-1">
         <div className="flex items-center gap-2 text-xs font-medium text-[#667085]">
-          <span className="font-semibold text-[#1F2937]">{role.title}</span>
-          {role.company && (
+          <span className="font-semibold text-[#1F2937]">{role?.title || 'Target Role'}</span>
+          {role?.company && (
             <>
               <span>·</span>
               <span>{role.company}</span>
@@ -802,7 +979,7 @@ export default function InterviewPage() {
         </div>
       )}
 
-      {/* QUESTION CARD (Requirements 8, 9, 10, 12) */}
+      {/* QUESTION CARD (Requirements 8, 9, 10, 12, 20) */}
       <section className="rolewise-card p-6 space-y-3">
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEECFF] text-[#6D5DFB] border border-[#D8D4FD]">
@@ -909,7 +1086,7 @@ export default function InterviewPage() {
         </p>
       </section>
 
-      {/* UNIFIED ANSWER CARD (Requirements 1, 2, 6, 7, 13, 14, 18, 19, 20) */}
+      {/* UNIFIED ANSWER CARD (Requirements 1, 2, 6, 7, 13, 14, 15, 18, 19, 20) */}
       <section className="rolewise-card p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-[#1F2937]">Answer your question</h3>
@@ -922,7 +1099,11 @@ export default function InterviewPage() {
             ref={textareaRef}
             rows={5}
             value={answerText}
-            onChange={(e) => setAnswerText(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setAnswerText(val);
+              saveStoredSession(roleId, { answerText: val });
+            }}
             placeholder="Type your answer here, or tap the microphone to speak..."
             disabled={isRecording || isAnalyzing}
             className={`w-full p-4 pr-16 pb-12 rounded-xl border border-[#E7E8EF] text-xs sm:text-sm text-[#1F2937] placeholder:text-[#667085]/60 focus:outline-none focus:border-[#6D5DFB] bg-white transition-colors resize-y leading-relaxed font-normal min-h-[140px] ${
@@ -1054,7 +1235,7 @@ export default function InterviewPage() {
                 onClick={handleTogglePlayAudio}
                 className="touch-target inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#FBD2CB] text-[#1F2937] text-xs font-medium hover:bg-[#FFF0ED] transition-colors cursor-pointer"
               >
-                <Play className="w-3 h-3 fill-current text-[#6D5DFB]" />
+                <Play className="w-3.5 h-3.5 fill-current text-[#6D5DFB]" />
                 <span>Listen</span>
               </button>
               <button
@@ -1062,7 +1243,7 @@ export default function InterviewPage() {
                 onClick={handleRetryTranscription}
                 className="touch-target inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#FBD2CB] text-[#1F2937] text-xs font-medium hover:bg-[#FFF0ED] transition-colors cursor-pointer"
               >
-                <RefreshCw className="w-3 h-3" />
+                <RefreshCw className="w-3.5 h-3.5" />
                 <span>Try transcription again</span>
               </button>
               <button
