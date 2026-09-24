@@ -17,8 +17,6 @@ import {
   LogOut,
   Plus,
   ChevronDown,
-  User as UserIcon,
-  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { AuthView } from '@/components/auth/AuthView';
@@ -46,15 +44,15 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   ];
 
   const isNavActive = (href: string) => {
-    if (href === '/') return pathname === '/';
+    if (href === '/') return pathname === '/' || pathname === '/dashboard';
     if (href === '/jobs') return pathname === '/jobs' || pathname.startsWith('/jobs/new');
     if (href === '/roles') return pathname.includes('/interview');
     return pathname?.startsWith(href);
   };
 
-  // Redirect to /auth when unauthenticated
+  // Redirect to /auth when unauthenticated (except when on /auth or /auth/callback)
   useEffect(() => {
-    if (!isLoading && !session && pathname !== '/auth') {
+    if (!isLoading && !session && pathname !== '/auth' && !pathname?.startsWith('/auth/')) {
       router.replace('/auth');
     }
   }, [isLoading, session, pathname, router]);
@@ -73,6 +71,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   // PRD Gate: Unauthenticated users must not access protected application screens
   if (!session) {
+    if (pathname?.startsWith('/auth/callback')) {
+      return <>{children}</>;
+    }
     return <AuthView />;
   }
 

@@ -1,9 +1,11 @@
 import { getSupabaseClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 import {
   AnalyzeRolePayload,
   AnalyzeRoleResponse,
   FitAnalysis,
   PreparationItem,
+  Profile,
   Role,
   RoleRequirement,
   VoiceTranscriptionResponse,
@@ -54,7 +56,7 @@ export async function invokeAnalyzeRole(
   const session = sessionData?.session;
 
   // Helper to generate realistic role bundle from inputs
-  const createSynthesizedRole = (jobDesc: string, resume: string): AnalyzeRoleResponse => {
+  const createSynthesizedRole = (): AnalyzeRoleResponse => {
     const roleId = 'role_' + Math.random().toString(36).substring(2, 9);
     
     // Use user-provided details (Requirements 11 & 12: no fake defaults or Acme Technologies)
@@ -70,7 +72,7 @@ export async function invokeAnalyzeRole(
       location,
       workplace_type,
       status: 'active',
-      job_description: jobDesc,
+      job_description: payload.jobDescription,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -207,7 +209,7 @@ export async function invokeAnalyzeRole(
   };
 
   if (!session?.access_token) {
-    return createSynthesizedRole(payload.jobDescription, payload.resumeText);
+    return createSynthesizedRole();
   }
 
   try {
@@ -227,7 +229,7 @@ export async function invokeAnalyzeRole(
 
     if (error || !data) {
       console.warn('[Rolewise] Edge function invocation fell back to local synthesis:', error);
-      return createSynthesizedRole(payload.jobDescription, payload.resumeText);
+      return createSynthesizedRole();
     }
 
     const roleId = data.role_id || data.roleId || data.id || data.role?.id;
@@ -252,7 +254,7 @@ export async function invokeAnalyzeRole(
     };
   } catch (err: unknown) {
     console.warn('[Rolewise] Edge function error fell back to local synthesis:', err);
-    return createSynthesizedRole(payload.jobDescription, payload.resumeText);
+    return createSynthesizedRole();
   }
 }
 
@@ -860,6 +862,102 @@ export async function getFinalInterviewFeedback(params: {
     action: 'final_feedback',
     ...params,
   });
+}
+
+/**
+ * Synchronizes the authenticated user with public.profiles.
+ * Reuses existing profile without duplicate entries.
+ * Enriches full_name and avatar_url from OAuth user metadata when available.
+ */
+export async function syncUserProfile(user: User): Promise<Profile | null> {
+  const supabase = getSupabaseClient();
+  const meta = (user.user_metadata || {}) as Record<string, unknown>;
+
+  const fullName =
+    (typeof meta.full_name === 'string' && meta.full_name) ||
+    (typeof meta.name === 'string' && meta.name) ||
+    (typeof meta.given_name === 'string' && typeof meta.family_name === 'string'
+      ? `${meta.given_name} ${meta.family_name}`
+      : null) ||
+    user.email?.split('@')[0] ||
+    'Candidate';
+
+  const avatarUrl =
+    (typeof meta.avatar_url === 'string' && meta.avatar_url) ||
+    (typeof meta.picture === 'string' && meta.picture) ||
+    null;
+
+  try {
+    const { data: existing, error: selectErr } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, avatar_url')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (selectErr && selectErr.code !== 'PGRST116') {
+      console.warn('[Rolewise] Profile lookup notice:', selectErr.message);
+    }
+
+    if (!existing) {
+      const { data: inserted, error: insertErr } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          full_name: fullName,
+          email: user.email,
+          avatar_url: avatarUrl,
+        })
+        .select()
+        .single();
+
+      if (insertErr) {
+        console.warn('[Rolewise] Profile insert notice:', insertErr.message);
+      }
+      return (inserted as Profile) || null;
+    } else {
+      const updates: Record<string, unknown> = {};
+      if (!existing.full_name && fullName) updates.full_name = fullName;
+      if (!existing.avatar_url && avatarUrl) updates.avatar_url = avatarUrl;
+      if (!existing.email && user.email) updates.email = user.email;
+
+      if (Object.keys(updates).length > 0) {
+        const { data: updated } = await supabase
+          .from('profiles')
+          .update(updates)
+          .eq('id', user.id)
+          .select()
+          .single();
+        return (updated as Profile) || (existing as Profile);
+      }
+      return existing as Profile;
+    }
+  } catch (err) {
+    console.warn('[Rolewise] Profile sync error:', err);
+    return null;
+  }
+}
+
+/**
+ * Fetch profile by user ID.
+ */
+export async function getUserProfile(userId: string): Promise<Profile | null> {
+  const supabase = getSupabaseClient();
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('[Rolewise] getUserProfile notice:', error.message);
+      return null;
+    }
+    return (data as Profile) || null;
+  } catch (err) {
+    console.warn('[Rolewise] getUserProfile exception:', err);
+    return null;
+  }
 }
 
 

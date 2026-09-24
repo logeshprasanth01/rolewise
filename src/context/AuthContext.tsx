@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { getSupabaseClient } from '@/lib/supabase/client';
+import { syncUserProfile } from '@/services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -38,6 +39,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!error && data?.session?.access_token) {
           setSession(data.session);
           setUser(data.session.user);
+          if (data.session.user) {
+            syncUserProfile(data.session.user).catch((err) => {
+              console.warn('[Rolewise] getSession profile sync notice:', err);
+            });
+          }
           if (typeof window !== 'undefined') {
             localStorage.removeItem('rolewise_demo_user');
           }
@@ -55,10 +61,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 2. Listen to real Supabase auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+    } = supabase.auth.onAuthStateChange((event, currentSession) => {
       if (currentSession?.access_token) {
         setSession(currentSession);
         setUser(currentSession.user ?? null);
+        if (currentSession.user && (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION')) {
+          syncUserProfile(currentSession.user).catch((err) => {
+            console.warn('[Rolewise] onAuthStateChange profile sync notice:', err);
+          });
+        }
         if (typeof window !== 'undefined') {
           localStorage.removeItem('rolewise_demo_user');
         }
@@ -87,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data, error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+            emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
           },
         });
         return { data, error };
@@ -113,16 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Create profile in public.profiles using authenticated user ID
       if (data?.user) {
         try {
-          await supabase
-            .from('profiles')
-            .upsert(
-              {
-                id: data.user.id,
-                full_name: fullName || email.split('@')[0],
-                email: data.user.email,
-              },
-              { onConflict: 'id' }
-            );
+          await syncUserProfile(data.user);
         } catch (profileErr: unknown) {
           console.warn('[Rolewise] Profile sync notice:', profileErr);
         }
@@ -151,6 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Determine user display name
   const userName =
     user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
     user?.email?.split('@')[0] ||
     '';
 
