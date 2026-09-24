@@ -81,12 +81,12 @@ export async function invokeAnalyzeRole(
     throw new RolewiseApiError('You must be signed in to analyze a job role.', 'AUTH_ERROR');
   }
 
-  // Safe request logging (Part 1 requirement)
-  console.log('[Rolewise] analyze-role request', {
-    roleId: payload.roleId || 'new',
-    authenticatedUserExists: Boolean(session?.user?.id),
+  // Safe request logging (Part 3 requirement)
+  console.log('[Rolewise] analyze-role context', {
+    hasJobDescription: Boolean(payload.jobDescription && payload.jobDescription.trim().length > 0),
     jobDescriptionLength: payload.jobDescription.length,
-    resumeTextAvailable: Boolean(payload.resumeText && payload.resumeText.trim().length > 0),
+    hasResumeText: Boolean(payload.resumeText && payload.resumeText.trim().length > 0),
+    resumeTextLength: payload.resumeText?.length ?? 0,
   });
 
   try {

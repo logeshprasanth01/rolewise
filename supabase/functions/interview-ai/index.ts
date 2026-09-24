@@ -21,116 +21,119 @@ function json(data: unknown, status = 200) {
   });
 }
 
-async function getAvailableGeminiModels(key: string): Promise<string[]> {
-  try {
-    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
-      headers: { 'x-goog-api-key': key },
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const list = (data.models || [])
-        .filter((m: { name?: string; supportedGenerationMethods?: string[] }) => {
-          const name = (m.name || '').replace(/^models\//, '');
-          if (name.includes('1.5') || name.includes('legacy')) return false;
-          const methods = m.supportedGenerationMethods || [];
-          return methods.includes('generateContent');
-        })
-        .map((m: { name?: string }) => (m.name || '').replace(/^models\//, ''));
-
-      if (list.length > 0) {
-        list.sort((a: string, b: string) => {
-          const score = (name: string) => {
-            if (name === 'gemini-2.5-flash-lite') return 1;
-            if (name === 'gemini-2.5-flash') return 2;
-            if (name.includes('flash-lite')) return 3;
-            if (name.includes('flash')) return 4;
-            return 10;
-          };
-          return score(a) - score(b);
-        });
-        return list;
-      }
-    }
-  } catch (err) {
-    console.warn('[interview-ai] Error querying available models:', err);
-  }
-
-  return ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-2.0-flash'];
-}
-
-async function callGemini(key: string, systemPrompt: string, userPrompt: string): Promise<any> {
-  const models = await getAvailableGeminiModels(key);
+/**
+ * Fast Gemini caller with timeout protection and verified candidate models.
+ */
+async function callGemini(key: string, systemPrompt: string, userPrompt: string, overrideModel?: string): Promise<any> {
+  const candidateModels = overrideModel
+    ? [{ name: overrideModel, tb: undefined }, { name: 'gemini-3.6-flash', tb: 0 }, { name: 'gemini-3-flash-preview', tb: undefined }]
+    : [
+        { name: 'gemini-3.6-flash', tb: 0 },
+        { name: 'gemini-3-flash-preview', tb: undefined },
+        { name: 'gemini-flash-lite-latest', tb: undefined },
+      ];
   let lastStatus = 503;
   let lastMessage = 'Gemini service is temporarily unavailable.';
 
-  for (const model of models) {
-    try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': key,
+  for (const candidate of candidateModels) {
+    const model = candidate.name;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        console.log(`[AI Interview] Gemini request started (${model}, attempt ${attempt})`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        const genConfig: any = {
+          responseMimeType: 'application/json',
+          temperature: 0.3,
+        };
+        if (candidate.tb !== undefined) {
+          genConfig.thinkingConfig = { thinkingBudget: candidate.tb };
+        }
+
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': key,
+            },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemPrompt }] },
+              contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+              generationConfig: genConfig,
+            }),
+            signal: controller.signal,
           },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-            generationConfig: { responseMimeType: 'application/json' },
-          }),
-        },
-      );
+        );
+        clearTimeout(timeoutId);
 
-      const raw = await res.text();
-      lastStatus = res.status;
+        const raw = await res.text();
+        lastStatus = res.status;
 
-      if (!res.ok) {
-        let msg = raw;
+        if (!res.ok) {
+          let msg = raw;
+          try {
+            const parsed = JSON.parse(raw);
+            msg = parsed.error?.message || parsed.message || raw;
+          } catch {}
+          lastMessage = msg;
+          console.warn(`[AI Interview] Gemini model ${model} error (${res.status}): ${msg}`);
+
+          if (res.status === 401 || res.status === 403) {
+            throw new ProviderError(res.status, `API/auth configuration error (${res.status}): ${msg}`);
+          }
+          if (res.status === 503 && attempt === 1) {
+            await new Promise((r) => setTimeout(r, 1500));
+            continue;
+          }
+          break;
+        }
+
+        console.log('[AI Interview] Gemini response received');
+
+        let data: any;
         try {
-          const parsed = JSON.parse(raw);
-          msg = parsed.error?.message || parsed.message || raw;
-        } catch {}
-        lastMessage = msg;
-
-        if (res.status === 401 || res.status === 403) {
-          throw new ProviderError(res.status, `API/auth configuration error (${res.status}): ${msg}`);
+          data = JSON.parse(raw);
+        } catch {
+          lastStatus = 502;
+          lastMessage = 'Invalid JSON response from Gemini.';
+          break;
         }
-        if (res.status === 404) {
-          continue;
+
+        const content = data.candidates?.[0]?.content?.parts
+          ?.map((p: any) => p.text ?? '')
+          .join('')
+          .trim();
+
+        if (!content) {
+          lastStatus = 502;
+          lastMessage = 'Gemini returned an empty response.';
+          break;
         }
-        if ([429, 500, 502, 503, 504].includes(res.status)) continue;
-        throw new ProviderError(res.status, msg);
-      }
 
-      let data: any;
-      try {
-        data = JSON.parse(raw);
-      } catch {
-        throw new ProviderError(502, 'Invalid response from Gemini.');
-      }
+        let parsed: any;
+        try {
+          parsed = JSON.parse(content);
+        } catch {
+          let cleaned = content;
+          if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);
+          else if (cleaned.startsWith('```')) cleaned = cleaned.slice(3);
+          if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3);
+          parsed = JSON.parse(cleaned.trim());
+        }
 
-      const content = data.candidates?.[0]?.content?.parts
-        ?.map((p: any) => p.text ?? '')
-        .join('')
-        .trim();
-
-      if (!content) {
-        lastStatus = 502;
-        lastMessage = 'Gemini returned an empty response.';
-        continue;
+        console.log('[AI Interview] question parsed');
+        return parsed;
+      } catch (err: unknown) {
+        if (err instanceof ProviderError && (err.status === 401 || err.status === 403)) {
+          throw err;
+        }
+        lastMessage = err instanceof Error ? err.message : String(err);
+        console.warn(`[AI Interview] Attempt with model ${model} notice:`, lastMessage);
+        break;
       }
-
-      try {
-        return JSON.parse(content);
-      } catch {
-        lastStatus = 502;
-        lastMessage = 'Gemini returned invalid JSON.';
-      }
-    } catch (err) {
-      if (err instanceof ProviderError && (err.status === 401 || err.status === 403)) {
-        throw err;
-      }
-      lastMessage = err instanceof Error ? err.message : String(err);
     }
   }
 
@@ -140,19 +143,29 @@ async function callGemini(key: string, systemPrompt: string, userPrompt: string)
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
+  console.log('[AI Interview] start');
+
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) return json({ error: 'Unauthorized' }, 401);
+    if (!authHeader) return json({ error: 'Unauthorized: Missing Authorization header.' }, 401);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
+      auth: { autoRefreshToken: false, persistSession: false },
     });
 
     const token = authHeader.replace(/^Bearer\s+/i, '');
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) return json({ error: 'Unauthorized' }, 401);
+    const { data: { user }, error: userError } = await authClient.auth.getUser(token);
+    if (userError || !user) {
+      console.error('[AI Interview] auth check failed:', userError);
+      return json({ error: 'Unauthorized: Invalid Supabase user session.' }, 401);
+    }
+
+    console.log('[AI Interview] authenticated user');
 
     const geminiKey = Deno.env.get('GEMINI_API_KEY')?.trim();
     if (!geminiKey) return json({ error: 'AI feedback is temporarily unavailable.' }, 503);
@@ -167,9 +180,19 @@ serve(async (req) => {
       previousAnswers = [],
       answers = [],
       previousQuestions = [],
+      testModel,
     } = body;
 
+    console.log(`[AI Interview] roleId: ${roleId || 'none'}`);
+
     if (!action) return json({ error: 'Action parameter is required' }, 400);
+
+    // Database client (using service role key if available for safe, fast lookups)
+    const db = serviceRoleKey
+      ? createClient(supabaseUrl, serviceRoleKey, {
+          auth: { autoRefreshToken: false, persistSession: false },
+        })
+      : authClient;
 
     let roleTitle = 'Specialist';
     let companyName = 'Target Company';
@@ -181,26 +204,39 @@ serve(async (req) => {
 
     if (roleId) {
       const [roleRes, reqRes, prepRes, fitRes] = await Promise.all([
-        supabase.from('roles').select('*').eq('id', roleId).maybeSingle(),
-        supabase.from('role_requirements').select('requirement, category').eq('role_id', roleId),
-        supabase.from('preparation_items').select('title, description, priority').eq('role_id', roleId),
-        supabase.from('fit_analysis').select('status, explanation').eq('role_id', roleId),
+        db.from('roles').select('*').eq('id', roleId).eq('user_id', user.id).maybeSingle(),
+        db.from('role_requirements').select('requirement, category, importance').eq('role_id', roleId),
+        db.from('preparation_items').select('title, description, priority').eq('role_id', roleId),
+        db.from('fit_analysis').select('status, explanation, evidence').eq('role_id', roleId),
       ]);
 
-      if (!roleRes.data || roleRes.data.status === 'archived') return json({ error: 'Role not found' }, 404);
+      if (!roleRes.data || roleRes.data.status === 'archived') {
+        console.warn('[AI Interview] role not found or archived for authenticated user');
+        return json({ error: 'Role not found' }, 404);
+      }
 
-      roleTitle = roleRes.data.job_title || roleTitle;
+      console.log('[AI Interview] role loaded');
+      console.log('[AI Interview] requirements loaded');
+      console.log('[AI Interview] fit analysis loaded');
+      console.log('[AI Interview] preparation loaded');
+
+      roleTitle = roleRes.data.job_title || roleRes.data.title || roleTitle;
       companyName = roleRes.data.company || companyName;
       jobDescription = roleRes.data.job_description || '';
 
       if (roleRes.data.resume_id) {
-        const { data: resumeData } = await supabase
+        const { data: resumeData } = await db
           .from('resumes')
           .select('resume_text')
           .eq('id', roleRes.data.resume_id)
           .maybeSingle();
-        candidateExperience = resumeData?.resume_text?.slice(0, 4000) || '';
+
+        if (resumeData?.resume_text) {
+          candidateExperience = resumeData.resume_text.slice(0, 4000);
+        }
       }
+
+      console.log('[AI Interview] resume loaded');
 
       requirementsList = (reqRes.data ?? [])
         .map((r: any) => r.requirement || '')
@@ -211,51 +247,43 @@ serve(async (req) => {
         .filter(Boolean);
 
       fitAnalysisList = (fitRes.data ?? [])
-        .map((f: any) => `${f.status}: ${f.explanation || ''}`)
+        .map((f: any) => `${f.status}: ${f.explanation || ''}${f.evidence ? ` (Evidence: ${f.evidence})` : ''}`)
         .filter(Boolean);
     }
 
     if (action === 'generate_question') {
-      const systemPrompt = `You are an experienced interviewer conducting a realistic interview for the role "${roleTitle}" at "${companyName}".
+      const systemPrompt = `You are an experienced interviewer conducting a realistic interview for the target role "${roleTitle}" at "${companyName}".
 
-Target Role Requirements:
-${requirementsList.length ? requirementsList.map(r => `- ${r}`).join('\n') : '- Core professional competency and problem solving'}
+Target Role Requirements (Ground your question in these):
+${requirementsList.length ? requirementsList.slice(0, 6).map(r => `- ${r}`).join('\n') : '- Professional competency and problem solving'}
 
-Job Description:
-${jobDescription.slice(0, 3500)}
+Role Fit Context:
+${fitAnalysisList.length ? fitAnalysisList.slice(0, 6).map(f => `- ${f}`).join('\n') : '- Evaluated candidate experience'}
 
-Candidate Experience:
-${candidateExperience || 'No resume evidence was supplied.'}
+Candidate Experience Evidence:
+${candidateExperience || 'Candidate profile on file.'}
 
-Preparation Areas:
-${preparationItemsList.length ? preparationItemsList.map(p => `- ${p}`).join('\n') : '- Communication, problem solving, role competency'}
-
-Role Fit:
-${fitAnalysisList.length ? fitAnalysisList.map(f => `- ${f}`).join('\n') : '- Review the supplied experience against the role.'}
+Preparation Focus:
+${preparationItemsList.length ? preparationItemsList.slice(0, 5).map(p => `- ${p}`).join('\n') : '- Role competency and communication'}
 
 Rules:
-- Generate a new role-specific question; never use a hardcoded question.
-- Do not assume the candidate worked at the target company.
-- Ground the question in the actual role requirements and candidate experience when evidence exists.
-- Avoid repeating previous questions.
-- Prefer a realistic interviewer question that can be answered from the candidate's own experience.
-- Return only valid JSON.
-
-Schema:
+- Generate Question ${Number(questionNumber)} of 5.
+- The question must be specific to "${roleTitle}" at "${companyName}" and directly probe one of the target role requirements.
+- Never use a generic placeholder question (e.g. do not say "Tell me about yourself").
+- Ground the question in the candidate's actual experience and the role's requirements.
+- Return ONLY valid JSON:
 {
-  "question": "string",
-  "competency": "string",
+  "question": "Specific, realistic interview question",
+  "competency": "Target competency name (e.g., Design Systems, User Research, Technical Architecture)",
   "questionNumber": ${Number(questionNumber)}
 }`;
 
-      const userPrompt = JSON.stringify({
-        questionNumber,
-        previousQuestions,
-        roleTitle,
-        companyName,
-      });
+      const userPrompt = `Generate Question ${Number(questionNumber)} for candidate for ${roleTitle} at ${companyName}.
+${previousQuestions.length > 0 ? `Do not repeat or overlap with previous questions: ${JSON.stringify(previousQuestions)}` : 'This is the first interview question.'}`;
 
-      return json(await callGemini(geminiKey, systemPrompt, userPrompt));
+      const result = await callGemini(geminiKey, systemPrompt, userPrompt, testModel);
+      console.log('[AI Interview] complete');
+      return json(result);
     }
 
     if (action === 'analyze_answer') {
@@ -264,33 +292,26 @@ Schema:
       const systemPrompt = `You are an expert interviewer and communication coach evaluating an interview response for the target role "${roleTitle}" at "${companyName}".
 
 Target Role Requirements:
-${requirementsList.length ? requirementsList.map(r => `- ${r}`).join('\n') : '- Core professional competency and domain alignment'}
-
-Job Description Context:
-${jobDescription.slice(0, 2000)}
+${requirementsList.length ? requirementsList.slice(0, 6).map(r => `- ${r}`).join('\n') : '- Core professional competency'}
 
 Candidate Context:
 ${candidateExperience || 'Candidate profile on file.'}
 
 Evaluation Objective:
-Evaluate how well the candidate's answer addresses the specific question and demonstrates the competency and skills required for this role.
-Evaluate only observable answer/content qualities:
+Evaluate how well the candidate's answer addresses the question and demonstrates the competency for this role.
+Evaluate observable answer qualities:
 - relevance to the specific question and target role
 - clarity and structure
 - specificity and concrete evidence from experience
 - personal actions and ownership
 - measurable outcome/result
 - conciseness
-- obvious filler-word patterns when present in the transcript
 
-Do not judge intelligence, personality, mental state, confidence, or hiring probability.
-Do not create numerical scores.
+Do not judge personality, confidence, or hiring probability. No numerical scores.
 
-If the answer is incomplete, suggest a targeted follow-up question.
-If it is complete, suggest a dynamic next question targeting another relevant role requirement.
 If question number is 5 or greater, next_question must be null.
 
-Return only valid JSON:
+Return ONLY valid JSON:
 {
   "strengths": ["string"],
   "improvements": ["string"],
@@ -314,29 +335,27 @@ Return only valid JSON:
         questionNumber,
       });
 
-      return json(await callGemini(geminiKey, systemPrompt, userPrompt));
+      const result = await callGemini(geminiKey, systemPrompt, userPrompt);
+      console.log('[AI Interview] complete');
+      return json(result);
     }
 
     if (action === 'final_feedback') {
-      const systemPrompt = `You are an expert communication coach reviewing a completed interview for the role "${roleTitle}" at "${companyName}".
+      const systemPrompt = `You are an expert communication coach reviewing a completed interview for "${roleTitle}" at "${companyName}".
 
 Target Role Requirements:
-${requirementsList.length ? requirementsList.map(r => `- ${r}`).join('\n') : '- Core professional competency'}
+${requirementsList.length ? requirementsList.slice(0, 6).map(r => `- ${r}`).join('\n') : '- Core professional competency'}
 
-Job Description Context:
-${jobDescription.slice(0, 1500)}
-
-Use only the actual answers supplied and evaluate alignment with this specific role.
-Give qualitative feedback on:
+Evaluate qualitative communication:
 - clarity
 - structure
 - specificity and concrete evidence
 - conciseness
-- role alignment and outcomes
+- role alignment
 
-Do not provide readiness scores, hiring probability, personality judgments, or intelligence judgments.
+Do not provide numerical scores or hiring probabilities.
 
-Return only valid JSON:
+Return ONLY valid JSON:
 {
   "strengths": ["string", "string", "string"],
   "areas_to_improve": ["string", "string"],
@@ -349,11 +368,13 @@ Return only valid JSON:
   "practice_exercises": ["string", "string"]
 }`;
 
-      return json(await callGemini(geminiKey, systemPrompt, JSON.stringify({ answers })));
+      const result = await callGemini(geminiKey, systemPrompt, JSON.stringify({ answers }));
+      console.log('[AI Interview] complete');
+      return json(result);
     }
 
     return json({ error: `Unknown action: ${action}` }, 400);
-  } catch (err) {
+  } catch (err: unknown) {
     if (err instanceof ProviderError) {
       const publicMessage =
         err.status === 429
@@ -371,7 +392,7 @@ Return only valid JSON:
       );
     }
 
-    console.error('[interview-ai] execution failure', err);
+    console.error('[AI Interview] execution failure', err);
     return json(
       { error: 'The AI service is temporarily unavailable. Please try again.', code: 'AI_PROVIDER_ERROR' },
       503,

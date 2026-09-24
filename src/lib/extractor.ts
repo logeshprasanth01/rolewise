@@ -1,7 +1,9 @@
 import mammoth from 'mammoth';
+import { extractText } from 'unpdf';
 
 /**
  * Extracts plain text from an uploaded File (TXT, DOCX, PDF).
+ * Real text extraction only — never returns placeholder or summary text.
  */
 export async function extractResumeText(file: File): Promise<string> {
   const fileName = file.name.toLowerCase();
@@ -15,8 +17,15 @@ export async function extractResumeText(file: File): Promise<string> {
   ) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve((reader.result as string) || '');
-      reader.onerror = () => reject(new Error('Failed to read text file'));
+      reader.onload = () => {
+        const result = (reader.result as string) || '';
+        if (result.trim().length > 0) {
+          resolve(result.trim());
+        } else {
+          reject(new Error('Uploaded text file is empty.'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read text file.'));
       reader.readAsText(file);
     });
   }
@@ -26,58 +35,77 @@ export async function extractResumeText(file: File): Promise<string> {
     fileName.endsWith('.docx') ||
     fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
   ) {
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    if (result.value && result.value.trim().length > 0) {
-      return result.value.trim();
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      if (result.value && result.value.trim().length > 0) {
+        return result.value.trim();
+      }
+    } catch (docxErr) {
+      console.warn('[Rolewise] Client DOCX extraction notice:', docxErr);
     }
-    throw new Error('Could not extract text from the DOCX file. Please ensure it contains text.');
+
+    // Try server-side extraction fallback
+    const serverResult = await tryServerExtraction(file);
+    if (serverResult) return serverResult;
+
+    throw new Error('Could not extract text from the DOCX file. Please ensure it contains readable text.');
   }
 
   // PDF Document (.pdf)
   if (fileName.endsWith('.pdf') || fileType === 'application/pdf') {
-    const arrayBuffer = await file.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
-    
-    // Quick binary-to-text extractor for basic and uncompressed PDF stream text
-    const textChunks: string[] = [];
-
-    // Fast text stream inspection
-    const decoder = new TextDecoder('latin1');
-    const content = decoder.decode(bytes);
-
-    // Look for text blocks in PDF streams: BT (begin text) ... ET (end text)
-    const textRegex = /BT[\s\S]*?ET/g;
-    const matches = content.match(textRegex);
-
-    if (matches && matches.length > 0) {
-      for (const block of matches) {
-        // Extract string literals inside parentheses ( )
-        const literalRegex = /\((.*?)\)/g;
-        let litMatch;
-        while ((litMatch = literalRegex.exec(block)) !== null) {
-          const clean = litMatch[1].replace(/\\([()\\])/g, '$1').trim();
-          if (clean.length > 0) {
-            textChunks.push(clean);
-          }
-        }
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      const res = await extractText(bytes);
+      const fullText = Array.isArray(res.text) ? res.text.join('\n\n') : String(res.text || '');
+      const cleaned = fullText.trim();
+      if (cleaned.length > 30) {
+        return cleaned;
       }
+    } catch (pdfErr) {
+      console.warn('[Rolewise] Client PDF extraction notice:', pdfErr);
     }
 
-    const extracted = textChunks.join(' ').replace(/\s+/g, ' ').trim();
-    if (extracted.length > 50) {
-      return extracted;
-    }
+    // Try server-side extraction fallback
+    const serverResult = await tryServerExtraction(file);
+    if (serverResult) return serverResult;
 
-    // Fallback: If PDF is compressed or binary font encoded, provide clear extracted baseline
-    return `[Resume Content from ${file.name}]\nFile uploaded successfully (${(file.size / 1024).toFixed(1)} KB). Candidate: ${file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ')}`;
+    throw new Error('Could not extract text from the PDF file. Please ensure the PDF has readable text (not scanned images) or use the manual experience input.');
   }
 
-  // Generic fallback
+  // Generic fallback for other text-based files
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve((reader.result as string) || '');
-    reader.onerror = () => reject(new Error('Unsupported file format'));
+    reader.onload = () => {
+      const res = (reader.result as string) || '';
+      if (res.trim().length > 0) {
+        resolve(res.trim());
+      } else {
+        reject(new Error('Uploaded file is empty or unsupported format.'));
+      }
+    };
+    reader.onerror = () => reject(new Error('Unsupported file format.'));
     reader.readAsText(file);
   });
+}
+
+async function tryServerExtraction(file: File): Promise<string | null> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const resp = await fetch('/api/resume/extract', {
+      method: 'POST',
+      body: formData,
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.text && typeof data.text === 'string' && data.text.trim().length > 30) {
+        return data.text.trim();
+      }
+    }
+  } catch (err) {
+    console.warn('[Rolewise] Server-side extraction fallback failed:', err);
+  }
+  return null;
 }

@@ -242,11 +242,9 @@ export default function InterviewPage() {
 
       const activeRole = overrideRole || role;
 
-      console.log('[AI INTERVIEW] initialization started', {
-        authenticatedUserExists: Boolean(session?.user),
-        roleId,
-        sessionExists: Boolean(session?.access_token),
-      });
+      console.log('[AI Interview] start');
+      console.log(`[AI Interview] roleId: ${roleId}`);
+      console.log(`[AI Interview] authenticated user: ${session?.user?.id ? 'present' : 'missing'}`);
 
       setIsGeneratingQuestion(true);
       setQuestionTimeoutOccurred(false);
@@ -259,24 +257,20 @@ export default function InterviewPage() {
       let hasTimedOut = false;
       questionTimeoutRef.current = setTimeout(() => {
         hasTimedOut = true;
-        console.warn('[AI INTERVIEW] request exceeded 15s timeout');
+        console.warn('[AI Interview] request exceeded 25s timeout');
         setIsGeneratingQuestion(false);
         isGeneratingRef.current = false;
         setQuestionTimeoutOccurred(true);
         setQuestionError({
-          title: 'AI question generation is taking longer than expected.',
-          description: 'Please try again.',
+          title: "AI question generation couldn't be completed.",
+          description: 'The request took longer than expected. Please try again.',
           type: 'AI_GENERATION_ERROR',
         });
-      }, 15000);
+      }, 25000);
 
       try {
-        console.log('[AI INTERVIEW] calling interview-ai', {
-          roleId,
-          questionNumber: 1,
-          roleTitle: activeRole?.title,
-          company: activeRole?.company,
-        });
+        console.log('[AI Interview] role loaded');
+        console.log('[AI Interview] Gemini request started');
 
         const generated = await generateInterviewQuestion({
           roleId,
@@ -287,13 +281,11 @@ export default function InterviewPage() {
         });
 
         if (hasTimedOut) {
-          console.warn('[AI INTERVIEW] received response after timeout, ignoring late response');
+          console.warn('[AI Interview] received response after timeout, ignoring late response');
           return;
         }
 
-        console.log('[AI INTERVIEW] interview-ai request completed', {
-          hasResponse: Boolean(generated),
-        });
+        console.log('[AI Interview] Gemini response received');
 
         // Safely validate and parse question and competency
         let parsedQuestion = '';
@@ -315,19 +307,14 @@ export default function InterviewPage() {
           }
         }
 
-        console.log('[AI INTERVIEW] response received', {
+        console.log('[AI Interview] question parsed', {
           hasQuestion: Boolean(parsedQuestion),
-          parsedCompetency,
+          competency: parsedCompetency,
         });
 
         if (!parsedQuestion || !parsedQuestion.trim()) {
           throw new Error('Received an empty question from interview-ai');
         }
-
-        console.log('[AI INTERVIEW] parsed question', {
-          question: parsedQuestion,
-          competency: parsedCompetency,
-        });
 
         setCurrentQuestion(parsedQuestion);
         setCurrentCompetency(parsedCompetency);
@@ -339,10 +326,32 @@ export default function InterviewPage() {
           flowState: 'READY',
         });
 
-        console.log('[AI INTERVIEW] initialization completed');
+        console.log('[AI Interview] complete');
       } catch (err: unknown) {
         if (hasTimedOut) return;
-        console.error('[AI INTERVIEW] initialization failed', err);
+        
+        let status = 500;
+        let errorName = 'Error';
+        let errorMessage = 'Unknown error';
+        let responseBody: unknown = null;
+
+        if (err instanceof RolewiseApiError) {
+          status = err.status || 500;
+          errorName = err.name;
+          errorMessage = err.message;
+          responseBody = err.details;
+        } else if (err instanceof Error) {
+          errorName = err.name;
+          errorMessage = err.message;
+        }
+
+        // Sanitized development logging per Requirement 12
+        console.error('[AI Interview] generation failed', {
+          status,
+          errorName,
+          errorMessage,
+          responseBody,
+        });
 
         const isAuth =
           (err instanceof RolewiseApiError && err.code === 'AUTH_ERROR') ||
@@ -367,8 +376,8 @@ export default function InterviewPage() {
           });
         } else {
           setQuestionError({
-            title: 'AI question generation is temporarily unavailable.',
-            description: err instanceof Error ? err.message : 'Please try again.',
+            title: "AI question generation couldn't be completed.",
+            description: errorMessage || 'Please try again.',
             type: 'AI_GENERATION_ERROR',
           });
         }

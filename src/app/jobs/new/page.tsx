@@ -370,11 +370,23 @@ export default function AddJobPage() {
 
     try {
       const text = await extractResumeText(file);
-      setResumeText(text || `Candidate Resume: ${file.name}\nSpecialist with extensive experience in target role.`);
+      if (!text || text.trim().length === 0) {
+        throw new Error('Could not extract text from the uploaded file.');
+      }
+      setResumeText(text);
       setResumeUploadState('uploaded');
-    } catch {
-      setResumeText(`Candidate Resume: ${file.name}\nUploaded successfully. Ready for role analysis.`);
-      setResumeUploadState('uploaded');
+      console.log('[Rolewise] resume extraction', {
+        resumeId: 'pending',
+        resumeFileName: file.name,
+        hasResumeText: Boolean(text),
+        resumeTextLength: text.length,
+      });
+    } catch (err: unknown) {
+      setResumeUploadState('error');
+      setResumeError(
+        err instanceof Error ? err.message : 'Could not extract text from the uploaded resume.'
+      );
+      console.error('[Rolewise] resume extraction error:', err);
     }
   };
 

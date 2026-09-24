@@ -94,10 +94,14 @@ export default function RoleFitPage() {
         }
       }
 
+      if (!resumeText || resumeText.trim().length < 20) {
+        throw new Error('No candidate resume text found for this role. Please re-upload your resume or submit experience details.');
+      }
+
       await invokeAnalyzeRole({
         roleId: role.id,
         jobDescription: role.job_description || `${role.title} at ${role.company}`,
-        resumeText: resumeText || `Candidate applying for ${role.title} with relevant background experience.`,
+        resumeText: resumeText.trim(),
         resumeFileName,
         resumeMimeType: 'application/pdf',
         jobTitle: role.title,

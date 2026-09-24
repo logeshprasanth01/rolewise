@@ -110,100 +110,106 @@ async function getAvailableGeminiModels(key: string): Promise<string[]> {
 }
 
 async function callGemini(key: string, systemPrompt: string, userPrompt: string): Promise<any> {
-  // Query supported models dynamically, falling back to verified current models (no 1.5 models)
-  const candidateModels = await getAvailableGeminiModels(key);
-  console.log("[analyze-role] Attempting Gemini models:", candidateModels);
-
+  const candidateModels = [
+    { name: "gemini-3.6-flash", tb: 0 },
+    { name: "gemini-3-flash-preview", tb: undefined },
+    { name: "gemini-flash-lite-latest", tb: undefined },
+  ];
   let lastStatus = 503;
   let lastMessage = "Gemini service is temporarily unavailable.";
+  const attempts: Array<{ model: string; status: number; message: string; elapsedMs: number }> = [];
 
-  for (const model of candidateModels) {
-    try {
-      console.log(`[analyze-role] Calling Gemini model: ${model}`);
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": key,
-          },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-            generationConfig: {
-              responseMimeType: "application/json",
-              temperature: 0.2,
+  for (const candidate of candidateModels) {
+    const model = candidate.name;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const modelStart = Date.now();
+      try {
+        console.log(`[analyze-role] Calling Gemini model: ${model} (attempt ${attempt})`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+        const genConfig: any = {
+          responseMimeType: "application/json",
+          temperature: 0.2,
+        };
+        if (candidate.tb !== undefined) {
+          genConfig.thinkingConfig = { thinkingBudget: candidate.tb };
+        }
+
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": key,
             },
-          }),
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemPrompt }] },
+              contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+              generationConfig: genConfig,
+            }),
+            signal: controller.signal,
+          }
+        );
+        clearTimeout(timeoutId);
+
+        const elapsed = Date.now() - modelStart;
+        const raw = await res.text();
+        lastStatus = res.status;
+
+        if (!res.ok) {
+          let msg = raw;
+          try {
+            const parsed = JSON.parse(raw);
+            msg = parsed.error?.message || parsed.message || raw;
+          } catch {}
+          console.warn(`[analyze-role] Model ${model} returned error status ${res.status} (${elapsed}ms):`, msg);
+          lastMessage = msg;
+          attempts.push({ model, status: res.status, message: msg, elapsedMs: elapsed });
+
+          if (res.status === 401 || res.status === 403) {
+            throw new Error(`API/auth configuration error (${res.status}): ${msg}`);
+          }
+
+          if (res.status === 503 && attempt === 1) {
+            await new Promise((r) => setTimeout(r, 1500));
+            continue;
+          }
+
+          break;
         }
-      );
 
-      const raw = await res.text();
-      lastStatus = res.status;
+        const data = JSON.parse(raw);
+        const content = data.candidates?.[0]?.content?.parts
+          ?.map((p: any) => p.text ?? "")
+          .join("")
+          .trim();
 
-      if (!res.ok) {
-        let msg = raw;
-        try {
-          const parsed = JSON.parse(raw);
-          msg = parsed.error?.message || parsed.message || raw;
-        } catch {}
-        console.warn(`[analyze-role] Model ${model} returned error status ${res.status}:`, msg);
-        lastMessage = msg;
-
-        // Permanent auth error: stop immediately
-        if (res.status === 401 || res.status === 403) {
-          throw new Error(`API/auth configuration error (${res.status}): ${msg}`);
+        if (!content) {
+          lastStatus = 502;
+          lastMessage = "Gemini returned an empty response.";
+          attempts.push({ model, status: 502, message: lastMessage, elapsedMs: elapsed });
+          break;
         }
 
-        // 404 (model not found): do not retry this model, try next candidate model
-        if (res.status === 404) {
-          continue;
+        const parsedJson = JSON.parse(cleanJsonText(content));
+        console.log(`[analyze-role] Model ${model} succeeded in ${elapsed}ms`);
+        return parsedJson;
+      } catch (err: unknown) {
+        const elapsed = Date.now() - modelStart;
+        console.warn(`[analyze-role] Error with model ${model} (${elapsed}ms):`, err);
+        if (err instanceof Error && err.message.includes("API/auth configuration error")) {
+          throw err;
         }
-
-        // 429 quota or 5xx server error: try next candidate model
-        if ([429, 500, 502, 503, 504].includes(res.status)) {
-          continue;
-        }
-
-        throw new Error(`Gemini error (${res.status}): ${msg}`);
+        lastMessage = err instanceof Error ? err.message : String(err);
+        attempts.push({ model, status: lastStatus || 500, message: lastMessage, elapsedMs: elapsed });
+        break;
       }
-
-      const data = JSON.parse(raw);
-      const content = data.candidates?.[0]?.content?.parts
-        ?.map((p: any) => p.text ?? "")
-        .join("")
-        .trim();
-
-      if (!content) {
-        lastStatus = 502;
-        lastMessage = "Gemini returned an empty response.";
-        continue;
-      }
-
-      const parsedJson = JSON.parse(cleanJsonText(content));
-      return parsedJson;
-    } catch (err: unknown) {
-      console.warn(`[analyze-role] Error with model ${model}:`, err);
-      if (err instanceof Error && err.message.includes("API/auth configuration error")) {
-        throw err;
-      }
-      lastMessage = err instanceof Error ? err.message : String(err);
     }
   }
 
-  // Classify failure per Requirement 11
-  if (lastStatus === 401 || lastStatus === 403) {
-    throw new Error(`API/auth configuration error (${lastStatus}): ${lastMessage}`);
-  } else if (lastStatus === 404) {
-    throw new Error(`Model unavailable (${lastStatus}): ${lastMessage}`);
-  } else if (lastStatus === 429) {
-    throw new Error(`Quota/rate limit exceeded (${lastStatus}): ${lastMessage}`);
-  } else if (lastStatus >= 500) {
-    throw new Error(`Provider server issue (${lastStatus}): ${lastMessage}`);
-  } else {
-    throw new Error(`Gemini failure (${lastStatus}): ${lastMessage}`);
-  }
+  throw new Error(`All models failed: ${JSON.stringify(attempts)}`);
 }
 
 Deno.serve(async (req: Request) => {
@@ -243,6 +249,11 @@ Deno.serve(async (req: Request) => {
 
     // 2. Validate input payload
     const body = await req.json().catch(() => ({}));
+    if (body?.action === "list_models") {
+      const geminiKey = Deno.env.get("GEMINI_API_KEY")?.trim() || "";
+      const available = await getAvailableGeminiModels(geminiKey);
+      return json({ availableModels: available });
+    }
     const existingRoleId = body?.roleId ? String(body.roleId).trim() : null;
     const jobDescription = String(body?.jobDescription ?? "").trim();
     const resumeText = String(body?.resumeText ?? "").trim();
@@ -277,30 +288,41 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // 4. Construct Gemini prompt for full role analysis
+    // Safe logging before Gemini request (Requirement 3)
+    console.log("[Rolewise] analyze-role context", {
+      hasJobDescription: Boolean(jobDescription && jobDescription.length > 0),
+      jobDescriptionLength: jobDescription.length,
+      hasResumeText: Boolean(resumeText && resumeText.length > 0),
+      resumeTextLength: resumeText.length,
+    });
+
+    // 4. Construct Gemini prompt for full role analysis (Requirement 4)
     const systemPrompt = `You are the role analysis engine for ROLEWISE, an AI career preparation platform.
 
 GOAL:
 Read the FULL submitted job description and compare it against the candidate's actual resume/experience text.
 Produce a tailored, evidence-grounded role fit analysis and a preparation plan.
 
-CRITICAL RULES:
-1. REQUIREMENTS MUST COME DIRECTLY FROM THE SUBMITTED JOB DESCRIPTION:
+CRITICAL INSTRUCTIONS:
+1. EVALUATION RULES:
+   - Use only the supplied candidate resume/experience as evidence.
+   - Do not infer skills that are not supported by the resume.
+   - Do not treat missing evidence as lack of ability.
+   - "Needs investigation" means insufficient evidence.
+   - "Not demonstrated" means the supplied experience does not demonstrate the requirement after considering transferable capabilities.
+   - "Strong alignment" means the supplied resume clearly demonstrates relevant, direct experience.
+   - "Transferable" means the supplied experience is related or adjacent, but not an exact match.
+
+2. REQUIREMENTS MUST COME DIRECTLY FROM THE SUBMITTED JOB DESCRIPTION:
    - Do NOT use generic predefined Product Designer requirements unless they are explicitly present in the submitted JD.
    - Extract 5 to 8 concrete requirements that reflect the role's actual demands (e.g., domain expertise, technical skills, ownership level, B2B/consumer focus, collaboration, tools, system complexity).
    - Only include requirements supported by the submitted JD. Do not invent requirements.
 
-2. EVIDENCE-BASED FIT EVALUATION:
-   For every requirement, evaluate the candidate's supplied resume and assign one of four statuses:
-   - "Strong alignment": The supplied resume clearly demonstrates relevant, direct experience.
-   - "Transferable": The supplied experience is related or adjacent, but not an exact match.
-   - "Needs investigation": The supplied information is insufficient to determine whether the candidate has the experience. IMPORTANT: "Needs investigation" does NOT mean the candidate lacks the skill; never infer lack of ability from missing resume text.
-   - "Not demonstrated": The supplied experience does not demonstrate the requirement after considering transferable capabilities.
-
 3. EVIDENCE & EXPLANATIONS:
-   - "evidence": Quote or faithfully summarize ONLY what is explicitly stated in the candidate's resume. If no evidence exists, provide null.
-   - "explanation": Explain clearly and objectively how the candidate's background connects (or where information is needed).
-   - Never invent candidate companies, years of experience, metrics, or accomplishments.
+   - Every "Strong alignment" or "Transferable" result MUST include evidence grounded in the supplied candidate resume.
+   - Quote or faithfully summarize ONLY what is explicitly stated in the candidate's resume. If no evidence exists, provide null.
+   - Explain clearly and objectively how the candidate's background connects (or where information is needed).
+   - Never invent candidate companies, years of experience, metrics, tools, or accomplishments.
 
 4. PREPARATION PLAN DERIVATION:
    - Generate 3 to 5 actionable preparation items directly tied to the analyzed requirements and fit findings.
@@ -348,16 +370,17 @@ Return ONLY valid JSON matching this exact structure:
   ]
 }`;
 
-    const userPrompt = JSON.stringify({
-      userProvidedDetails: {
-        jobTitle: userJobTitle || null,
-        company: userCompany || null,
-        location: userLocation || null,
-        workModel: userWorkModel || null,
-      },
-      jobDescription,
-      candidateResume: resumeText,
-    });
+    const userPrompt = `JOB DESCRIPTION
+${jobDescription}
+
+CANDIDATE EXPERIENCE / RESUME
+${resumeText}
+
+Candidate and Role Metadata:
+Target Job Title: ${userJobTitle || "Not specified"}
+Company: ${userCompany || "Not specified"}
+Location: ${userLocation || "Not specified"}
+Work Model: ${userWorkModel || "Not specified"}`;
 
     console.log("[analyze-role] Sending prompt to Gemini...");
     const analysis: AnalysisOutput = await callGemini(geminiKey, systemPrompt, userPrompt);
@@ -402,6 +425,14 @@ Return ONLY valid JSON matching this exact structure:
       console.error("[analyze-role] Resume insert failed:", resumeError);
       return json({ error: "Could not save resume record", detail: resumeError?.message }, 500);
     }
+
+    // Safe logging after resume extraction saved (Requirement 1)
+    console.log("[Rolewise] resume extraction", {
+      resumeId: resume.id,
+      resumeFileName: resumeFileName,
+      hasResumeText: Boolean(resumeText && resumeText.trim().length > 0),
+      resumeTextLength: resumeText ? resumeText.length : 0,
+    });
 
     // 7. Save Role record (Update if re-running for existing roleId, else Insert new)
     let roleId = existingRoleId;
