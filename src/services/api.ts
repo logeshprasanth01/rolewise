@@ -308,16 +308,19 @@ export async function getRole(roleId: string): Promise<Role | null> {
     .single();
 
   if (!error && data) {
+    if (data.status === 'archived') return null;
     return data as Role;
   }
 
   // Local fallback
   const local = getLocalRoles().find((r) => r.id === roleId);
+  if (local?.status === 'archived') return null;
   return local || null;
 }
 
 /**
- * Fetch all roles (for current session or recent)
+ * Fetch all active roles (for current session or recent).
+ * Filters out archived roles.
  */
 export async function getUserRoles(): Promise<Role[]> {
   const supabase = getSupabaseClient();
@@ -332,20 +335,63 @@ export async function getUserRoles(): Promise<Role[]> {
       .from('roles')
       .select('*')
       .eq('user_id', session.user.id)
+      .neq('status', 'archived')
       .order('created_at', { ascending: false });
     if (data) {
       dbRoles = data as Role[];
     }
   }
 
-  const localRoles = getLocalRoles();
+  const localRoles = getLocalRoles().filter((r) => r.status !== 'archived');
   const combinedMap = new Map<string, Role>();
-  dbRoles.forEach((r) => combinedMap.set(r.id, r));
+  dbRoles.forEach((r) => {
+    if (r.status !== 'archived') combinedMap.set(r.id, r);
+  });
   localRoles.forEach((r) => {
-    if (!combinedMap.has(r.id)) combinedMap.set(r.id, r);
+    if (!combinedMap.has(r.id) && r.status !== 'archived') combinedMap.set(r.id, r);
   });
 
   return Array.from(combinedMap.values());
+}
+
+/**
+ * Removes / archives a role from the database.
+ * Scoped to authenticated user's ID for ownership security.
+ */
+export async function removeRole(roleId: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
+
+  if (session?.user) {
+    const { error } = await supabase
+      .from('roles')
+      .update({ status: 'archived', updated_at: new Date().toISOString() })
+      .eq('id', roleId)
+      .eq('user_id', session.user.id);
+
+    if (error) {
+      console.error('[Rolewise] Failed to archive role in Supabase:', error.message);
+      throw new RolewiseApiError("Couldn't remove this job. Please try again.", 'DATABASE_ERROR', error);
+    }
+  }
+
+  // Also remove from local fallback storage and caches
+  if (typeof window !== 'undefined') {
+    try {
+      const localRoles = getLocalRoles().filter((r) => r.id !== roleId);
+      localStorage.setItem('rolewise_local_roles', JSON.stringify(localRoles));
+
+      localStorage.removeItem(`rolewise_reqs_${roleId}`);
+      localStorage.removeItem(`rolewise_fit_${roleId}`);
+      localStorage.removeItem(`rolewise_prep_${roleId}`);
+      sessionStorage.removeItem(`rolewise-interview-${roleId}`);
+    } catch (e) {
+      console.warn('[Rolewise] Notice clearing local role cache:', e);
+    }
+  }
+
+  return true;
 }
 
 /**
