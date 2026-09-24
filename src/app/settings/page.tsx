@@ -2,24 +2,20 @@
 
 import React, { useState } from 'react';
 import {
-  Settings as SettingsIcon,
   User,
   Mic,
   Video,
   Shield,
-  Key,
   CheckCircle2,
   AlertCircle,
   LogOut,
-  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function SettingsPage() {
-  const { userName, session, signOut, anonKey, updateAnonKey, isConfigured } = useAuth();
-  const [apiKeyInput, setApiKeyInput] = useState(anonKey || '');
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const { userName, session, signOut } = useAuth();
   const [micTested, setMicTested] = useState<boolean | null>(null);
+  const [cameraTested, setCameraTested] = useState<boolean | null>(null);
 
   const handleTestMic = async () => {
     try {
@@ -35,11 +31,18 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSaveKey = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateAnonKey(apiKeyInput.trim());
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 2000);
+  const handleTestCamera = async () => {
+    try {
+      if (typeof window !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream.getTracks().forEach((t) => t.stop());
+        setCameraTested(true);
+      } else {
+        setCameraTested(false);
+      }
+    } catch {
+      setCameraTested(false);
+    }
   };
 
   return (
@@ -50,7 +53,7 @@ export default function SettingsPage() {
           Settings & Preferences
         </h1>
         <p className="text-xs sm:text-sm text-[#667085]">
-          Manage your account, device permissions for voice/video practice, and workspace settings.
+          Manage your account and device permissions for interview practice sessions.
         </p>
       </section>
 
@@ -64,11 +67,11 @@ export default function SettingsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div className="space-y-1">
             <span className="text-[#667085]">Full Name</span>
-            <p className="font-semibold text-sm text-[#1F2937]">{userName || 'Logesh Prasanth'}</p>
+            <p className="font-semibold text-sm text-[#1F2937]">{userName || 'Candidate'}</p>
           </div>
           <div className="space-y-1">
             <span className="text-[#667085]">Email Address</span>
-            <p className="font-semibold text-sm text-[#1F2937]">{session?.user?.email || 'logesh@rolewise.io'}</p>
+            <p className="font-semibold text-sm text-[#1F2937]">{session?.user?.email || 'candidate@rolewise.io'}</p>
           </div>
         </div>
 
@@ -76,7 +79,7 @@ export default function SettingsPage() {
           <span className="text-xs text-[#667085]">Signed in as authenticated candidate</span>
           <button
             onClick={() => signOut()}
-            className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#FCDAD5] text-[#E87967] hover:bg-[#FFF0ED] text-xs font-semibold transition-colors"
+            className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#FCDAD5] text-[#E87967] hover:bg-[#FFF0ED] text-xs font-semibold transition-colors cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign out</span>
@@ -91,14 +94,14 @@ export default function SettingsPage() {
           <h2 className="text-sm font-semibold text-[#1F2937]">Audio & Video Permissions</h2>
         </div>
         <p className="text-xs text-[#667085] leading-relaxed">
-          Communication practice relies on standard browser media APIs. You can test your microphone connection below.
+          Communication practice relies on standard browser media APIs. You can verify your microphone and camera permissions below.
         </p>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={handleTestMic}
-            className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#1F2937] transition-all shadow-xs"
+            className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#1F2937] transition-all shadow-xs cursor-pointer"
           >
             <Mic className="w-3.5 h-3.5 text-[#6D5DFB]" />
             <span>Test Microphone Permission</span>
@@ -117,47 +120,41 @@ export default function SettingsPage() {
               <span>Permission denied or unavailable</span>
             </span>
           )}
+
+          <button
+            type="button"
+            onClick={handleTestCamera}
+            className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#1F2937] transition-all shadow-xs cursor-pointer"
+          >
+            <Video className="w-3.5 h-3.5 text-[#6D5DFB]" />
+            <span>Test Camera Permission</span>
+          </button>
+
+          {cameraTested === true && (
+            <span className="inline-flex items-center gap-1 text-xs text-[#4E9B76] font-semibold">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Camera available</span>
+            </span>
+          )}
+
+          {cameraTested === false && (
+            <span className="inline-flex items-center gap-1 text-xs text-[#E87967] font-semibold">
+              <AlertCircle className="w-4 h-4" />
+              <span>Permission denied or unavailable</span>
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Backend & AI Connection */}
-      <div className="rolewise-card p-6 space-y-4">
+      {/* Privacy & Workspace Security */}
+      <div className="rolewise-card p-6 space-y-3">
         <div className="flex items-center gap-2">
-          <Key className="w-4 h-4 text-[#6D5DFB]" />
-          <h2 className="text-sm font-semibold text-[#1F2937]">Backend Configuration</h2>
+          <Shield className="w-4 h-4 text-[#6D5DFB]" />
+          <h2 className="text-sm font-semibold text-[#1F2937]">Privacy & Workspace Security</h2>
         </div>
-
-        <form onSubmit={handleSaveKey} className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#1F2937]">Supabase Anon Key</label>
-            <input
-              type="password"
-              value={apiKeyInput}
-              onChange={(e) => setApiKeyInput(e.target.value)}
-              placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[#E7E8EF] text-xs text-[#1F2937] focus:outline-none focus:border-[#6D5DFB]"
-            />
-            <p className="text-[11px] text-[#98A2B3]">
-              Pre-configured. Leave as default or update to connect a custom Supabase instance.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="submit"
-              className="touch-target px-4 py-2 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs font-semibold transition-all shadow-xs"
-            >
-              Save Configuration
-            </button>
-
-            {saveSuccess && (
-              <span className="text-xs text-[#4E9B76] font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Configuration saved</span>
-              </span>
-            )}
-          </div>
-        </form>
+        <p className="text-xs text-[#667085] leading-relaxed">
+          ROLEWISE keeps your job descriptions, resume details, and interview practice recordings private and tied exclusively to your authenticated account.
+        </p>
       </div>
     </div>
   );

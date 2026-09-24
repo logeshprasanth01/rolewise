@@ -2,23 +2,16 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import {
-  getSupabaseAnonKey,
-  getSupabaseClient,
-  setSupabaseAnonKey,
-} from '@/lib/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase/client';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
-  isConfigured: boolean;
-  anonKey: string;
   userName: string;
   signIn: (email: string, password?: string) => Promise<{ data?: { user?: User | null; session?: Session | null } | null; error: Error | null }>;
   signUp: (email: string, password?: string, fullName?: string) => Promise<{ data?: { user?: User | null; session?: Session | null } | null; error: Error | null }>;
   signOut: () => Promise<void>;
-  updateAnonKey: (key: string) => void;
   openAuthModal: (mode?: 'signin' | 'signup' | unknown) => void;
   closeAuthModal: () => void;
   isAuthModalOpen: boolean;
@@ -32,18 +25,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [anonKey, setAnonKeyState] = useState<string>(() => getSupabaseAnonKey());
-  const [isConfigured, setIsConfigured] = useState<boolean>(() => {
-    const k = getSupabaseAnonKey();
-    return Boolean(k && k.trim().length > 15);
-  });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
 
   useEffect(() => {
     const supabase = getSupabaseClient();
 
-    // 1. Check active Supabase session (TASK 3 & TASK 5: session persistence across routes)
+    // 1. Check active Supabase session
     supabase.auth
       .getSession()
       .then(({ data, error }) => {
@@ -85,12 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
-
-  const updateAnonKey = (newKey: string) => {
-    setSupabaseAnonKey(newKey);
-    setAnonKeyState(newKey);
-    setIsConfigured(Boolean(newKey && newKey.trim().length > 20));
-  };
 
   const signIn = async (email: string, password?: string) => {
     const supabase = getSupabaseClient();
@@ -187,13 +169,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         session,
         isLoading,
-        isConfigured,
-        anonKey,
         userName,
         signIn,
         signUp,
         signOut,
-        updateAnonKey,
         openAuthModal,
         closeAuthModal: () => setIsAuthModalOpen(false),
         isAuthModalOpen,

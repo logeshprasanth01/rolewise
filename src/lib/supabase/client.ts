@@ -8,36 +8,15 @@ export function getSupabaseUrl(): string {
 }
 
 let cachedClient: SupabaseClient | null = null;
-let currentKey = '';
 
 export function getSupabaseAnonKey(): string {
-  // If environment variable is configured, use it as primary
-  if (DEFAULT_ANON_KEY && DEFAULT_ANON_KEY.length > 20) {
-    return DEFAULT_ANON_KEY;
-  }
-  if (typeof window !== 'undefined') {
-    const stored = localStorage.getItem('rolewise_supabase_anon_key');
-    if (stored) return stored;
-  }
   return DEFAULT_ANON_KEY;
-}
-
-export function setSupabaseAnonKey(key: string): void {
-  if (typeof window !== 'undefined') {
-    if (key) {
-      localStorage.setItem('rolewise_supabase_anon_key', key);
-    } else {
-      localStorage.removeItem('rolewise_supabase_anon_key');
-    }
-  }
-  currentKey = key;
-  cachedClient = null; // force recreation with new key
 }
 
 export function getSupabaseClient(): SupabaseClient {
   const activeKey = getSupabaseAnonKey() || 'placeholder-anon-key-awaiting-configuration';
-  
-  if (cachedClient && currentKey === activeKey) {
+
+  if (cachedClient) {
     return cachedClient;
   }
 
@@ -48,8 +27,7 @@ export function getSupabaseClient(): SupabaseClient {
       detectSessionInUrl: true,
     },
   });
-  
-  currentKey = activeKey;
+
   return cachedClient;
 }
 
