@@ -843,9 +843,23 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
   }
 
   const fallbackMsg =
-    typeof errorBody === 'object' && errorBody && 'message' in errorBody
-      ? String((errorBody as { message: unknown }).message)
-      : error?.message || `HTTP ${status}`;
+    typeof errorBody === 'object' && errorBody && 'error' in errorBody
+      ? String((errorBody as { error: unknown }).error)
+      : typeof errorBody === 'object' && errorBody && 'message' in errorBody
+        ? String((errorBody as { message: unknown }).message)
+        : error?.message || `HTTP ${status}`;
+
+  if (status === 404) {
+    throw new RolewiseApiError(
+      fallbackMsg || 'Role not found. Please select an active role from My Jobs.',
+      'NOT_FOUND',
+      {
+        status: 404,
+        functionName: 'interview-ai',
+        errorBody,
+      }
+    );
+  }
 
   throw new RolewiseApiError(
     fallbackMsg,
@@ -866,12 +880,16 @@ export async function generateInterviewQuestion(params: {
   sessionId?: string;
   questionNumber: number;
   previousQuestions?: string[];
+  roleTitle?: string;
+  companyName?: string;
 }): Promise<{ question: string; competency: string; questionNumber: number }> {
   return invokeInterviewAI<{ question: string; competency: string; questionNumber: number }>({
     action: 'generate_question',
     roleId: params.roleId,
     questionNumber: params.questionNumber,
     previousQuestions: params.previousQuestions || [],
+    ...(params.roleTitle ? { roleTitle: params.roleTitle } : {}),
+    ...(params.companyName ? { companyName: params.companyName } : {}),
     ...(params.sessionId ? { sessionId: params.sessionId } : {}),
   });
 }

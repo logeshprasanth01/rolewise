@@ -1,5 +1,3 @@
-// Supabase Edge Function: interview-ai
-// Powered by OpenRouter free model router (openrouter/free)
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -16,78 +14,114 @@ class ProviderError extends Error {
   }
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+async function callGemini(key: string, systemPrompt: string, userPrompt: string): Promise<any> {
+  // Prefer the lightweight model for interview turns. Fall back once to the
+  // standard Flash model if the lightweight model is temporarily unavailable.
+  const models = ['gemini-3.5-flash-lite', 'gemini-3.5-flash'];
+  let lastStatus = 503;
+  let lastMessage = 'Gemini service is temporarily unavailable.';
+
+  for (const model of models) {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': key,
+        },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+          generationConfig: { responseMimeType: 'application/json' },
+        }),
+      },
+    );
+
+    const raw = await res.text();
+    lastStatus = res.status;
+
+    if (!res.ok) {
+      try {
+        const parsed = JSON.parse(raw);
+        lastMessage = parsed.error?.message || parsed.message || raw;
+      } catch {
+        lastMessage = raw;
+      }
+      if ([429, 500, 502, 503, 504].includes(res.status)) continue;
+      throw new ProviderError(res.status, lastMessage);
+    }
+
+    let data: any;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      throw new ProviderError(502, 'Invalid response from Gemini.');
+    }
+
+    const content = data.candidates?.[0]?.content?.parts
+      ?.map((p: any) => p.text ?? '')
+      .join('')
+      .trim();
+
+    if (!content) {
+      lastStatus = 502;
+      lastMessage = 'Gemini returned an empty response.';
+      continue;
+    }
+
+    try {
+      return JSON.parse(content);
+    } catch {
+      lastStatus = 502;
+      lastMessage = 'Gemini returned invalid JSON.';
+    }
   }
 
+  throw new ProviderError(lastStatus, lastMessage);
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
   try {
-    // 1. Verify authenticated Supabase user
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized: missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    if (!authHeader) return json({ error: 'Unauthorized' }, 401);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const token = authHeader.replace('Bearer ', '');
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser(token);
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return json({ error: 'Unauthorized' }, 401);
 
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized: invalid or expired session' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const geminiKey = Deno.env.get('GEMINI_API_KEY')?.trim();
+    if (!geminiKey) return json({ error: 'AI feedback is temporarily unavailable.' }, 503);
 
-    // 2. Read and verify OpenRouter API key
-    const openrouterKey = Deno.env.get('OPENROUTER_API_KEY');
-    const isConfigured = Boolean(openrouterKey && openrouterKey.trim().length > 0);
-    console.log(`OPENROUTER_API_KEY configured: ${isConfigured}`);
-
-    if (!isConfigured) {
-      console.error('[interview-ai] OPENROUTER_API_KEY is not configured in Edge Function secrets');
-      return new Response(
-        JSON.stringify({
-          error: 'AI_PROVIDER_ERROR',
-          provider: 'openrouter',
-          status: 500,
-          message: 'OPENROUTER_API_KEY is not configured in Supabase Edge Function secrets',
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // 3. Parse input
     const body = await req.json().catch(() => ({}));
     const {
       action,
       roleId,
       questionNumber = 1,
-      question,
-      transcript,
+      question = '',
+      transcript = '',
       previousAnswers = [],
       answers = [],
+      previousQuestions = [],
     } = body;
 
-    if (!action) {
-      return new Response(
-        JSON.stringify({ error: 'Action parameter is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    if (!action) return json({ error: 'Action parameter is required' }, 400);
 
-    // 4. Retrieve authenticated user's role context from Supabase (respecting RLS)
     let roleTitle = 'Specialist';
     let companyName = 'Target Company';
     let jobDescription = '';
@@ -98,264 +132,185 @@ serve(async (req) => {
 
     if (roleId) {
       const [roleRes, reqRes, prepRes, fitRes] = await Promise.all([
-        supabaseClient.from('roles').select('*').eq('id', roleId).maybeSingle(),
-        supabaseClient.from('role_requirements').select('requirement, title, category').eq('role_id', roleId),
-        supabaseClient.from('preparation_items').select('title, description, priority').eq('role_id', roleId),
-        supabaseClient.from('fit_analysis').select('status, explanation').eq('role_id', roleId),
+        supabase.from('roles').select('*').eq('id', roleId).maybeSingle(),
+        supabase.from('role_requirements').select('requirement, category').eq('role_id', roleId),
+        supabase.from('preparation_items').select('title, description, priority').eq('role_id', roleId),
+        supabase.from('fit_analysis').select('status, explanation').eq('role_id', roleId),
       ]);
 
-      if (roleRes.data) {
-        roleTitle = roleRes.data.job_title || roleRes.data.title || roleTitle;
-        companyName = roleRes.data.company || companyName;
-        jobDescription = roleRes.data.job_description || '';
+      if (!roleRes.data) return json({ error: 'Role not found' }, 404);
 
-        if (roleRes.data.resume_id) {
-          const { data: resumeData } = await supabaseClient
-            .from('resumes')
-            .select('resume_text')
-            .eq('id', roleRes.data.resume_id)
-            .maybeSingle();
-          if (resumeData?.resume_text) {
-            candidateExperience = resumeData.resume_text.slice(0, 1000);
-          }
-        }
+      roleTitle = roleRes.data.job_title || roleTitle;
+      companyName = roleRes.data.company || companyName;
+      jobDescription = roleRes.data.job_description || '';
+
+      if (roleRes.data.resume_id) {
+        const { data: resumeData } = await supabase
+          .from('resumes')
+          .select('resume_text')
+          .eq('id', roleRes.data.resume_id)
+          .maybeSingle();
+        candidateExperience = resumeData?.resume_text?.slice(0, 4000) || '';
       }
 
-      if (reqRes.data && reqRes.data.length > 0) {
-        requirementsList = reqRes.data.map((r: { requirement?: string; title?: string }) => r.requirement || r.title || '').filter(Boolean);
-      }
-      if (prepRes.data && prepRes.data.length > 0) {
-        preparationItemsList = prepRes.data.map((p: { title?: string; description?: string }) => `${p.title}: ${p.description}`).filter(Boolean);
-      }
-      if (fitRes.data && fitRes.data.length > 0) {
-        fitAnalysisList = fitRes.data.map((f: { status?: string; explanation?: string }) => `${f.status}: ${f.explanation}`).filter(Boolean);
-      }
+      requirementsList = (reqRes.data ?? [])
+        .map((r: any) => r.requirement || '')
+        .filter(Boolean);
+
+      preparationItemsList = (prepRes.data ?? [])
+        .map((p: any) => `${p.title}: ${p.description || ''}`)
+        .filter(Boolean);
+
+      fitAnalysisList = (fitRes.data ?? [])
+        .map((f: any) => `${f.status}: ${f.explanation || ''}`)
+        .filter(Boolean);
     }
 
-    // Helper to invoke OpenRouter with openrouter/free
-    async function callOpenRouter(systemPrompt: string, userPrompt: string) {
-      const endpoint = 'https://openrouter.ai/api/v1/chat/completions';
-      const model = 'openrouter/free';
-
-      console.log(`[interview-ai] Calling OpenRouter endpoint: ${endpoint} with model: ${model}`);
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${openrouterKey}`,
-          'HTTP-Referer': 'https://rolewise.app',
-          'X-Title': 'Rolewise AI Interview',
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.6,
-        }),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('[interview-ai] OpenRouter API error:', res.status, errorText);
-        let parsedMessage = errorText;
-        try {
-          const errObj = JSON.parse(errorText);
-          parsedMessage = errObj.error?.message || errObj.message || errorText;
-        } catch {
-          // keep errorText
-        }
-        throw new ProviderError(res.status, parsedMessage);
-      }
-
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content;
-      if (!content) {
-        console.error('[interview-ai] OpenRouter returned empty choices');
-        throw new ProviderError(502, 'OpenRouter returned empty choices in completion response');
-      }
-
-      try {
-        return JSON.parse(content);
-      } catch (e) {
-        throw new ProviderError(502, `Failed to parse OpenRouter response as JSON: ${(e as Error).message}`);
-      }
-    }
-
-    // ACTION 1: generate_question
     if (action === 'generate_question') {
-      const systemPrompt = `You are an experienced interviewer conducting a realistic interview for the role of "${roleTitle}" at "${companyName}".
+      const systemPrompt = `You are an experienced interviewer conducting a realistic interview for the role "${roleTitle}" at "${companyName}".
 
 Target Role Requirements:
-${requirementsList.length > 0 ? requirementsList.map((r) => `- ${r}`).join('\n') : '- Professional domain competency and problem solving'}
+${requirementsList.length ? requirementsList.map(r => `- ${r}`).join('\n') : '- Core professional competency and problem solving'}
 
-${jobDescription ? `Job Description:\n${jobDescription.slice(0, 1000)}\n` : ''}
-Candidate Experience Summary:
-${candidateExperience || 'Experienced professional in this discipline'}
+Job Description:
+${jobDescription.slice(0, 3500)}
+
+Candidate Experience:
+${candidateExperience || 'No resume evidence was supplied.'}
 
 Preparation Areas:
-${preparationItemsList.length > 0 ? preparationItemsList.map((p) => `- ${p}`).join('\n') : '- Problem solving, communication, leadership'}
+${preparationItemsList.length ? preparationItemsList.map(p => `- ${p}`).join('\n') : '- Communication, problem solving, role competency'}
 
-Role Fit Context:
-${fitAnalysisList.length > 0 ? fitAnalysisList.map((f) => `- ${f}`).join('\n') : '- Alignment on core requirements'}
+Role Fit:
+${fitAnalysisList.length ? fitAnalysisList.map(f => `- ${f}`).join('\n') : '- Review the supplied experience against the role.'}
 
-CRITICAL GUIDELINES FOR QUESTION GENERATION:
-- Do NOT use a fixed or hard-coded question list.
-- Start with a candidate-experience question rather than assuming they have already worked at ${companyName}.
-- BAD: "At ${companyName}, scaling design consistency across high-velocity teams is paramount..." (Incorrectly assumes prior experience at ${companyName}).
-- BETTER: "Tell me about a project where you created or maintained consistency across multiple screens or user flows. What decisions did you make?"
-- Ground the question in real requirements and candidate experience.
+Rules:
+- Generate a new role-specific question; never use a hardcoded question.
+- Do not assume the candidate worked at the target company.
+- Ground the question in the actual role requirements and candidate experience when evidence exists.
+- Avoid repeating previous questions.
+- Prefer a realistic interviewer question that can be answered from the candidate's own experience.
+- Return only valid JSON.
 
-Return ONLY valid JSON matching this schema:
+Schema:
 {
   "question": "string",
   "competency": "string",
-  "questionNumber": ${questionNumber}
+  "questionNumber": ${Number(questionNumber)}
 }`;
 
       const userPrompt = JSON.stringify({
-        jobTitle: roleTitle,
-        company: companyName,
         questionNumber,
+        previousQuestions,
+        roleTitle,
+        companyName,
       });
 
-      const parsed = await callOpenRouter(systemPrompt, userPrompt);
-      return new Response(JSON.stringify(parsed), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json(await callGemini(geminiKey, systemPrompt, userPrompt));
     }
 
-    // ACTION 2: analyze_answer
     if (action === 'analyze_answer') {
-      if (!transcript || !transcript.trim()) {
-        return new Response(
-          JSON.stringify({ error: 'Transcript is required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      if (!transcript.trim()) return json({ error: 'Transcript is required' }, 400);
 
-      const systemPrompt = `You are an expert communication coach and technical interviewer evaluating an interview response for "${roleTitle}" at "${companyName}".
+      const systemPrompt = `You are an expert interviewer and communication coach evaluating one interview response for "${roleTitle}".
 
-Target Role Requirements:
-${requirementsList.map((r) => `- ${r}`).join('\n')}
+Evaluate only observable answer/content qualities:
+- relevance
+- clarity
+- structure
+- specificity
+- personal actions
+- outcome/result
+- conciseness
+- obvious filler-word patterns when present in the transcript
 
-EVALUATION CRITERIA (Observable communication characteristics only):
-- relevance (Did the candidate answer the question?)
-- clarity (Is the explanation clear?)
-- structure (Is the answer structured, e.g. Situation -> Action -> Result?)
-- specificity (Does the candidate give concrete examples rather than vague claims?)
-- actions taken (Does the candidate explain their personal actions?)
-- outcome/result (Does the candidate explain the measurable outcome or impact?)
-- conciseness (Is the answer concise or unnecessarily rambling?)
-- observable filler-word patterns when available
+Do not judge intelligence, personality, mental state, confidence, or hiring probability.
+Do not create numerical scores.
 
-CRITICAL RULES:
-- Do NOT evaluate intelligence, personality, mental state, psychological confidence, or hiring probability.
-- Do NOT create numerical scores.
-- DYNAMIC FOLLOW-UP:
-  - If the answer lacks an important element (e.g. candidate explains a design or technical project but omits the outcome):
-    Set "follow_up_needed": true, provide "follow_up_reason", and generate a targeted follow-up question (e.g. "What was the outcome of that design change, and how did you measure whether it worked?").
-  - If the answer is sufficiently complete:
-    Set "follow_up_needed": false, and generate a dynamic next question exploring another relevant competency.
-- If question 5 or greater, set next_question to null.
+If the answer is incomplete, create one targeted follow-up question.
+If it is complete, create a dynamic next question for another relevant competency.
+If question number is 5 or greater, next_question must be null.
 
-Return ONLY valid JSON:
+Return only valid JSON:
 {
-  "strengths": ["string", "string"],
-  "improvements": ["string", "string"],
+  "strengths": ["string"],
+  "improvements": ["string"],
   "missing_elements": ["string"],
   "communication_feedback": {
-    "clarity": "Strong" | "Developing" | "Needs more detail",
-    "structure": "Strong" | "Developing" | "Needs more detail",
-    "specificity": "Strong" | "Developing" | "Needs more detail",
-    "conciseness": "Strong" | "Developing" | "Needs more detail"
+    "clarity": "Strong | Developing | Needs more detail",
+    "structure": "Strong | Developing | Needs more detail",
+    "specificity": "Strong | Developing | Needs more detail",
+    "conciseness": "Strong | Developing | Needs more detail"
   },
-  "follow_up_needed": boolean,
+  "follow_up_needed": true,
   "follow_up_reason": "string",
-  "next_question": "string"
+  "next_question": "string or null"
 }`;
 
       const userPrompt = JSON.stringify({
         question,
         transcript,
+        previousQuestions,
         previousAnswers,
+        questionNumber,
       });
 
-      const parsed = await callOpenRouter(systemPrompt, userPrompt);
-      return new Response(JSON.stringify(parsed), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json(await callGemini(geminiKey, systemPrompt, userPrompt));
     }
 
-    // ACTION 3: final_feedback
     if (action === 'final_feedback') {
-      const systemPrompt = `You are an expert communication coach evaluating the candidate's complete interview session for the role of "${roleTitle}" at "${companyName}".
+      const systemPrompt = `You are an expert communication coach reviewing a completed interview for "${roleTitle}".
 
-Target Role Requirements:
-${requirementsList.map((r) => `- ${r}`).join('\n')}
+Use only the actual answers supplied.
+Give qualitative feedback on:
+- clarity
+- structure
+- specificity
+- conciseness
+- concrete evidence
+- outcomes
 
-Review the completed rounds and synthesize overall qualitative feedback based on actual answers given.
+Do not provide readiness scores, hiring probability, personality judgments, or intelligence judgments.
 
-CRITICAL RULES:
-- No readiness score.
-- No hiring probability.
-- No fake confidence score.
-- Observable communication characteristics only.
-
-Return ONLY valid JSON matching this schema:
+Return only valid JSON:
 {
   "strengths": ["string", "string", "string"],
   "areas_to_improve": ["string", "string"],
   "communication": {
-    "clarity": "Qualitative summary of clarity across answers",
-    "structure": "Qualitative summary of logical structure",
-    "specificity": "Qualitative summary of evidence and concrete examples",
-    "conciseness": "Qualitative summary of pacing and conciseness"
+    "clarity": "string",
+    "structure": "string",
+    "specificity": "string",
+    "conciseness": "string"
   },
-  "practice_exercises": [
-    "Concrete exercise 1 based on actual weaknesses",
-    "Concrete exercise 2 based on actual weaknesses"
-  ]
+  "practice_exercises": ["string", "string"]
 }`;
 
-      const userPrompt = JSON.stringify({ answers });
-      const parsed = await callOpenRouter(systemPrompt, userPrompt);
-      return new Response(JSON.stringify(parsed), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json(await callGemini(geminiKey, systemPrompt, JSON.stringify({ answers })));
     }
 
-    return new Response(
-      JSON.stringify({ error: `Unknown action: ${action}` }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  } catch (err: unknown) {
+    return json({ error: `Unknown action: ${action}` }, 400);
+  } catch (err) {
     if (err instanceof ProviderError) {
-      return new Response(
-        JSON.stringify({
-          error: 'AI_PROVIDER_ERROR',
-          provider: 'openrouter',
-          status: err.status,
-          message: err.message,
-        }),
-        { status: err.status >= 400 && err.status < 600 ? err.status : 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      const publicMessage =
+        err.status === 429
+          ? 'AI feedback is temporarily unavailable. Please try again shortly.'
+          : err.status >= 500
+            ? 'The AI service is temporarily unavailable. Please try again.'
+            : 'We could not process this request. Please try again.';
+
+      return json(
+        {
+          error: publicMessage,
+          code: err.status === 429 ? 'AI_RATE_LIMITED' : 'AI_PROVIDER_ERROR',
+        },
+        err.status >= 400 && err.status < 600 ? err.status : 503,
       );
     }
-    console.error('[interview-ai] Execution failure:', err);
-    return new Response(
-      JSON.stringify({
-        error: 'AI_PROVIDER_ERROR',
-        provider: 'openrouter',
-        status: 500,
-        message: err instanceof Error ? err.message : 'Internal execution failure',
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+
+    console.error('[interview-ai] execution failure', err);
+    return json(
+      { error: 'The AI service is temporarily unavailable. Please try again.', code: 'AI_PROVIDER_ERROR' },
+      503,
     );
   }
 });

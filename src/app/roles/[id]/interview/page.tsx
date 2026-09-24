@@ -217,93 +217,164 @@ export default function InterviewPage() {
     };
   }, []);
 
-  // Fetch question with 11-second timeout & zero fake fallback (Requirements 8, 9, 10, 11, 12, 13, 14)
-  const fetchFirstQuestion = useCallback(async () => {
-    if (!roleId) return;
+  // Fetch question with 15-second client timeout & guaranteed loading resolution
+  const fetchFirstQuestion = useCallback(
+    async (overrideRole?: Role) => {
+      if (!roleId) return;
 
-    // Guard against duplicate concurrent calls (Requirement 13)
-    if (isGeneratingRef.current) return;
-    isGeneratingRef.current = true;
-
-    const requestId = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-    activeRequestIdRef.current = requestId;
-
-    setIsGeneratingQuestion(true);
-    setQuestionTimeoutOccurred(false);
-    setQuestionError(null);
-
-    if (questionTimeoutRef.current) {
-      clearTimeout(questionTimeoutRef.current);
-    }
-
-    // 11s timeout
-    questionTimeoutRef.current = setTimeout(() => {
-      if (activeRequestIdRef.current === requestId) {
-        setQuestionTimeoutOccurred(true);
-      }
-    }, 11000);
-
-    try {
-      const generated = await generateInterviewQuestion({
-        roleId,
-        questionNumber: 1,
-        previousQuestions: [],
-      });
-
-      // Guard against stale responses (Requirement 14)
-      if (activeRequestIdRef.current !== requestId) {
+      // Guard against duplicate concurrent calls
+      if (isGeneratingRef.current) {
+        console.log('[AI INTERVIEW] already generating question, skipping duplicate invocation');
         return;
       }
+      isGeneratingRef.current = true;
 
-      if (questionTimeoutRef.current) {
-        clearTimeout(questionTimeoutRef.current);
-      }
+      const activeRole = overrideRole || role;
+
+      console.log('[AI INTERVIEW] initialization started', {
+        authenticatedUserExists: Boolean(session?.user),
+        roleId,
+        sessionExists: Boolean(session?.access_token),
+      });
+
+      setIsGeneratingQuestion(true);
       setQuestionTimeoutOccurred(false);
+      setQuestionError(null);
 
-      if (generated.question) {
-        setCurrentQuestion(generated.question);
-        saveStoredSession(roleId, {
-          currentQuestion: generated.question,
-          currentCompetency: generated.competency || 'Role Competency',
-          questionNumber: 1,
-        });
-      }
-      if (generated.competency) {
-        setCurrentCompetency(generated.competency);
-      }
-    } catch (err: unknown) {
-      if (activeRequestIdRef.current !== requestId) return;
       if (questionTimeoutRef.current) {
         clearTimeout(questionTimeoutRef.current);
       }
-      console.error('[InterviewPage] Question generation error:', err);
 
-      const isAuth =
-        (err instanceof RolewiseApiError && err.code === 'AUTH_ERROR') ||
-        (err instanceof Error && /sign in|session|unauthorized|jwt|401/i.test(err.message));
-
-      if (isAuth) {
+      let hasTimedOut = false;
+      questionTimeoutRef.current = setTimeout(() => {
+        hasTimedOut = true;
+        console.warn('[AI INTERVIEW] request exceeded 15s timeout');
+        setIsGeneratingQuestion(false);
+        isGeneratingRef.current = false;
+        setQuestionTimeoutOccurred(true);
         setQuestionError({
-          title: 'Your session has expired. Please sign in again.',
-          description: 'Sign in to your account to practice your interview.',
-          isAuth: true,
-        });
-      } else {
-        setQuestionError({
-          title: 'AI question generation is temporarily unavailable.',
-          description: 'Gemini is temporarily unavailable. You can retry safely.',
+          title: 'AI question generation is taking longer than expected.',
+          description: 'Please try again.',
           isAuth: false,
         });
-      }
-    } finally {
-      if (activeRequestIdRef.current === requestId) {
+      }, 15000);
+
+      try {
+        console.log('[AI INTERVIEW] calling interview-ai', {
+          roleId,
+          questionNumber: 1,
+          roleTitle: activeRole?.title,
+          company: activeRole?.company,
+        });
+
+        const generated = await generateInterviewQuestion({
+          roleId,
+          questionNumber: 1,
+          previousQuestions: [],
+          roleTitle: activeRole?.title,
+          companyName: activeRole?.company,
+        });
+
+        if (hasTimedOut) {
+          console.warn('[AI INTERVIEW] received response after timeout, ignoring late response');
+          return;
+        }
+
+        console.log('[AI INTERVIEW] interview-ai request completed', {
+          hasResponse: Boolean(generated),
+        });
+
+        // Safely validate and parse question and competency
+        let parsedQuestion = '';
+        let parsedCompetency = 'Role Competency';
+
+        if (typeof generated === 'string') {
+          try {
+            const parsedObj = JSON.parse(generated);
+            parsedQuestion = parsedObj.question || parsedObj.questionText || generated;
+            parsedCompetency = parsedObj.competency || 'Role Competency';
+          } catch {
+            parsedQuestion = generated;
+          }
+        } else if (generated && typeof generated === 'object') {
+          const genObj = generated as Record<string, unknown>;
+          parsedQuestion = String(genObj.question || genObj.questionText || genObj.content || '');
+          if (genObj.competency) {
+            parsedCompetency = String(genObj.competency);
+          }
+        }
+
+        console.log('[AI INTERVIEW] response received', {
+          hasQuestion: Boolean(parsedQuestion),
+          parsedCompetency,
+        });
+
+        if (!parsedQuestion || !parsedQuestion.trim()) {
+          throw new Error('Received an empty question from interview-ai');
+        }
+
+        console.log('[AI INTERVIEW] parsed question', {
+          question: parsedQuestion,
+          competency: parsedCompetency,
+        });
+
+        setCurrentQuestion(parsedQuestion);
+        setCurrentCompetency(parsedCompetency);
+
+        saveStoredSession(roleId, {
+          currentQuestion: parsedQuestion,
+          currentCompetency: parsedCompetency,
+          questionNumber: 1,
+          flowState: 'READY',
+        });
+
+        console.log('[AI INTERVIEW] initialization completed');
+      } catch (err: unknown) {
+        if (hasTimedOut) return;
+        console.error('[AI INTERVIEW] initialization failed', err);
+
+        const isAuth =
+          (err instanceof RolewiseApiError && err.code === 'AUTH_ERROR') ||
+          (err instanceof Error && /sign in|session|unauthorized|jwt|401/i.test(err.message));
+
+        if (isAuth) {
+          setQuestionError({
+            title: 'Your session has expired. Please sign in again.',
+            description: 'Sign in to your account to practice your interview.',
+            isAuth: true,
+          });
+        } else {
+          const isNotFound =
+            (err instanceof RolewiseApiError && err.code === 'NOT_FOUND') ||
+            (err instanceof Error && /not found|404/i.test(err.message));
+
+          if (isNotFound) {
+            setQuestionError({
+              title: 'Role not found.',
+              description: 'The selected role could not be found. Please select an active job from My Jobs.',
+              isAuth: false,
+            });
+          } else {
+            setQuestionError({
+              title: 'AI question generation is temporarily unavailable.',
+              description: err instanceof Error ? err.message : 'Please try again.',
+              isAuth: false,
+            });
+          }
+        }
+      } finally {
+        if (questionTimeoutRef.current) {
+          clearTimeout(questionTimeoutRef.current);
+          questionTimeoutRef.current = null;
+        }
         setIsGeneratingQuestion(false);
         isGeneratingRef.current = false;
       }
-    }
-  }, [roleId]);
+    },
+    [roleId, role, session?.access_token, session?.user]
+  );
 
-  // Initial mount: initialize ONLY ONCE per session (Requirements 1, 2, 3, 6, 11)
+  // Initial mount: initialize interview session cleanly (StrictMode compatible, session preserved)
   useEffect(() => {
     if (isAuthLoading) return;
 
@@ -314,31 +385,38 @@ export default function InterviewPage() {
 
     if (!roleId) return;
 
-    // Requirement 2 & 3: Initialization guard prevents re-running on tab switch / window focus
+    // Guard against repeated re-initialization on tab switch / window focus
     if (initializedRef.current) {
       return;
     }
-    initializedRef.current = true;
 
-    let isMounted = true;
+    let isCancelled = false;
 
     async function init() {
       try {
+        console.log('[AI INTERVIEW] loading role data', { roleId });
         const fetchedRole = await getRole(roleId);
-        if (!isMounted) return;
+        if (isCancelled) return;
 
         if (!fetchedRole) {
           setRole(null);
           setIsLoadingSession(false);
+          setQuestionError({
+            title: 'Role not found.',
+            description: 'This role does not exist in your account. Please select a valid role from My Jobs.',
+            isAuth: false,
+          });
           return;
         }
 
         setRole(fetchedRole);
 
-        // Requirement 6: Check whether an existing interview state exists.
-        // If it exists: restore immediately and DO NOT generate another question!
+        // Check whether an existing valid interview state exists in sessionStorage
         const saved = loadStoredSession(roleId);
-        if (saved?.currentQuestion) {
+        if (saved?.currentQuestion && saved.currentQuestion.trim()) {
+          console.log('[AI INTERVIEW] restoring existing session from storage', {
+            questionNumber: saved.questionNumber || 1,
+          });
           setCurrentQuestion(saved.currentQuestion);
           setCurrentCompetency(saved.currentCompetency || '');
           setQuestionNumber(saved.questionNumber || 1);
@@ -352,17 +430,31 @@ export default function InterviewPage() {
             setLastRecordedDuration(saved.lastRecordedDuration);
           }
           setIsLoadingSession(false);
+          setIsGeneratingQuestion(false);
+          initializedRef.current = true;
           return;
         }
 
-        setIsLoadingSession(false);
+        // Clean up incomplete / invalid stored session
+        if (saved && !saved.currentQuestion) {
+          console.warn('[AI INTERVIEW] found incomplete stored session without question, resetting question state');
+          clearStoredSession(roleId);
+        }
 
-        // Preload Question 1 only if no session already exists
-        fetchFirstQuestion();
+        setIsLoadingSession(false);
+        initializedRef.current = true;
+
+        // Preload Question 1
+        await fetchFirstQuestion(fetchedRole);
       } catch (err) {
-        console.error('Error fetching role:', err);
-        if (isMounted) {
+        console.error('[AI INTERVIEW] error during session setup:', err);
+        if (!isCancelled) {
           setIsLoadingSession(false);
+          setQuestionError({
+            title: 'Failed to set up interview session.',
+            description: err instanceof Error ? err.message : 'Please try again.',
+            isAuth: false,
+          });
         }
       }
     }
@@ -370,10 +462,12 @@ export default function InterviewPage() {
     init();
 
     return () => {
-      isMounted = false;
+      // In dev mode (React Strict Mode), if unmounted before init completes, allow remount to run
+      if (!initializedRef.current) {
+        isCancelled = true;
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally exclude session object to prevent re-initialization on tab switch / token refresh
-  }, [roleId, isAuthLoading, router, fetchFirstQuestion]);
+  }, [roleId, isAuthLoading, router, session?.access_token, fetchFirstQuestion]);
 
   // Handle Start Recording (Requirement 2 & 3: Decoupled client-side recording)
   const handleStartRecording = async () => {
@@ -615,7 +709,7 @@ export default function InterviewPage() {
 
   // Only show the initial setup loader if we truly have NO question or session yet (Requirements 7, 8, 20)
   const hasExistingSession = Boolean(currentQuestion || completedRounds.length > 0);
-  if ((isAuthLoading || isLoadingSession) && !hasExistingSession) {
+  if ((isAuthLoading || isLoadingSession) && !hasExistingSession && !questionError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
         <Loader2 className="w-7 h-7 animate-spin text-[#6D5DFB]" />
