@@ -21,67 +21,116 @@ function json(data: unknown, status = 200) {
   });
 }
 
+async function getAvailableGeminiModels(key: string): Promise<string[]> {
+  try {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
+      headers: { 'x-goog-api-key': key },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const list = (data.models || [])
+        .filter((m: { name?: string; supportedGenerationMethods?: string[] }) => {
+          const name = (m.name || '').replace(/^models\//, '');
+          if (name.includes('1.5') || name.includes('legacy')) return false;
+          const methods = m.supportedGenerationMethods || [];
+          return methods.includes('generateContent');
+        })
+        .map((m: { name?: string }) => (m.name || '').replace(/^models\//, ''));
+
+      if (list.length > 0) {
+        list.sort((a: string, b: string) => {
+          const score = (name: string) => {
+            if (name === 'gemini-2.5-flash-lite') return 1;
+            if (name === 'gemini-2.5-flash') return 2;
+            if (name.includes('flash-lite')) return 3;
+            if (name.includes('flash')) return 4;
+            return 10;
+          };
+          return score(a) - score(b);
+        });
+        return list;
+      }
+    }
+  } catch (err) {
+    console.warn('[interview-ai] Error querying available models:', err);
+  }
+
+  return ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-2.0-flash'];
+}
+
 async function callGemini(key: string, systemPrompt: string, userPrompt: string): Promise<any> {
-  // Prefer the lightweight model for interview turns. Fall back once to the
-  // standard Flash model if the lightweight model is temporarily unavailable.
-  const models = ['gemini-3.5-flash-lite', 'gemini-3.5-flash'];
+  const models = await getAvailableGeminiModels(key);
   let lastStatus = 503;
   let lastMessage = 'Gemini service is temporarily unavailable.';
 
   for (const model of models) {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': key,
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': key,
+          },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+            generationConfig: { responseMimeType: 'application/json' },
+          }),
         },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-          generationConfig: { responseMimeType: 'application/json' },
-        }),
-      },
-    );
+      );
 
-    const raw = await res.text();
-    lastStatus = res.status;
+      const raw = await res.text();
+      lastStatus = res.status;
 
-    if (!res.ok) {
-      try {
-        const parsed = JSON.parse(raw);
-        lastMessage = parsed.error?.message || parsed.message || raw;
-      } catch {
-        lastMessage = raw;
+      if (!res.ok) {
+        let msg = raw;
+        try {
+          const parsed = JSON.parse(raw);
+          msg = parsed.error?.message || parsed.message || raw;
+        } catch {}
+        lastMessage = msg;
+
+        if (res.status === 401 || res.status === 403) {
+          throw new ProviderError(res.status, `API/auth configuration error (${res.status}): ${msg}`);
+        }
+        if (res.status === 404) {
+          continue;
+        }
+        if ([429, 500, 502, 503, 504].includes(res.status)) continue;
+        throw new ProviderError(res.status, msg);
       }
-      if ([429, 500, 502, 503, 504].includes(res.status)) continue;
-      throw new ProviderError(res.status, lastMessage);
-    }
 
-    let data: any;
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      throw new ProviderError(502, 'Invalid response from Gemini.');
-    }
+      let data: any;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        throw new ProviderError(502, 'Invalid response from Gemini.');
+      }
 
-    const content = data.candidates?.[0]?.content?.parts
-      ?.map((p: any) => p.text ?? '')
-      .join('')
-      .trim();
+      const content = data.candidates?.[0]?.content?.parts
+        ?.map((p: any) => p.text ?? '')
+        .join('')
+        .trim();
 
-    if (!content) {
-      lastStatus = 502;
-      lastMessage = 'Gemini returned an empty response.';
-      continue;
-    }
+      if (!content) {
+        lastStatus = 502;
+        lastMessage = 'Gemini returned an empty response.';
+        continue;
+      }
 
-    try {
-      return JSON.parse(content);
-    } catch {
-      lastStatus = 502;
-      lastMessage = 'Gemini returned invalid JSON.';
+      try {
+        return JSON.parse(content);
+      } catch {
+        lastStatus = 502;
+        lastMessage = 'Gemini returned invalid JSON.';
+      }
+    } catch (err) {
+      if (err instanceof ProviderError && (err.status === 401 || err.status === 403)) {
+        throw err;
+      }
+      lastMessage = err instanceof Error ? err.message : String(err);
     }
   }
 

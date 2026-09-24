@@ -64,9 +64,56 @@ function cleanJsonText(rawText: string): string {
   return cleaned.trim();
 }
 
+async function getAvailableGeminiModels(key: string): Promise<string[]> {
+  try {
+    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
+      headers: { "x-goog-api-key": key },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const list = (data.models || [])
+        .filter((m: { name?: string; supportedGenerationMethods?: string[] }) => {
+          const name = (m.name || "").replace(/^models\//, "");
+          // Strictly exclude legacy 1.5 models per requirements
+          if (name.includes("1.5") || name.includes("legacy")) return false;
+          // Must support generateContent
+          const methods = m.supportedGenerationMethods || [];
+          return methods.includes("generateContent");
+        })
+        .map((m: { name?: string }) => (m.name || "").replace(/^models\//, ""));
+
+      console.log("[analyze-role] Models available for API key:", list);
+
+      if (list.length > 0) {
+        // Prioritize Flash-Lite models first, then other Flash models
+        list.sort((a: string, b: string) => {
+          const score = (name: string) => {
+            if (name === "gemini-2.5-flash-lite") return 1;
+            if (name === "gemini-2.5-flash") return 2;
+            if (name.includes("flash-lite")) return 3;
+            if (name.includes("flash")) return 4;
+            return 10;
+          };
+          return score(a) - score(b);
+        });
+        return list;
+      }
+    } else {
+      console.warn(`[analyze-role] Models list request returned status ${res.status}`);
+    }
+  } catch (err) {
+    console.warn("[analyze-role] Error querying available models list:", err);
+  }
+
+  // Curated supported fallback models (strictly excluding 1.5):
+  return ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash"];
+}
+
 async function callGemini(key: string, systemPrompt: string, userPrompt: string): Promise<any> {
-  // Candidate Gemini models for robust fallback
-  const candidateModels = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-flash"];
+  // Query supported models dynamically, falling back to verified current models (no 1.5 models)
+  const candidateModels = await getAvailableGeminiModels(key);
+  console.log("[analyze-role] Attempting Gemini models:", candidateModels);
+
   let lastStatus = 503;
   let lastMessage = "Gemini service is temporarily unavailable.";
 
@@ -103,8 +150,23 @@ async function callGemini(key: string, systemPrompt: string, userPrompt: string)
         } catch {}
         console.warn(`[analyze-role] Model ${model} returned error status ${res.status}:`, msg);
         lastMessage = msg;
-        if ([429, 500, 502, 503, 504].includes(res.status)) continue;
-        throw new Error(msg);
+
+        // Permanent auth error: stop immediately
+        if (res.status === 401 || res.status === 403) {
+          throw new Error(`API/auth configuration error (${res.status}): ${msg}`);
+        }
+
+        // 404 (model not found): do not retry this model, try next candidate model
+        if (res.status === 404) {
+          continue;
+        }
+
+        // 429 quota or 5xx server error: try next candidate model
+        if ([429, 500, 502, 503, 504].includes(res.status)) {
+          continue;
+        }
+
+        throw new Error(`Gemini error (${res.status}): ${msg}`);
       }
 
       const data = JSON.parse(raw);
@@ -123,11 +185,25 @@ async function callGemini(key: string, systemPrompt: string, userPrompt: string)
       return parsedJson;
     } catch (err: unknown) {
       console.warn(`[analyze-role] Error with model ${model}:`, err);
+      if (err instanceof Error && err.message.includes("API/auth configuration error")) {
+        throw err;
+      }
       lastMessage = err instanceof Error ? err.message : String(err);
     }
   }
 
-  throw new Error(`Gemini failure (${lastStatus}): ${lastMessage}`);
+  // Classify failure per Requirement 11
+  if (lastStatus === 401 || lastStatus === 403) {
+    throw new Error(`API/auth configuration error (${lastStatus}): ${lastMessage}`);
+  } else if (lastStatus === 404) {
+    throw new Error(`Model unavailable (${lastStatus}): ${lastMessage}`);
+  } else if (lastStatus === 429) {
+    throw new Error(`Quota/rate limit exceeded (${lastStatus}): ${lastMessage}`);
+  } else if (lastStatus >= 500) {
+    throw new Error(`Provider server issue (${lastStatus}): ${lastMessage}`);
+  } else {
+    throw new Error(`Gemini failure (${lastStatus}): ${lastMessage}`);
+  }
 }
 
 Deno.serve(async (req: Request) => {

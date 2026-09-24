@@ -58,7 +58,7 @@ export function getActiveAIProvider(): {
       provider: 'gemini',
       apiKey: process.env.GEMINI_API_KEY || '',
       baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
-      model: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
+      model: process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite',
     };
   }
 

@@ -28,7 +28,7 @@ serve(async (req) => {
     } else if (!openrouterKey && geminiKey) {
       endpoint = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
       apiKey = geminiKey;
-      model = 'gemini-1.5-flash';
+      model = 'gemini-2.5-flash-lite';
     }
 
     if (!apiKey) {
