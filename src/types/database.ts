@@ -76,7 +76,8 @@ export interface PreparationItem {
 }
 
 export interface AnalyzeRolePayload {
-  roleId?: string;
+  roleId?: string | null;
+  resumeId?: string | null;
   jobDescription: string;
   resumeText: string;
   resumeFileName: string;

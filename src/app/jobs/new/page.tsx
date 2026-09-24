@@ -20,7 +20,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { extractResumeText } from '@/lib/extractor';
-import { invokeAnalyzeRole } from '@/services/api';
+import { invokeAnalyzeRole, getSupabaseClient } from '@/services/api';
 
 // Common job roles (Requirement 1)
 const JOB_TITLE_OPTIONS = [
@@ -338,6 +338,7 @@ export default function AddJobPage() {
   const [analysisStep, setAnalysisStep] = useState<number>(0);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [createdRoleId, setCreatedRoleId] = useState<string | null>(null);
+  const [createdResumeId, setCreatedResumeId] = useState<string | null>(null);
 
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const jdInputRef = useRef<HTMLInputElement>(null);
@@ -356,6 +357,9 @@ export default function AddJobPage() {
   const handleResumeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Reset pre-created resume id if new file selected
+    setCreatedResumeId(null);
 
     // 10 MB limit
     if (file.size > 10 * 1024 * 1024) {
@@ -415,7 +419,7 @@ export default function AddJobPage() {
     }
   };
 
-  // Primary Action: Analyze Role & Experience (Requirement 12 & Part 15 UX)
+  // Primary Action: Analyze Role & Experience (Sequence: Auth -> Resume -> Role -> AI Analysis)
   const handleAnalyze = async () => {
     if (!isFormValid || isAnalyzing) return;
 
@@ -427,12 +431,114 @@ export default function AddJobPage() {
     const stepTimer2 = setTimeout(() => setAnalysisStep(3), 1400); // Connecting requirements
 
     try {
+      // 1. Authenticate user
+      const supabase = getSupabaseClient();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const user = sessionData?.session?.user;
+
+      if (sessionError || !user) {
+        clearTimeout(stepTimer1);
+        clearTimeout(stepTimer2);
+        setAnalysisStatus('failed');
+        setGlobalError('You must be signed in to add a job.');
+        return;
+      }
+
+      const fileName = resumeFileName || (isManualExperience ? 'manual_experience.txt' : 'candidate_resume.pdf');
+
+      // Safe logging before resume persistence (Requirement 5)
+      console.log('[Rolewise] resume persistence context', {
+        authenticated: Boolean(user),
+        userIdPresent: Boolean(user?.id),
+        fileNamePresent: Boolean(fileName),
+        resumeTextPresent: Boolean(activeExperienceText && activeExperienceText.trim().length > 0),
+        resumeTextLength: activeExperienceText?.length ?? 0,
+      });
+
+      // 2. Create or reuse resume record (Requirement 10 & 11)
+      let resumeId = createdResumeId;
+      if (!resumeId) {
+        const { data: resumeRow, error: resumeInsertError } = await supabase
+          .from('resumes')
+          .insert({
+            user_id: user.id,
+            file_name: fileName,
+            file_path: null,
+            mime_type: isManualExperience ? 'text/plain' : 'application/pdf',
+            resume_text: activeExperienceText.trim(),
+          })
+          .select('id')
+          .single();
+
+        if (resumeInsertError || !resumeRow) {
+          console.error('[Rolewise] resume insert failed', {
+            code: resumeInsertError?.code,
+            message: resumeInsertError?.message,
+            details: resumeInsertError?.details,
+            hint: resumeInsertError?.hint,
+          });
+          clearTimeout(stepTimer1);
+          clearTimeout(stepTimer2);
+          setAnalysisStatus('failed');
+          setGlobalError("Your resume couldn't be saved. Your uploaded file is still available. Please try again.");
+          return;
+        }
+
+        resumeId = resumeRow.id;
+        setCreatedResumeId(resumeId);
+
+        console.log('[Rolewise] resume extraction', {
+          resumeId,
+          resumeFileName: fileName,
+          hasResumeText: Boolean(activeExperienceText && activeExperienceText.trim().length > 0),
+          resumeTextLength: activeExperienceText?.length ?? 0,
+        });
+      }
+
+      // 3. Create or reuse role record using resume_id (Requirement 10 & 11)
+      let roleId = createdRoleId;
+      if (!roleId) {
+        const { data: roleRow, error: roleInsertError } = await supabase
+          .from('roles')
+          .insert({
+            user_id: user.id,
+            job_title: jobTitle.trim(),
+            company: company.trim(),
+            location: location.trim() || null,
+            work_model: workModel.trim() || null,
+            job_description: `${jobTitle} at ${company}\n\n${jobDescription}`.trim(),
+            resume_id: resumeId,
+            status: 'analyzing',
+          })
+          .select('id')
+          .single();
+
+        if (roleInsertError || !roleRow) {
+          console.error('[Rolewise] role insert failed', {
+            code: roleInsertError?.code,
+            message: roleInsertError?.message,
+            details: roleInsertError?.details,
+            hint: roleInsertError?.hint,
+          });
+          clearTimeout(stepTimer1);
+          clearTimeout(stepTimer2);
+          setAnalysisStatus('failed');
+          setGlobalError("Your job couldn't be saved. Please try again.");
+          return;
+        }
+
+        roleId = roleRow.id;
+        setCreatedRoleId(roleId);
+      }
+
+      // 4. Run role analysis via analyze-role edge function
       const res = await invokeAnalyzeRole({
-        roleId: createdRoleId || undefined,
+        roleId: roleId || undefined,
+        resumeId: resumeId || undefined,
         jobDescription: `${jobTitle} at ${company}\n\n${jobDescription}`,
         resumeText: activeExperienceText,
-        resumeFileName: resumeFileName || 'candidate_profile.pdf',
-        resumeMimeType: 'application/pdf',
+        resumeFileName: fileName,
+        resumeMimeType: isManualExperience ? 'text/plain' : 'application/pdf',
         jobTitle: jobTitle.trim(),
         company: company.trim(),
         location: location.trim() || undefined,
@@ -443,9 +549,9 @@ export default function AddJobPage() {
       clearTimeout(stepTimer2);
       setAnalysisStep(4); // Finished
 
-      const roleId = res.role_id || res.id || res.role?.id || createdRoleId || '';
-      if (roleId) {
-        setCreatedRoleId(roleId);
+      const finalRoleId = res.role_id || res.id || res.role?.id || roleId;
+      if (finalRoleId) {
+        setCreatedRoleId(finalRoleId);
       }
       setAnalysisStatus('completed');
     } catch (err: unknown) {

@@ -61,7 +61,36 @@ function cleanJsonText(rawText: string): string {
   if (cleaned.endsWith("```")) {
     cleaned = cleaned.slice(0, -3);
   }
-  return cleaned.trim();
+  cleaned = cleaned.trim();
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start !== -1 && end !== -1 && end > start) {
+    cleaned = cleaned.slice(start, end + 1);
+  }
+  // Remove trailing commas before closing braces/brackets
+  cleaned = cleaned.replace(/,\s*([\]}])/g, "$1");
+
+  try {
+    JSON.parse(cleaned);
+    return cleaned;
+  } catch {
+    // If cut off mid-string or trailing unfinished property, trim to last complete value
+    let repaired = cleaned;
+    repaired = repaired.replace(/,\s*"[^"]*"\s*:\s*$/, "");
+    repaired = repaired.replace(/,\s*"[^"]*"\s*$/, "");
+    repaired = repaired.replace(/,\s*$/, "");
+    const openBraces = (repaired.match(/\{/g) || []).length;
+    const closeBraces = (repaired.match(/\}/g) || []).length;
+    const openBrackets = (repaired.match(/\[/g) || []).length;
+    const closeBrackets = (repaired.match(/\]/g) || []).length;
+    if (openBrackets > closeBrackets) {
+      repaired += "]".repeat(openBrackets - closeBrackets);
+    }
+    if (openBraces > closeBraces) {
+      repaired += "}".repeat(openBraces - closeBraces);
+    }
+    return repaired;
+  }
 }
 
 async function getAvailableGeminiModels(key: string): Promise<string[]> {
@@ -114,6 +143,8 @@ async function callGemini(key: string, systemPrompt: string, userPrompt: string)
     { name: "gemini-3.6-flash", tb: 0 },
     { name: "gemini-3-flash-preview", tb: undefined },
     { name: "gemini-flash-lite-latest", tb: undefined },
+    { name: "gemini-3.7-flash", tb: 0 },
+    { name: "gemini-flash-latest", tb: undefined },
   ];
   let lastStatus = 503;
   let lastMessage = "Gemini service is temporarily unavailable.";
@@ -131,6 +162,7 @@ async function callGemini(key: string, systemPrompt: string, userPrompt: string)
         const genConfig: any = {
           responseMimeType: "application/json",
           temperature: 0.2,
+          maxOutputTokens: 8192,
         };
         if (candidate.tb !== undefined) {
           genConfig.thinkingConfig = { thinkingBudget: candidate.tb };
@@ -172,8 +204,8 @@ async function callGemini(key: string, systemPrompt: string, userPrompt: string)
             throw new Error(`API/auth configuration error (${res.status}): ${msg}`);
           }
 
-          if (res.status === 503 && attempt === 1) {
-            await new Promise((r) => setTimeout(r, 1500));
+          if ((res.status === 503 || res.status === 429) && attempt === 1) {
+            await new Promise((r) => setTimeout(r, 2000));
             continue;
           }
 
@@ -193,7 +225,15 @@ async function callGemini(key: string, systemPrompt: string, userPrompt: string)
           break;
         }
 
-        const parsedJson = JSON.parse(cleanJsonText(content));
+        let parsedJson: any;
+        try {
+          parsedJson = JSON.parse(cleanJsonText(content));
+        } catch {
+          const relaxed = cleanJsonText(content)
+            .replace(/,\s*([\]}])/g, "$1")
+            .replace(/[\x00-\x1F\x7F-\x9F]/g, " ");
+          parsedJson = JSON.parse(relaxed);
+        }
         console.log(`[analyze-role] Model ${model} succeeded in ${elapsed}ms`);
         return parsedJson;
       } catch (err: unknown) {
@@ -255,6 +295,7 @@ Deno.serve(async (req: Request) => {
       return json({ availableModels: available });
     }
     const existingRoleId = body?.roleId ? String(body.roleId).trim() : null;
+    const existingResumeId = body?.resumeId ? String(body.resumeId).trim() : null;
     const jobDescription = String(body?.jobDescription ?? "").trim();
     const resumeText = String(body?.resumeText ?? "").trim();
     const resumeFileName = body?.resumeFileName ? String(body.resumeFileName) : "resume.pdf";
@@ -408,28 +449,76 @@ Work Model: ${userWorkModel || "Not specified"}`;
     const finalLocation = userLocation || analysis.role?.location || null;
     const finalWorkModel = userWorkModel || analysis.role?.work_model || null;
 
-    // 6. Save Resume record
-    const { data: resume, error: resumeError } = await db
-      .from("resumes")
-      .insert({
-        user_id: userId,
-        file_name: resumeFileName,
-        file_path: null,
-        mime_type: resumeMimeType,
-        resume_text: resumeText,
-      })
-      .select("id")
-      .single();
+    // 6. Save or resolve Resume record
+    let resumeId = existingResumeId;
+    if (existingResumeId) {
+      const { data: existingResume, error: resumeCheckError } = await db
+        .from("resumes")
+        .select("id")
+        .eq("id", existingResumeId)
+        .eq("user_id", userId)
+        .maybeSingle();
 
-    if (resumeError || !resume) {
-      console.error("[analyze-role] Resume insert failed:", resumeError);
-      return json({ error: "Could not save resume record", detail: resumeError?.message }, 500);
+      if (existingResume && !resumeCheckError) {
+        resumeId = existingResume.id;
+        console.log("[Rolewise] resume persistence context (reused)", {
+          authenticated: true,
+          userIdPresent: true,
+          resumeId,
+          resumeTextPresent: Boolean(resumeText && resumeText.trim().length > 0),
+          resumeTextLength: resumeText ? resumeText.length : 0,
+        });
+      } else {
+        resumeId = null;
+      }
+    }
+
+    if (!resumeId) {
+      // Safe logging before resume insertion (Requirement 5)
+      console.log("[Rolewise] resume persistence context", {
+        authenticated: Boolean(user),
+        userIdPresent: Boolean(userId),
+        fileNamePresent: Boolean(resumeFileName),
+        resumeTextPresent: Boolean(resumeText && resumeText.trim().length > 0),
+        resumeTextLength: resumeText ? resumeText.length : 0,
+      });
+
+      const { data: resume, error: resumeError } = await db
+        .from("resumes")
+        .insert({
+          user_id: userId,
+          file_name: resumeFileName || "candidate_resume.pdf",
+          file_path: null,
+          mime_type: resumeMimeType || "application/pdf",
+          resume_text: resumeText,
+        })
+        .select("id")
+        .single();
+
+      if (resumeError || !resume) {
+        console.error("[Rolewise] resume insert failed", {
+          code: resumeError?.code,
+          message: resumeError?.message,
+          details: resumeError?.details,
+          hint: resumeError?.hint,
+        });
+        return json(
+          {
+            error: "Could not save resume record",
+            code: resumeError?.code,
+            message: resumeError?.message,
+            detail: resumeError?.details || resumeError?.message,
+          },
+          500
+        );
+      }
+      resumeId = resume.id;
     }
 
     // Safe logging after resume extraction saved (Requirement 1)
     console.log("[Rolewise] resume extraction", {
-      resumeId: resume.id,
-      resumeFileName: resumeFileName,
+      resumeId,
+      resumeFileName: resumeFileName || "candidate_resume.pdf",
       hasResumeText: Boolean(resumeText && resumeText.trim().length > 0),
       resumeTextLength: resumeText ? resumeText.length : 0,
     });
@@ -463,7 +552,7 @@ Work Model: ${userWorkModel || "Not specified"}`;
           work_model: finalWorkModel,
           job_description: jobDescription,
           status: "analyzing",
-          resume_id: resume.id,
+          resume_id: resumeId,
           updated_at: new Date().toISOString(),
         })
         .eq("id", existingRoleId);
@@ -484,14 +573,13 @@ Work Model: ${userWorkModel || "Not specified"}`;
           work_model: finalWorkModel,
           job_description: jobDescription,
           status: "analyzing",
-          resume_id: resume.id,
+          resume_id: resumeId,
         })
         .select("id")
         .single();
 
       if (roleInsertError || !newRole) {
         console.error("[analyze-role] Role insert failed:", roleInsertError);
-        await db.from("resumes").delete().eq("id", resume.id);
         return json({ error: "Could not save role record", detail: roleInsertError?.message }, 500);
       }
       roleId = newRole.id;
@@ -643,7 +731,7 @@ Work Model: ${userWorkModel || "Not specified"}`;
     return json({
       success: true,
       role_id: roleId,
-      resume_id: resume.id,
+      resume_id: resumeId,
       role: {
         id: roleId,
         job_title: finalJobTitle,

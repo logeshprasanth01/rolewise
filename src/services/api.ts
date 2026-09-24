@@ -94,6 +94,7 @@ export async function invokeAnalyzeRole(
     const { data, error } = await supabase.functions.invoke<AnalyzeRoleResponse>('analyze-role', {
       body: {
         roleId: payload.roleId,
+        resumeId: payload.resumeId,
         jobDescription: payload.jobDescription.trim(),
         resumeText: payload.resumeText.trim(),
         resumeFileName: payload.resumeFileName || 'resume.pdf',
@@ -116,9 +117,9 @@ export async function invokeAnalyzeRole(
         try {
           errorBody = (await ctx.clone().json()) as Record<string, unknown>;
           detailedMessage =
+            (errorBody?.detail as string) ||
             (errorBody?.message as string) ||
             (errorBody?.error as string) ||
-            (errorBody?.detail as string) ||
             detailedMessage;
         } catch {
           try {
