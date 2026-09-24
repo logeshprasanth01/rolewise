@@ -95,6 +95,8 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     setAudioUrl(null);
   }, [stopStreamTracks]);
 
+  const selectedMimeTypeRef = useRef<string>('');
+
   const startRecording = useCallback(async (): Promise<boolean> => {
     resetRecording();
     clearPermissionError();
@@ -106,7 +108,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       typeof window.MediaRecorder === 'undefined'
     ) {
       setIsPermissionDenied(true);
-      setPermissionError('Microphone access is required for voice practice.');
+      setPermissionError("Voice recording isn't supported in this browser. You can type your answer instead.");
       return false;
     }
 
@@ -121,19 +123,39 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
       audioStreamRef.current = stream;
 
-      // Select supported audio mime type
-      let mimeType = 'audio/webm';
-      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        mimeType = 'audio/webm;codecs=opus';
-      } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-        mimeType = 'audio/webm';
-      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-        mimeType = 'audio/mp4';
-      } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
-        mimeType = 'audio/ogg';
+      // Detect supported audio MIME type dynamically (Requirement 4)
+      const candidateMimeTypes = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/mp4',
+        'audio/aac',
+        'audio/ogg;codecs=opus',
+        'audio/ogg',
+        'audio/wav',
+      ];
+
+      let selectedMime = '';
+      for (const type of candidateMimeTypes) {
+        if (typeof MediaRecorder !== 'undefined' && typeof MediaRecorder.isTypeSupported === 'function') {
+          if (MediaRecorder.isTypeSupported(type)) {
+            selectedMime = type;
+            break;
+          }
+        }
       }
 
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      selectedMimeTypeRef.current = selectedMime;
+
+      let recorder: MediaRecorder;
+      try {
+        recorder = selectedMime
+          ? new MediaRecorder(stream, { mimeType: selectedMime })
+          : new MediaRecorder(stream);
+      } catch {
+        // Fallback without options if codec initialization failed
+        recorder = new MediaRecorder(stream);
+      }
+
       mediaRecorderRef.current = recorder;
       audioChunksRef.current = [];
 
@@ -141,6 +163,10 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         if (event.data && event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
+      };
+
+      recorder.onerror = (e) => {
+        console.error('[useVoiceRecorder] MediaRecorder runtime error:', e);
       };
 
       recorder.start(250); // collect data every 250ms chunks
@@ -159,16 +185,19 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       console.warn('[useVoiceRecorder] getUserMedia failed:', err);
       setIsPermissionDenied(true);
 
+      // Requirement 5: exact error states
       if (err instanceof DOMException) {
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-          setPermissionError('Microphone access is required for voice practice.');
+          setPermissionError('Microphone access is blocked. Allow microphone access in your browser settings and try again.');
         } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-          setPermissionError("We couldn't find an available microphone.");
+          setPermissionError('No microphone was detected. You can type your answer instead.');
+        } else if (err.name === 'NotSupportedError') {
+          setPermissionError("Voice recording isn't supported in this browser. You can type your answer instead.");
         } else {
-          setPermissionError('Microphone access is required for voice practice.');
+          setPermissionError('Microphone access is blocked. Allow microphone access in your browser settings and try again.');
         }
       } else {
-        setPermissionError('Microphone access is required for voice practice.');
+        setPermissionError('Microphone access is blocked. Allow microphone access in your browser settings and try again.');
       }
 
       setIsRecording(false);
@@ -190,14 +219,24 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       if (!recorder || recorder.state === 'inactive') {
         setIsRecording(false);
         stopStreamTracks();
-        resolve(null);
+        if (audioChunksRef.current.length > 0) {
+          const type = selectedMimeTypeRef.current || 'audio/webm';
+          const blob = new Blob(audioChunksRef.current, { type });
+          const url = URL.createObjectURL(blob);
+          audioUrlRef.current = url;
+          setAudioBlob(blob);
+          setAudioUrl(url);
+          resolve({ blob, durationSeconds: elapsed, audioUrl: url });
+        } else {
+          resolve(null);
+        }
         return;
       }
 
       recorder.onstop = () => {
         try {
-          const mimeType = recorder.mimeType || 'audio/webm';
-          const blob = new Blob(audioChunksRef.current, { type: mimeType });
+          const type = recorder.mimeType || selectedMimeTypeRef.current || 'audio/webm';
+          const blob = new Blob(audioChunksRef.current, { type });
           const url = URL.createObjectURL(blob);
           if (audioUrlRef.current) {
             URL.revokeObjectURL(audioUrlRef.current);
@@ -217,6 +256,9 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       };
 
       try {
+        if (recorder.state === 'recording') {
+          recorder.requestData();
+        }
         recorder.stop();
       } catch (err) {
         console.error('[useVoiceRecorder] Error calling recorder.stop():', err);
