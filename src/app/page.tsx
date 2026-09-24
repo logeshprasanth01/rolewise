@@ -369,7 +369,97 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Recent Activity (Truthful empty state per PRD) */}
+        </div>
+      </div>
+
+      {/* 4. LOWER DASHBOARD: RECOMMENDED FOR YOU (2x2 GRID) & RECENT ACTIVITY */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left Column: Recommended for you (2 x 2 Card Grid) */}
+        <section className="lg:col-span-2 space-y-3">
+          <div className="space-y-0.5">
+            <h2 className="text-sm sm:text-base font-semibold text-[#1F2937]">Recommended for you</h2>
+            <p className="text-xs text-[#667085]">
+              Start with these key areas to improve your interview readiness.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link
+              href="/communication-practice"
+              className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center shrink-0">
+                  <Layers className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
+                    System Design
+                  </p>
+                  <p className="text-[11px] text-[#667085]">High impact</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937] transition-colors shrink-0" />
+            </Link>
+
+            <Link
+              href="/communication-practice/voice"
+              className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#EAF6F0] text-[#10B981] flex items-center justify-center shrink-0">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
+                    Behavioral
+                  </p>
+                  <p className="text-[11px] text-[#667085]">Commonly asked</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937] transition-colors shrink-0" />
+            </Link>
+
+            <Link
+              href="/communication-practice"
+              className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#F5F3FF] text-[#8B5CF6] flex items-center justify-center shrink-0">
+                  <Compass className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
+                    Product Sense
+                  </p>
+                  <p className="text-[11px] text-[#667085]">Role specific</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937] transition-colors shrink-0" />
+            </Link>
+
+            <Link
+              href="/communication-practice"
+              className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] text-[#F97316] flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
+                    Case Studies
+                  </p>
+                  <p className="text-[11px] text-[#667085]">Improve problem solving</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937] transition-colors shrink-0" />
+            </Link>
+          </div>
+        </section>
+
+        {/* Right Column: Recent Activity (Truthful empty state per PRD) */}
+        <section className="lg:col-span-1">
           <div className="rolewise-card p-5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#1F2937] flex items-center gap-1.5">
@@ -391,92 +481,8 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
-
-      {/* 4. RECOMMENDED FOR YOU (Practice focus shortcuts) */}
-      <section className="space-y-3 pt-2">
-        <div className="space-y-0.5">
-          <h2 className="text-sm sm:text-base font-semibold text-[#1F2937]">Recommended for you</h2>
-          <p className="text-xs text-[#667085]">
-            Start with these key areas to improve your interview readiness.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Link
-            href="/communication-practice"
-            className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center">
-                <Layers className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
-                  System Design
-                </p>
-                <p className="text-[11px] text-[#667085]">High impact</p>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937]" />
-          </Link>
-
-          <Link
-            href="/communication-practice/voice"
-            className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#EAF6F0] text-[#10B981] flex items-center justify-center">
-                <MessageSquare className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
-                  Behavioral
-                </p>
-                <p className="text-[11px] text-[#667085]">Commonly asked</p>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937]" />
-          </Link>
-
-          <Link
-            href="/communication-practice"
-            className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#F5F3FF] text-[#8B5CF6] flex items-center justify-center">
-                <Compass className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
-                  Product Sense
-                </p>
-                <p className="text-[11px] text-[#667085]">Role specific</p>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937]" />
-          </Link>
-
-          <Link
-            href="/communication-practice"
-            className="rolewise-card p-4 hover:border-[#6D5DFB] transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] text-[#F97316] flex items-center justify-center">
-                <FileText className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
-                  Case Studies
-                </p>
-                <p className="text-[11px] text-[#667085]">Improve problem solving</p>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#1F2937]" />
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }
