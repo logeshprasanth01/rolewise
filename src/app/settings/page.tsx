@@ -65,7 +65,7 @@ export default function SettingsPage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
   const [profileError, setProfileError] = useState('');
-  const [accessibilityEnabled, setAccessibilityEnabled] = useState(true);
+  const [accessibilityEnabled, setAccessibilityEnabled] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [micTested, setMicTested] = useState<boolean | null>(null);
@@ -81,7 +81,7 @@ export default function SettingsPage() {
       return value === null ? fallback : value === 'true';
     };
 
-    setAccessibilityEnabled(readBool(ACCESSIBILITY_KEY, true));
+    setAccessibilityEnabled(readBool(ACCESSIBILITY_KEY, false));
     setReducedMotion(readBool(REDUCED_MOTION_KEY, false));
     setNotificationsEnabled(readBool(NOTIFICATIONS_KEY, true));
   }, [user, userName]);
