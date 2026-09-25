@@ -195,7 +195,7 @@ export const AuthView: React.FC = () => {
       <div className="w-full lg:w-[48%] bg-white border-b lg:border-b-0 lg:border-r border-[#D9D8D2] p-8 sm:p-12 lg:p-16 flex flex-col justify-between relative overflow-hidden">
         {/* Subtle background decoration */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#FFF2B8] rounded-full blur-3xl opacity-50 -mr-20 -mt-20 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#EAF6F0] rounded-full blur-3xl opacity-40 -ml-20 -mb-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#EEF7F0] rounded-full blur-3xl opacity-40 -ml-20 -mb-20 pointer-events-none" />
 
         {/* Brand Header */}
         <div className="flex items-center gap-3 relative z-10">
@@ -232,7 +232,7 @@ export const AuthView: React.FC = () => {
                   UI/UX Designer
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-[#D9D8D2] text-xs font-semibold text-[#252525] shadow-xs">
-                  <Layers className="w-3.5 h-3.5 text-[#4E9B76]" />
+                  <Layers className="w-3.5 h-3.5 text-[#6FA77F]" />
                   Product Designer
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-[#D9D8D2] text-xs font-semibold text-[#252525] shadow-xs">
@@ -252,7 +252,7 @@ export const AuthView: React.FC = () => {
               {/* Tagline Box */}
               <div className="pt-2 border-t border-[#D9D8D2] flex items-center justify-between text-xs text-[#73757A]">
                 <span>“Prepare for the role. Not just the interview.”</span>
-                <span className="text-[#4E9B76] font-semibold">2026 SaaS</span>
+                <span className="text-[#6FA77F] font-semibold">2026 SaaS</span>
               </div>
             </div>
           </div>
@@ -260,7 +260,7 @@ export const AuthView: React.FC = () => {
 
         {/* Footer Guarantee */}
         <div className="relative z-10 flex items-center gap-2 text-xs text-[#73757A]">
-          <CheckCircle2 className="w-4 h-4 text-[#4E9B76]" />
+          <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
           <span>Qualitative assessment without arbitrary readiness scores</span>
         </div>
       </div>
@@ -282,14 +282,14 @@ export const AuthView: React.FC = () => {
 
           {/* Error / Success Banners */}
           {errorMessage && (
-            <div className="p-3.5 rounded-xl bg-[#FFF0ED] border border-[#FCDAD5] text-xs sm:text-sm text-[#E87967] flex items-start gap-2.5">
+            <div className="p-3.5 rounded-xl bg-[#FFF0ED] border border-[#F6D8D1] text-xs sm:text-sm text-[#D97968] flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {successMessage && (
-            <div className="p-3.5 rounded-xl bg-[#EAF6F0] border border-[#CEECD9] text-xs sm:text-sm text-[#4E9B76] flex items-start gap-2.5">
+            <div className="p-3.5 rounded-xl bg-[#EEF7F0] border border-[#DDEEDF] text-xs sm:text-sm text-[#6FA77F] flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{successMessage}</span>
             </div>
@@ -404,7 +404,7 @@ export const AuthView: React.FC = () => {
               type="button"
               onClick={() => handleSocialAuth('Google')}
               disabled={isLoading || socialLoading !== null}
-              className="w-full touch-target h-11 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#F9FAFB] text-xs sm:text-sm font-medium text-[#252525] transition-all flex items-center justify-center gap-2.5 shadow-2xs disabled:opacity-60 cursor-pointer"
+              className="w-full touch-target h-11 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs sm:text-sm font-medium text-[#252525] transition-all flex items-center justify-center gap-2.5 shadow-2xs disabled:opacity-60 cursor-pointer"
             >
               {socialLoading === 'Google' ? (
                 <>
@@ -440,7 +440,7 @@ export const AuthView: React.FC = () => {
               type="button"
               onClick={() => handleSocialAuth('LinkedIn')}
               disabled={isLoading || socialLoading !== null}
-              className="w-full touch-target h-11 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#F9FAFB] text-xs sm:text-sm font-medium text-[#252525] transition-all flex items-center justify-center gap-2.5 shadow-2xs disabled:opacity-60 cursor-pointer"
+              className="w-full touch-target h-11 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs sm:text-sm font-medium text-[#252525] transition-all flex items-center justify-center gap-2.5 shadow-2xs disabled:opacity-60 cursor-pointer"
             >
               {socialLoading === 'LinkedIn' ? (
                 <>
