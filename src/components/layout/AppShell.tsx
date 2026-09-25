@@ -164,7 +164,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   </div>
                 </Link>
               ) : (
-                <span aria-hidden="true" className="w-0 h-0 overflow-hidden" />
+                <Link href="/" data-ui-sound="click" title="ROLEWISE home" aria-label="ROLEWISE home" className="flex items-center justify-center w-full"><div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#D8D8D8] flex items-center justify-center font-bold text-base transition-transform duration-200 hover:scale-[1.04]">R</div></Link>
               )}
 
               <button
@@ -191,9 +191,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   title={item.label}
                   aria-current={active ? 'page' : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${active ? 'bg-[#E6E5E0] text-[#5F6368] border border-[#D1D0CA]' : 'text-[#73757A] hover:bg-[#E8E7E2] hover:text-[#3F4246]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${active ? 'bg-[#252525] text-white border border-[#252525]' : 'text-[#73757A] hover:bg-[#E8E7E2] hover:text-[#3F4246]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#5F6368]' : 'text-[#73757A] group-hover:text-[#3F4246]'}`} />
+                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-white' : 'text-[#73757A] group-hover:text-[#3F4246]'}`} />
                   {!isSidebarCollapsed && <span className="hidden lg:inline truncate text-current">{item.label}</span>}
                 </Link>
               );
@@ -205,9 +205,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               href="/settings"
               title="Settings"
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isNavActive('/settings') ? 'bg-[#E6E5E0] text-[#5F6368] border border-[#D1D0CA]' : 'text-[#73757A] hover:bg-[#E8E7E2] hover:text-[#3F4246]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isNavActive('/settings') ? 'bg-[#252525] text-white border border-[#252525]' : 'text-[#73757A] hover:bg-[#E8E7E2] hover:text-[#3F4246]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
             >
-              <Settings className={`w-4 h-4 shrink-0 ${isNavActive('/settings') ? 'text-[#5F6368]' : 'text-[#73757A]'}`} />
+              <Settings className={`w-4 h-4 shrink-0 ${isNavActive('/settings') ? 'text-white' : 'text-[#73757A]'}`} />
               {!isSidebarCollapsed && <span className="hidden lg:inline text-current">Settings</span>}
             </Link>
 
@@ -228,8 +228,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 )}
                 {!isSidebarCollapsed && (
                   <div className="hidden lg:block min-w-0 text-left flex-1">
-                    <p className="text-xs font-bold text-[#252525] truncate">{userName || 'Candidate'}</p>
-                    <p className="text-[10px] text-[#73757A] truncate">{session.user?.email || 'Profile'}</p>
+                    <p className="text-xs font-bold text-[#252525] truncate">My account</p>
+                    <p className="text-[10px] text-[#73757A] truncate">Account settings</p>
                   </div>
                 )}
                 {!isSidebarCollapsed && (
