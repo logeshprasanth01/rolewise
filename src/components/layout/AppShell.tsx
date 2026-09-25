@@ -35,6 +35,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const { user, userName, session, isLoading, signOut } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarDragging, setIsSidebarDragging] = useState(false);
   const [accessibilityEnabled, setAccessibilityEnabled] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
@@ -126,6 +127,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   useEffect(() => {
     const handleTouchStart = (event: TouchEvent) => {
       touchStartX.current = event.touches[0]?.clientX ?? null;
+      setIsSidebarDragging(true);
     };
 
     const handleTouchEnd = (event: TouchEvent) => {
@@ -138,13 +140,15 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
       // Only treat horizontal gestures near the left app edge as sidebar gestures.
       if (startX > 280 && !isSidebarCollapsed) return;
-      if (Math.abs(deltaX) < 60) return;
+      if (Math.abs(deltaX) < 45) return;
 
       if (deltaX < 0 && !isSidebarCollapsed) {
         setIsSidebarCollapsed(true);
       } else if (deltaX > 0 && isSidebarCollapsed && startX < 280) {
         setIsSidebarCollapsed(false);
       }
+
+      setIsSidebarDragging(false);
     };
 
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
@@ -176,13 +180,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       <div className="min-h-screen bg-[#F3F2EE] text-[#252525] font-sans">
       <div className="rw-app-frame min-h-screen w-full border-0 rounded-none overflow-hidden flex min-h-0 shadow-none">
         <aside
-          className={`hidden md:flex shrink-0 bg-[#FAF9F4]/96 backdrop-blur-xl border-r border-[#D9D8D2] flex-col z-40 transition-[width] duration-300 ease-out overflow-hidden ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`}
+          className={`hidden md:flex shrink-0 bg-[#F7F7F5]/96 backdrop-blur-xl border-r border-[#D9D8D2] flex-col z-40 transition-[width] duration-300 ease-out overflow-hidden ${isSidebarDragging ? 'select-none' : ''} ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`} style={{ touchAction: 'pan-y' }}
           aria-label="Sidebar navigation"
         >
           <div className={`p-3 ${isSidebarCollapsed ? 'md:p-3' : 'md:p-5'}`}>
             <div className={`flex items-center gap-2 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
-              {!isSidebarCollapsed && (
-                <Link href="/" data-ui-sound="click" title="ROLEWISE" aria-label="ROLEWISE home" className="flex items-center min-w-0 flex-1 group">
+              <Link href="/" data-ui-sound="click" title="ROLEWISE" aria-label="ROLEWISE home" aria-hidden={isSidebarCollapsed} className={`flex items-center min-w-0 group transition-all duration-200 overflow-hidden ${isSidebarCollapsed ? 'w-0 max-w-0 opacity-0 scale-95 pointer-events-none' : 'flex-1 opacity-100 scale-100'}`}>
                   <img
                     src="/rolewise-logo.svg"
                     alt="ROLEWISE"
@@ -192,7 +195,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                     className="w-[176px] h-auto max-h-10 object-contain object-left transition-transform duration-200 group-hover:scale-[1.015]"
                   />
                 </Link>
-              )}
               <button type="button" data-ui-sound="click" onClick={() => setIsSidebarCollapsed((value) => !value)} title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'} aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'} aria-expanded={!isSidebarCollapsed} aria-keyshortcuts="Control+B Meta+B" className={`w-9 h-9 flex items-center justify-center rounded-xl text-[#73757A] hover:text-[#5F6368] hover:bg-[#EAE9E4] transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isSidebarCollapsed ? 'mx-auto' : ''}`}>
                 {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
               </button>
@@ -210,9 +212,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   title={item.label}
                   aria-current={active ? 'page' : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 md:px-3.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${active ? 'bg-[#252525] text-[#8A8A8A] border border-[#252525]' : 'text-[#73757A] hover:bg-[#E8E7E2] hover:text-[#5F6368]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 md:px-3.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${active ? 'bg-[#252525] text-[#C8C8C8] border border-[#252525]' : 'text-[#686A6D] hover:bg-[#E8E7E2] hover:text-[#303234]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#8A8A8A]' : 'text-[#73757A] group-hover:text-[#5F6368]'}`} />
+                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#C8C8C8]' : 'text-[#686A6D] group-hover:text-[#303234]'}`} />
                   {!isSidebarCollapsed && <span className="inline truncate text-current">{item.label}</span>}
                 </Link>
               );
@@ -224,9 +226,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               href="/settings"
               title="Settings"
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 md:px-3.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isNavActive('/settings') ? 'bg-[#252525] text-[#C7C7C7] border border-[#252525]' : 'text-[#73757A] hover:bg-[#E8E7E2] hover:text-[#3F4246]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 md:px-3.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isNavActive('/settings') ? 'bg-[#252525] text-[#C8C8C8] border border-[#252525]' : 'text-[#686A6D] hover:bg-[#E8E7E2] hover:text-[#303234]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
             >
-              <Settings className={`w-4 h-4 shrink-0 ${isNavActive('/settings') ? 'text-[#8A8A8A]' : 'text-[#73757A]'}`} />
+              <Settings className={`w-4 h-4 shrink-0 ${isNavActive('/settings') ? 'text-[#C8C8C8]' : 'text-[#686A6D]'}`} />
               {!isSidebarCollapsed && <span className="inline text-current">Settings</span>}
             </Link>
 
@@ -315,8 +317,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             const Icon = item.icon;
             const active = isNavActive(item.href);
             return (
-              <Link key={item.label} href={item.href} data-ui-sound="click" aria-current={active ? 'page' : undefined} className={`touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-inset ${active ? 'text-[#252525]' : 'text-[#5F6368]'}`}>
-                <div className={`w-8 h-6 rounded-full flex items-center justify-center transition-all ${active ? 'bg-[#FFD84D]' : ''}`}><Icon className="w-4 h-4" /></div>
+              <Link key={item.label} href={item.href} data-ui-sound="click" aria-current={active ? 'page' : undefined} className={`touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-inset ${active ? 'text-[#252525]' : 'text-[#686A6D]'}`}>
+                <div className={`w-8 h-6 rounded-full flex items-center justify-center transition-all ${active ? 'bg-[#FFF2B8]' : ''}`}><Icon className="w-4 h-4" /></div>
                 <span className={`text-[10px] mt-0.5 ${active ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
               </Link>
             );
