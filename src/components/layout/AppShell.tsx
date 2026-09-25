@@ -166,8 +166,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         >
           <div className={`p-3 ${isSidebarCollapsed ? 'md:p-3' : 'md:p-5'}`}>
             <div className={`flex items-center gap-2 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
-              <div className="flex items-center gap-2 w-full">
-                <Link href="/" data-ui-sound="click" title="ROLEWISE" aria-label="ROLEWISE home" className={`flex items-center gap-3 group min-w-0 ${isSidebarCollapsed ? 'justify-center flex-1' : 'flex-1'}`}>
+              <div className={`flex items-center gap-2 w-full ${isSidebarCollapsed ? 'flex-col' : 'flex-row'}`}>
+                <Link href="/" data-ui-sound="click" title="ROLEWISE" aria-label="ROLEWISE home" className={`flex items-center gap-3 group min-w-0 ${isSidebarCollapsed ? 'justify-center w-full' : 'flex-1'}`}>
                   <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#B8B8B8] flex items-center justify-center font-bold text-base transition-transform duration-200 group-hover:scale-[1.04] shrink-0">R</div>
                   {!isSidebarCollapsed && (
                     <div className="min-w-0">
