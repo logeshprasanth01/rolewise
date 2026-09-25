@@ -60,7 +60,7 @@ export default function SettingsPage() {
       {/* Account Profile Card */}
       <div className="rolewise-card p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <User className="w-4 h-4 text-[#6D5DFB]" />
+          <User className="w-4 h-4 text-[#252525]" />
           <h2 className="text-sm font-semibold text-[#1F2937]">Account Information</h2>
         </div>
 
@@ -90,7 +90,7 @@ export default function SettingsPage() {
       {/* Device Permissions Check */}
       <div className="rolewise-card p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Mic className="w-4 h-4 text-[#6D5DFB]" />
+          <Mic className="w-4 h-4 text-[#252525]" />
           <h2 className="text-sm font-semibold text-[#1F2937]">Audio & Video Permissions</h2>
         </div>
         <p className="text-xs text-[#667085] leading-relaxed">
@@ -103,7 +103,7 @@ export default function SettingsPage() {
             onClick={handleTestMic}
             className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#1F2937] transition-all shadow-xs cursor-pointer"
           >
-            <Mic className="w-3.5 h-3.5 text-[#6D5DFB]" />
+            <Mic className="w-3.5 h-3.5 text-[#252525]" />
             <span>Test Microphone Permission</span>
           </button>
 
@@ -126,7 +126,7 @@ export default function SettingsPage() {
             onClick={handleTestCamera}
             className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#1F2937] transition-all shadow-xs cursor-pointer"
           >
-            <Video className="w-3.5 h-3.5 text-[#6D5DFB]" />
+            <Video className="w-3.5 h-3.5 text-[#252525]" />
             <span>Test Camera Permission</span>
           </button>
 
@@ -149,7 +149,7 @@ export default function SettingsPage() {
       {/* Privacy & Workspace Security */}
       <div className="rolewise-card p-6 space-y-3">
         <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-[#6D5DFB]" />
+          <Shield className="w-4 h-4 text-[#252525]" />
           <h2 className="text-sm font-semibold text-[#1F2937]">Privacy & Workspace Security</h2>
         </div>
         <p className="text-xs text-[#667085] leading-relaxed">
