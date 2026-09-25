@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { AuthView } from '@/components/auth/AuthView';
+import { playUiSound } from '@/lib/ui-sound';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -69,6 +70,18 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   useEffect(() => {
     setIsProfileOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const handleUiSound = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const trigger = target?.closest<HTMLElement>('[data-ui-sound]');
+      if (!trigger) return;
+      const type = trigger.dataset.uiSound === 'success' ? 'success' : 'click';
+      playUiSound(type);
+    };
+    document.addEventListener('click', handleUiSound);
+    return () => document.removeEventListener('click', handleUiSound);
+  }, []);
 
   if (isLoading) {
     return (
