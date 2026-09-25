@@ -121,14 +121,14 @@ export default function PreparationPage() {
       return (
         <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#C58A2B]">
           <span>Investigate</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3.5 h-3.5 pointer-events-none shrink-0" />
         </span>
       );
     }
     return (
       <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#252525]">
         <span>Practice</span>
-        <ArrowRight className="w-3.5 h-3.5" />
+        <ArrowRight className="w-3.5 h-3.5 pointer-events-none shrink-0" />
       </span>
     );
   };
