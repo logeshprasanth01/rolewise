@@ -283,9 +283,13 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
           <header className="sticky top-0 z-30 bg-[#F3F2EE]/55 backdrop-blur-xl border-b border-[#D9D8D2]/75">
             <div className="px-4 sm:px-6 lg:px-7 py-3 flex items-center gap-3">
-              <div className="flex items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FAF9F4] border border-[#D9D8D2] text-[#73757A] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all">
+              <div className="rw-search-shell flex items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FAF9F4] border border-[#D9D8D2] text-[#73757A] transition-all">
                 <Search className="w-3.5 h-3.5 shrink-0" />
-                <input type="text" placeholder="Search jobs, interviews, or topics..." className="bg-transparent border-none outline-none w-full text-xs text-[#252525] placeholder:text-[#9A9B9E]" />
+                <input
+                  type="text"
+                  placeholder="Search jobs, interviews, or topics..."
+                  className="rw-search-input bg-transparent border-none w-full text-xs text-[#252525] placeholder:text-[#9A9B9E]"
+                />
                 <kbd className="hidden sm:inline text-[9px] font-semibold px-1.5 py-0.5 rounded-md bg-[#F3F2EE] border border-[#D9D8D2]">⌘K</kbd>
               </div>
               <div className="ml-auto flex items-center gap-2">
