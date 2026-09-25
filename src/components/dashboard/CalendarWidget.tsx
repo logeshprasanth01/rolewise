@@ -375,7 +375,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
               aria-current={cell.isToday ? 'date' : undefined}
               className={`py-1.5 px-0.5 rounded-md text-[11px] flex flex-col items-center justify-center transition-all cursor-pointer relative group ${
                 cell.isSelected
-                  ? 'bg-[#FFD84D] text-white font-semibold shadow-xs'
+                  ? 'bg-[#FFD84D] text-[#252525] font-semibold shadow-xs'
                   : cell.isToday
                   ? 'border border-[#FFD84D] text-[#FFD84D] font-semibold hover:bg-[#FFF2B8]'
                   : cell.isCurrentMonth
@@ -388,7 +388,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
               {cell.hasEvents && (
                 <span
                   className={`w-1 h-1 rounded-full mt-0.5 ${
-                    cell.isSelected ? 'bg-white' : 'bg-[#FFD84D]'
+                    cell.isSelected ? 'bg-[#252525]' : 'bg-[#FFD84D]'
                   }`}
                 />
               )}
