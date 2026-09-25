@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #858B93;
+  --color-canvas: #EEF0F1;
   --color-surface: #FAF9F4;
   --color-surface-warm: #FFFBEF;
   --color-text-primary: #252525;
@@ -22,12 +22,12 @@
 }
 
 :root {
-  --background: #858B93;
+  --background: #EEF0F1;
   --foreground: #252525;
 }
 
 body {
-  background-color: #858B93;
+  background-color: #EEF0F1;
   color: #252525;
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -46,15 +46,15 @@ body {
 /* ROLEWISE 2026 visual system: cool grey -> warm ivory -> soft yellow */
 .rw-app-frame {
   background:
-    radial-gradient(circle at 88% 12%, rgba(255,216,77,.05) 0%, rgba(255,216,77,0) 28%),
-    radial-gradient(circle at 12% 88%, rgba(226,230,236,.42) 0%, rgba(226,230,236,0) 34%),
-    linear-gradient(120deg, #747A82 0%, #858B93 62%, #9A9FA5 100%);
+    radial-gradient(circle at 88% 12%, rgba(255,216,77,.18) 0%, rgba(255,216,77,0) 30%),
+    radial-gradient(circle at 10% 88%, rgba(232,235,237,.75) 0%, rgba(232,235,237,0) 38%),
+    linear-gradient(120deg, #EEF0F1 0%, #F3F2EE 58%, #FFF7D8 100%);
 }
 
 .rw-gradient-hero {
   background:
-    radial-gradient(circle at 90% 20%, rgba(255,216,77,.06) 0%, rgba(255,216,77,0) 34%),
-    linear-gradient(115deg, #767C84 0%, #8B9097 68%, #A2A6AB 100%);
+    radial-gradient(circle at 90% 20%, rgba(255,216,77,.20) 0%, rgba(255,216,77,0) 34%),
+    linear-gradient(115deg, #EEF0F1 0%, #F4F3EF 68%, #FFF5C9 100%);
 }
 
 .rw-gradient-surface {
@@ -330,23 +330,22 @@ html[data-accessibility="enhanced"] .rw-search-input:focus-visible {
 
 
 
-/* Sidebar: neutral-first navigation inspired by clean job-directory interfaces. */
+/* Sidebar: neutral-first navigation. Yellow is reserved for primary actions and small highlights. */
 .rw-sidebar-nav {
-  color: #686A6D;
+  color: #6B6F73;
 }
 .rw-sidebar-nav a,
 .rw-sidebar-nav button {
-  color: #686A6D;
+  color: #6B6F73;
 }
 .rw-sidebar-nav a:hover,
 .rw-sidebar-nav button:hover {
   color: #303234;
 }
 .rw-sidebar-nav a[aria-current="page"] {
-  color: #C8C8C8;
+  color: #F5F5F3;
 }
 
-/* Keep the yellow accent intentionally sparse: primary actions and small highlights only. */
 .rw-accent-yellow {
   background: #FFD84D;
   color: #252525;
