@@ -192,55 +192,64 @@ body {
 }
 
 
-/* WCAG 2.1 accessibility baseline */
-html {
+/* Optional accessibility enhancements — enabled only when the user turns them on. */
+html[data-accessibility="enhanced"] {
   scroll-behavior: smooth;
 }
 
-:focus-visible {
+html[data-accessibility="enhanced"] :focus-visible {
   outline: 3px solid #252525;
   outline-offset: 3px;
 }
 
-::selection {
+html[data-accessibility="enhanced"] ::selection {
   background: #252525;
   color: #FFFFFF;
 }
 
-button,
-a,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
-button:disabled,
-[aria-disabled="true"] {
+html[data-accessibility="enhanced"] button:disabled,
+html[data-accessibility="enhanced"] [aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
+html[data-accessibility="enhanced"] button,
+html[data-accessibility="enhanced"] a,
+html[data-accessibility="enhanced"] input,
+html[data-accessibility="enhanced"] textarea,
+html[data-accessibility="enhanced"] select {
+  font: inherit;
+}
+
+html[data-accessibility="enhanced"] {
+  --rw-focus-width: 3px;
+}
+
+html[data-accessibility="enhanced"] :focus-visible {
+  outline: var(--rw-focus-width) solid #252525;
+  outline-offset: 3px;
+}
+
 @media (prefers-contrast: more) {
-  .rw-app-frame {
+  html[data-accessibility="enhanced"] .rw-app-frame {
     background: #FFFFFF;
   }
 
-  .rolewise-card,
-  header,
-  aside,
-  nav {
+  html[data-accessibility="enhanced"] .rolewise-card,
+  html[data-accessibility="enhanced"] header,
+  html[data-accessibility="enhanced"] aside,
+  html[data-accessibility="enhanced"] nav {
     border-color: #555555 !important;
   }
 }
 
 @media (forced-colors: active) {
-  :focus-visible {
+  html[data-accessibility="enhanced"] :focus-visible {
     outline: 2px solid CanvasText;
   }
 
-  a,
-  button {
+  html[data-accessibility="enhanced"] a,
+  html[data-accessibility="enhanced"] button {
     forced-color-adjust: auto;
   }
 }
