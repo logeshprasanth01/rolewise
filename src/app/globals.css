@@ -182,3 +182,77 @@ body {
 .rw-app-frame {
   border-radius: 0 !important;
 }
+
+
+/* WCAG 2.1 accessibility baseline */
+html {
+  scroll-behavior: smooth;
+}
+
+:focus-visible {
+  outline: 3px solid #252525;
+  outline-offset: 3px;
+}
+
+::selection {
+  background: #252525;
+  color: #FFFFFF;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (prefers-contrast: more) {
+  .rw-app-frame {
+    background: #FFFFFF;
+  }
+
+  .rolewise-card,
+  header,
+  aside,
+  nav {
+    border-color: #555555 !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid CanvasText;
+  }
+
+  a,
+  button {
+    forced-color-adjust: auto;
+  }
+}
+
+.rw-skip-link {
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  z-index: 9999;
+  transform: translateY(-160%);
+  background: #252525;
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform 160ms ease;
+}
+
+.rw-skip-link:focus {
+  transform: translateY(0);
+}
