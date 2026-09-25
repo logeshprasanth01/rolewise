@@ -53,7 +53,7 @@ export default function PreparationPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#73757A]">
         <Loader2 className="w-6 h-6 animate-spin text-[#252525]" />
         <p className="text-xs sm:text-sm">Building your role preparation roadmap...</p>
       </div>
@@ -63,12 +63,12 @@ export default function PreparationPage() {
   if (!role) {
     return (
       <div className="rolewise-card p-8 max-w-lg mx-auto text-center space-y-4 my-12">
-        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#E87967] flex items-center justify-center mx-auto">
+        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#D97968] flex items-center justify-center mx-auto">
           <AlertCircle className="w-6 h-6" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-[#1F2937]">Role not found</h2>
-          <p className="text-xs text-[#667085]">Return to your jobs list to begin preparing.</p>
+          <h2 className="text-lg font-semibold text-[#252525]">Role not found</h2>
+          <p className="text-xs text-[#73757A]">Return to your jobs list to begin preparing.</p>
         </div>
         <Link
           href="/jobs"
@@ -85,7 +85,7 @@ export default function PreparationPage() {
     const combined = `${status || ''} ${alignment || ''}`.toLowerCase();
     if (combined.includes('attention') || combined.includes('not demonstrated')) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FFF0ED] text-[#E87967] text-[11px] font-semibold">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FFF0ED] text-[#D97968] text-[11px] font-semibold">
           <AlertCircle className="w-3 h-3" />
           <span>Needs attention</span>
         </span>
@@ -93,7 +93,7 @@ export default function PreparationPage() {
     }
     if (combined.includes('investigation')) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FFF5DF] text-[#C58A2B] text-[11px] font-semibold">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FFF2D2] text-[#C58A2B] text-[11px] font-semibold">
           <HelpCircle className="w-3 h-3" />
           <span>Needs investigation</span>
         </span>
@@ -108,7 +108,7 @@ export default function PreparationPage() {
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#EAF6F0] text-[#4E9B76] text-[11px] font-semibold">
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#EEF7F0] text-[#6FA77F] text-[11px] font-semibold">
         <CheckCircle2 className="w-3 h-3" />
         <span>Strong alignment</span>
       </span>
@@ -157,20 +157,20 @@ export default function PreparationPage() {
   ) || items[2] || items[1];
 
   const focusAreas = [
-    highPriorityItem ? { label: 'Needs Attention', item: highPriorityItem, color: 'text-[#E87967]', bg: 'bg-[#FFF0ED]', border: 'border-[#FCDAD5]' } : null,
-    practiceItem && practiceItem.id !== highPriorityItem?.id ? { label: 'Practice & Frame', item: practiceItem, color: 'text-[#252525]', bg: 'bg-[#FFF2B8]', border: 'border-[#DDD8FE]' } : null,
-    strengthItem && strengthItem.id !== highPriorityItem?.id && strengthItem.id !== practiceItem?.id ? { label: 'Key Strength', item: strengthItem, color: 'text-[#4E9B76]', bg: 'bg-[#EAF6F0]', border: 'border-[#CEECD9]' } : null,
+    highPriorityItem ? { label: 'Needs Attention', item: highPriorityItem, color: 'text-[#D97968]', bg: 'bg-[#FFF0ED]', border: 'border-[#F6D8D1]' } : null,
+    practiceItem && practiceItem.id !== highPriorityItem?.id ? { label: 'Practice & Frame', item: practiceItem, color: 'text-[#252525]', bg: 'bg-[#FFF2B8]', border: 'border-[#FFF2B8]' } : null,
+    strengthItem && strengthItem.id !== highPriorityItem?.id && strengthItem.id !== practiceItem?.id ? { label: 'Key Strength', item: strengthItem, color: 'text-[#6FA77F]', bg: 'bg-[#EEF7F0]', border: 'border-[#DDEEDF]' } : null,
   ].filter(Boolean) as { label: string; item: PreparationItem; color: string; bg: string; border: string }[];
 
   if (items.length === 0) {
     return (
       <div className="rolewise-card p-8 max-w-lg mx-auto text-center space-y-4 my-12 animate-in fade-in">
-        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#E87967] flex items-center justify-center mx-auto">
+        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#D97968] flex items-center justify-center mx-auto">
           <AlertCircle className="w-6 h-6" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-[#1F2937]">Role preparation couldn&apos;t be loaded.</h2>
-          <p className="text-xs text-[#667085]">
+          <h2 className="text-lg font-semibold text-[#252525]">Role preparation couldn&apos;t be loaded.</h2>
+          <p className="text-xs text-[#73757A]">
             Role analysis may still be processing or requires re-analysis.
           </p>
         </div>
@@ -192,7 +192,7 @@ export default function PreparationPage() {
       {/* Breadcrumb Back */}
       <Link
         href={`/roles/${role.id}/fit`}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#667085] hover:text-[#1F2937] transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#73757A] hover:text-[#252525] transition-colors"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
         <span>Back to Role Fit</span>
@@ -200,12 +200,12 @@ export default function PreparationPage() {
 
       {/* HEADER SECTION (PRD Requirement 5) */}
       <section className="space-y-1">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#1F2937] tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">
           Prepare for your interview
         </h1>
-        <p className="text-xs sm:text-sm text-[#667085]">
+        <p className="text-xs sm:text-sm text-[#73757A]">
           Focus on the areas that matter most for{' '}
-          <strong className="text-[#1F2937]">{role.title}</strong> at {role.company}.
+          <strong className="text-[#252525]">{role.title}</strong> at {role.company}.
         </p>
       </section>
 
@@ -214,7 +214,7 @@ export default function PreparationPage() {
         {/* LEFT COLUMN: Preparation Area Cards */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between pb-1">
-            <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#73757A] uppercase tracking-wider">
               {items.length} Preparation Areas Identified
             </span>
           </div>
@@ -228,23 +228,23 @@ export default function PreparationPage() {
                 <div className="flex items-center gap-2">
                   {getStatusBadge(item.status, item.alignment_status)}
                 </div>
-                <div className="flex items-center gap-1 text-xs font-semibold text-[#4E9B76]">
+                <div className="flex items-center gap-1 text-xs font-semibold text-[#6FA77F]">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Ready to practice</span>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <h3 className="text-sm sm:text-base font-semibold text-[#1F2937]">
+                <h3 className="text-sm sm:text-base font-semibold text-[#252525]">
                   {item.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-[#475467] leading-relaxed">
+                <p className="text-xs sm:text-sm text-[#55565A] leading-relaxed">
                   {item.description}
                 </p>
               </div>
 
-              <div className="pt-2 border-t border-[#E7E8EF] flex items-center justify-between">
-                <span className="text-[11px] text-[#98A2B3]">Derived from role fit findings</span>
+              <div className="pt-2 border-t border-[#D9D8D2] flex items-center justify-between">
+                <span className="text-[11px] text-[#9A9B9E]">Derived from role fit findings</span>
                 <Link
                   href={`/roles/${role.id}/interview`}
                   className="touch-target inline-flex items-center gap-1 text-xs font-semibold text-[#252525] hover:text-[#E7C43E] transition-colors"
@@ -256,11 +256,11 @@ export default function PreparationPage() {
           ))}
 
           {/* Practical Tip Callout */}
-          <div className="p-4 rounded-xl bg-[#FFF2B8]/60 border border-[#DDD8FE] flex items-start gap-3 text-xs text-[#1F2937]">
+          <div className="p-4 rounded-xl bg-[#FFF2B8]/60 border border-[#FFF2B8] flex items-start gap-3 text-xs text-[#252525]">
             <Lightbulb className="w-4 h-4 text-[#252525] shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <span className="font-semibold">Preparation Strategy: </span>
-              <span className="text-[#475467]">
+              <span className="text-[#55565A]">
                 Focus on the areas marked for practice or investigation to feel more confident during your AI interview session.
               </span>
             </div>
@@ -276,8 +276,8 @@ export default function PreparationPage() {
                 <Briefcase className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-xs sm:text-sm font-semibold text-[#1F2937] truncate">{role.title}</h3>
-                <p className="text-xs text-[#667085] truncate">{role.company}</p>
+                <h3 className="text-xs sm:text-sm font-semibold text-[#252525] truncate">{role.title}</h3>
+                <p className="text-xs text-[#73757A] truncate">{role.company}</p>
               </div>
             </div>
 
@@ -293,7 +293,7 @@ export default function PreparationPage() {
 
               <Link
                 href={`/roles/${role.id}/fit`}
-                className="w-full touch-target inline-flex items-center justify-center py-2.5 px-4 rounded-xl border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#667085] transition-colors"
+                className="w-full touch-target inline-flex items-center justify-center py-2.5 px-4 rounded-xl border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs font-semibold text-[#73757A] transition-colors"
               >
                 Back to role fit
               </Link>
@@ -303,7 +303,7 @@ export default function PreparationPage() {
           {/* Dynamic Interview Focus Summary */}
           {focusAreas.length > 0 && (
             <div className="rolewise-card p-5 space-y-3">
-              <h4 className="text-xs font-semibold text-[#1F2937] uppercase tracking-wider">
+              <h4 className="text-xs font-semibold text-[#252525] uppercase tracking-wider">
                 Interview Focus
               </h4>
               <div className="space-y-2 text-xs">
@@ -314,7 +314,7 @@ export default function PreparationPage() {
                   >
                     <div>
                       <p className={`text-[10px] uppercase font-semibold ${f.color}`}>{f.label}</p>
-                      <p className="font-semibold text-[#1F2937] truncate max-w-[200px]">{f.item.title}</p>
+                      <p className="font-semibold text-[#252525] truncate max-w-[200px]">{f.item.title}</p>
                     </div>
                   </div>
                 ))}
@@ -324,12 +324,12 @@ export default function PreparationPage() {
 
           {/* Before Your Interview Checklist (Image 5) */}
           <div className="rolewise-card p-5 space-y-3">
-            <h4 className="text-xs font-semibold text-[#1F2937] flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-[#252525] flex items-center gap-1.5">
               <CheckSquare className="w-3.5 h-3.5 text-[#252525]" />
               <span>Before your interview</span>
             </h4>
 
-            <ul className="space-y-2.5 text-xs text-[#475467]">
+            <ul className="space-y-2.5 text-xs text-[#55565A]">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-[#252525] shrink-0 mt-0.5" />
                 <span>Review your strongest project examples</span>
