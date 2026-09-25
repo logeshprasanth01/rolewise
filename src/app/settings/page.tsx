@@ -102,6 +102,10 @@ export default function SettingsPage() {
     window.localStorage.setItem(ACCESSIBILITY_KEY, String(accessibilityEnabled));
     window.localStorage.setItem(REDUCED_MOTION_KEY, String(reducedMotion));
     window.localStorage.setItem(NOTIFICATIONS_KEY, String(notificationsEnabled));
+
+    // Notify the app shell immediately so the accessibility UI is applied once,
+    // without requiring a route change or page refresh.
+    window.dispatchEvent(new Event('rolewise-accessibility-change'));
   }, [accessibilityEnabled, reducedMotion, notificationsEnabled]);
 
   const handleAvatarUpload = (event: ChangeEvent<HTMLInputElement>) => {
