@@ -177,7 +177,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   return (
     <>
       {accessibilityEnabled && <a href="#main-content" className="rw-skip-link">Skip to main content</a>}
-      <div className="min-h-screen bg-[#858B93] text-[#252525] font-sans">
+      <div className="min-h-screen bg-[#EEF0F1] text-[#252525] font-sans">
       <div className="rw-app-frame min-h-screen w-full border-0 rounded-none overflow-hidden flex min-h-0 shadow-none">
         <aside
           className={`rw-sidebar-nav hidden md:flex shrink-0 bg-[#FAF9F4]/96 backdrop-blur-xl border-r border-[#D9D8D2] flex-col z-40 transition-[width] duration-300 ease-out overflow-hidden ${isSidebarDragging ? 'select-none' : ''} ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`} style={{ touchAction: 'pan-y' }}
@@ -193,9 +193,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   title="Open ROLEWISE sidebar"
                   aria-label="Open ROLEWISE sidebar"
                   aria-expanded={false}
-                  className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#FFD84D] flex items-center justify-center font-bold text-base shadow-sm hover:scale-[1.02] transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD84D] focus-visible:ring-offset-2"
+                  className="w-10 h-10 rounded-[14px] bg-transparent text-[#6B6F73] flex items-center justify-center shadow-none hover:bg-[#F0F0EE] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
                 >
-                  R
+                  <PanelLeftOpen className="w-4 h-4" />
                 </button>
               ) : (
                 <>
@@ -237,23 +237,23 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   title={item.label}
                   aria-current={active ? 'page' : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 md:px-3.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${active ? 'bg-[#252525] text-[#FFD84D] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#252525] hover:bg-[#F3F2EE] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 md:px-3.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${active ? 'bg-[#252525] text-[#F5F5F3] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.10)]' : 'text-[#6B6F73] hover:bg-[#F1F1EF] hover:text-[#303234]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#FFD84D]' : 'text-[#5F6368] group-hover:text-[#252525]'}`} />
+                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#D6D6D2]' : 'text-[#777B80] group-hover:text-[#303234]'}`} />
                   {!isSidebarCollapsed && <span className="inline truncate text-current">{item.label}</span>}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="p-2 md:p-3 space-y-2 border-t border-[#454545]">
+          <div className="p-2 md:p-3 space-y-2 border-t border-[#E2E1DC]">
             <Link
               href="/settings"
               title="Settings"
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 md:px-3.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isNavActive('/settings') ? 'bg-[#252525] text-[#C8C8C8] border border-[#252525]' : 'text-[#252525] hover:bg-[#F3F2EE] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 md:px-3.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isNavActive('/settings') ? 'bg-[#252525] text-[#F5F5F3] border border-[#252525]' : 'text-[#6B6F73] hover:bg-[#F1F1EF] hover:text-[#303234]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
             >
-              <Settings className={`w-4 h-4 shrink-0 ${isNavActive('/settings') ? 'text-[#D8D8D8]' : 'text-[#A8A8A8]'}`} />
+              <Settings className={`w-4 h-4 shrink-0 ${isNavActive('/settings') ? 'text-[#D6D6D2]' : 'text-[#777B80]'}`} />
               {!isSidebarCollapsed && <span className="inline text-current">Settings</span>}
             </Link>
 
@@ -263,18 +263,18 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 onClick={() => setIsProfileOpen((value) => !value)}
                 title="Profile"
                 aria-expanded={isProfileOpen}
-                className="w-full flex items-center gap-3 min-h-12 rounded-[15px] px-2.5 lg:px-3 bg-[#383838] border border-[#505050] hover:border-[#A9A9A4] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
+                className="w-full flex items-center gap-3 min-h-12 rounded-[15px] px-2.5 lg:px-3 bg-[#F2F2EF] border border-[#D9D8D2] hover:border-[#BFC0BA] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
               >
                 {user?.user_metadata?.avatar_url ? (
                   <img src={user.user_metadata.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover border border-[#D9D8D2] shrink-0" />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-[#252525] text-[#FFD84D] font-bold text-xs flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-[#252525] text-[#F5F5F3] font-bold text-xs flex items-center justify-center shrink-0">
                     {userName ? userName[0].toUpperCase() : 'U'}
                   </div>
                 )}
                 {!isSidebarCollapsed && (
                   <div className="block min-w-0 text-left flex-1">
-                    <p className="text-xs font-bold text-[#252525] truncate">My account</p>
+                    <p className="text-xs font-bold text-[#303234] truncate">My account</p>
                     <p className="text-[10px] text-[#73757A] truncate">Account settings</p>
                   </div>
                 )}
@@ -303,7 +303,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               )}
             </div>
 
-            <button type="button" data-ui-sound="click" onClick={() => signOut()} className="flex w-full items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-xs font-semibold text-[#252525] hover:bg-[#F3F2EE] hover:text-[#252525] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2">
+            <button type="button" data-ui-sound="click" onClick={() => signOut()} className="flex w-full items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-xs font-semibold text-[#6B6F73] hover:bg-[#F1F1EF] hover:text-[#303234] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2">
               <LogOut className="w-4 h-4" /> Sign out
             </button>
           </div>
