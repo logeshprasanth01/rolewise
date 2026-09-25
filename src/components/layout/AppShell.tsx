@@ -53,8 +53,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const isNavActive = (href: string) => {
     if (href === '/') return pathname === '/' || pathname === '/dashboard';
     if (href === '/jobs') return pathname === '/jobs' || pathname.startsWith('/jobs/new');
-    if (href === '/roles') return pathname.startsWith('/roles');
+    // Role-specific preparation routes also contain "/roles/.../preparation".
+    // They belong exclusively to Preparation, never AI Interview.
     if (href === '/preparation') return pathname.startsWith('/preparation') || pathname.includes('/preparation');
+    if (href === '/roles') return pathname.startsWith('/roles') && !pathname.includes('/preparation');
     return pathname?.startsWith(href);
   };
 
