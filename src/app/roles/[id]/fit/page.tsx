@@ -133,7 +133,7 @@ export default function RoleFitPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
-        <Loader2 className="w-6 h-6 animate-spin text-[#6D5DFB]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[#252525]" />
         <p className="text-xs sm:text-sm">Connecting your experience to role requirements...</p>
       </div>
     );
@@ -151,7 +151,7 @@ export default function RoleFitPage() {
         </div>
         <Link
           href="/jobs/new"
-          className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#6D5DFB] text-white text-xs font-semibold"
+          className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FFD84D] text-[#252525] text-xs font-semibold"
         >
           <span>Add a job</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -178,7 +178,7 @@ export default function RoleFitPage() {
             type="button"
             onClick={handleTryAgain}
             disabled={isRetrying}
-            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#252525] hover:bg-[#E7C43E] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
           >
             {isRetrying ? (
               <>
@@ -228,7 +228,7 @@ export default function RoleFitPage() {
     }
     if (s.includes('transferable')) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#EEECFF] text-[#6D5DFB] text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#FFF2B8] text-[#252525] text-xs font-semibold">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Transferable</span>
         </span>
@@ -265,7 +265,7 @@ export default function RoleFitPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-md bg-[#EEECFF] text-[#6D5DFB] text-xs font-semibold">
+            <span className="px-2.5 py-0.5 rounded-md bg-[#FFF2B8] text-[#252525] text-xs font-semibold">
               Requirement Analysis
             </span>
             <span className="text-xs text-[#667085]">
@@ -284,7 +284,7 @@ export default function RoleFitPage() {
         <div className="shrink-0">
           <Link
             href={`/roles/${role.id}/preparation`}
-            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#252525] hover:bg-[#E7C43E] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
           >
             <span>Prepare for this role</span>
             <ArrowRight className="w-4 h-4" />
@@ -311,11 +311,11 @@ export default function RoleFitPage() {
           onClick={() => setStatusFilter(statusFilter === 'transferable' ? 'all' : 'transferable')}
           className={`p-3.5 rounded-xl border text-left transition-all ${
             statusFilter === 'transferable'
-              ? 'bg-[#EEECFF] border-[#6D5DFB]'
-              : 'bg-white border-[#E7E8EF] hover:border-[#6D5DFB]'
+              ? 'bg-[#FFF2B8] border-[#252525]'
+              : 'bg-white border-[#E7E8EF] hover:border-[#252525]'
           }`}
         >
-          <p className="text-xs font-semibold text-[#6D5DFB]">Transferable</p>
+          <p className="text-xs font-semibold text-[#252525]">Transferable</p>
           <p className="text-lg font-bold text-[#1F2937]">{counts.transferable}</p>
           <p className="text-[11px] text-[#667085]">Related competencies</p>
         </button>
@@ -349,7 +349,7 @@ export default function RoleFitPage() {
 
       {/* PRD SCOPE GUIDANCE BANNER (Strict rule: Explain statuses humanely) */}
       <div className="p-3.5 rounded-xl bg-[#F7F7FB] border border-[#E7E8EF] flex items-start gap-3 text-xs text-[#667085]">
-        <Info className="w-4 h-4 text-[#6D5DFB] shrink-0 mt-0.5" />
+        <Info className="w-4 h-4 text-[#252525] shrink-0 mt-0.5" />
         <div>
           <span className="font-semibold text-[#1F2937]">How ROLEWISE analyzes your fit: </span>
           <span>
@@ -385,8 +385,8 @@ export default function RoleFitPage() {
             onClick={() => setStatusFilter('transferable')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               statusFilter === 'transferable'
-                ? 'bg-[#6D5DFB] text-white'
-                : 'text-[#667085] hover:text-[#6D5DFB] hover:bg-white'
+                ? 'bg-[#FFD84D] text-[#252525]'
+                : 'text-[#667085] hover:text-[#252525] hover:bg-white'
             }`}
           >
             Transferable ({counts.transferable})
@@ -463,7 +463,7 @@ export default function RoleFitPage() {
 
                   {/* Concrete Candidate Evidence Quote */}
                   <div className="space-y-1.5 p-3.5 rounded-xl bg-white border border-[#E7E8EF]">
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-[#6D5DFB]">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-[#252525]">
                       <FileCheck className="w-3.5 h-3.5" />
                       <span>Candidate Evidence in Supplied Background</span>
                     </div>
@@ -489,7 +489,7 @@ export default function RoleFitPage() {
 
         <Link
           href={`/roles/${role.id}/preparation`}
-          className="touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+          className="touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#252525] hover:bg-[#E7C43E] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
         >
           <span>Prepare for this role</span>
           <ArrowRight className="w-4 h-4" />
