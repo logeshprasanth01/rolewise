@@ -144,7 +144,7 @@ export default function VoicePracticePage() {
 
       {/* Header */}
       <section className="space-y-1">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EEECFF] text-[#6D5DFB] text-xs font-semibold">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FFF2B8] text-[#252525] text-xs font-semibold">
           <Mic className="w-3.5 h-3.5" />
           <span>Voice Practice</span>
         </div>
@@ -230,7 +230,7 @@ export default function VoicePracticePage() {
       {/* Prompt Card */}
       <section className="rolewise-card p-6 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEECFF] text-[#6D5DFB]">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFF2B8] text-[#252525]">
             <Sparkles className="w-3.5 h-3.5" />
             General Interview Communication
           </span>
@@ -258,7 +258,7 @@ export default function VoicePracticePage() {
             <button
               type="button"
               onClick={handleStart}
-              className="touch-target inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm cursor-pointer"
+              className="touch-target inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-medium transition-colors shadow-sm cursor-pointer"
             >
               <Mic className="w-5 h-5" />
               <span>Start recording</span>
@@ -342,7 +342,7 @@ export default function VoicePracticePage() {
             <button
               type="button"
               onClick={() => handleAnalyze()}
-              className="touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm cursor-pointer"
+              className="touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-medium transition-colors shadow-sm cursor-pointer"
             >
               <span>Get feedback</span>
               <ArrowRight className="w-4 h-4" />
@@ -354,7 +354,7 @@ export default function VoicePracticePage() {
       {/* STATE 4: PROCESSING */}
       {flowState === 'PROCESSING' && (
         <div className="rolewise-card p-8 space-y-3 text-center animate-in fade-in">
-          <Loader2 className="w-6 h-6 animate-spin text-[#6D5DFB] mx-auto" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#252525] mx-auto" />
           <h3 className="text-sm font-semibold text-[#1F2937]">Analyzing your communication...</h3>
           <p className="text-xs text-[#667085]">
             Evaluating clarity, structure, conciseness, and key talking points.
@@ -375,7 +375,7 @@ export default function VoicePracticePage() {
                 clearPermissionError();
                 setFlowState('READY');
               }}
-              className="text-xs text-[#6D5DFB] hover:underline flex items-center gap-1 cursor-pointer"
+              className="text-xs text-[#252525] hover:underline flex items-center gap-1 cursor-pointer"
             >
               <Mic className="w-3.5 h-3.5" />
               <span>Record with voice instead</span>
@@ -388,7 +388,7 @@ export default function VoicePracticePage() {
             value={typedAnswer}
             onChange={(e) => setTypedAnswer(e.target.value)}
             placeholder="Type your answer to this question..."
-            className="w-full p-4 rounded-xl border border-[#E7E8EF] text-sm text-[#1F2937] placeholder:text-[#667085]/60 focus:outline-none focus:border-[#6D5DFB] bg-white transition-colors resize-y leading-relaxed"
+            className="w-full p-4 rounded-xl border border-[#E7E8EF] text-sm text-[#1F2937] placeholder:text-[#667085]/60 focus:outline-none focus:border-[#252525] bg-white transition-colors resize-y leading-relaxed"
           />
 
           <div className="flex items-center justify-end gap-3 pt-2">
@@ -396,7 +396,7 @@ export default function VoicePracticePage() {
               type="button"
               disabled={!typedAnswer.trim()}
               onClick={() => handleAnalyze(typedAnswer)}
-              className="touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+              className="touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-medium transition-colors shadow-sm cursor-pointer disabled:opacity-50"
             >
               <span>Submit answer</span>
               <ArrowRight className="w-4 h-4" />
@@ -417,7 +417,7 @@ export default function VoicePracticePage() {
               <button
                 type="button"
                 onClick={handleReRecord}
-                className="text-xs text-[#6D5DFB] font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs text-[#252525] font-medium hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Practice another answer</span>
@@ -497,7 +497,7 @@ export default function VoicePracticePage() {
             <button
               type="button"
               onClick={handleReRecord}
-              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-medium transition-colors shadow-sm"
+              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-medium transition-colors shadow-sm"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Practice again</span>
