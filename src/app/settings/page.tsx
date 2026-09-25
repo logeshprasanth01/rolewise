@@ -87,8 +87,18 @@ export default function SettingsPage() {
   }, [user, userName]);
 
   useEffect(() => {
-    document.documentElement.dataset.accessibility = accessibilityEnabled ? 'enhanced' : 'standard';
-    document.documentElement.dataset.reducedMotion = reducedMotion ? 'true' : 'false';
+    if (accessibilityEnabled) {
+      document.documentElement.dataset.accessibility = 'enhanced';
+    } else {
+      document.documentElement.removeAttribute('data-accessibility');
+    }
+
+    if (reducedMotion) {
+      document.documentElement.dataset.reducedMotion = 'true';
+    } else {
+      document.documentElement.removeAttribute('data-reduced-motion');
+    }
+
     window.localStorage.setItem(ACCESSIBILITY_KEY, String(accessibilityEnabled));
     window.localStorage.setItem(REDUCED_MOTION_KEY, String(reducedMotion));
     window.localStorage.setItem(NOTIFICATIONS_KEY, String(notificationsEnabled));
@@ -271,15 +281,15 @@ export default function SettingsPage() {
           <Accessibility className="w-4 h-4 text-[#5F6368]" />
           <div>
             <h2 className="text-sm font-semibold text-[#252525]">Accessibility</h2>
-            <p className="text-xs text-[#73757A]">Accessibility controls aligned with WCAG 2.1 principles.</p>
+            <p className="text-xs text-[#73757A]">Optional interface enhancements for clearer focus, contrast, and interaction.</p>
           </div>
         </div>
 
         <Toggle
           checked={accessibilityEnabled}
           onChange={setAccessibilityEnabled}
-          label="WCAG 2.1 accessibility support"
-          description="Enable stronger keyboard focus, contrast, readable controls, and accessibility-friendly interaction defaults."
+          label="Accessibility enhancements"
+          description="Turn on stronger focus visibility, contrast, readable controls, and accessibility-friendly interaction defaults."
         />
         <Toggle
           checked={reducedMotion}
