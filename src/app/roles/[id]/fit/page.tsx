@@ -132,7 +132,7 @@ export default function RoleFitPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#73757A]">
         <Loader2 className="w-6 h-6 animate-spin text-[#252525]" />
         <p className="text-xs sm:text-sm">Connecting your experience to role requirements...</p>
       </div>
@@ -142,12 +142,12 @@ export default function RoleFitPage() {
   if (!role) {
     return (
       <div className="rolewise-card p-8 max-w-lg mx-auto text-center space-y-4 my-12">
-        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#E87967] flex items-center justify-center mx-auto">
+        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#D97968] flex items-center justify-center mx-auto">
           <AlertCircle className="w-6 h-6" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-[#1F2937]">Role context not found</h2>
-          <p className="text-xs text-[#667085]">Add a job description to build requirement-level role fit.</p>
+          <h2 className="text-lg font-semibold text-[#252525]">Role context not found</h2>
+          <p className="text-xs text-[#73757A]">Add a job description to build requirement-level role fit.</p>
         </div>
         <Link
           href="/jobs/new"
@@ -164,12 +164,12 @@ export default function RoleFitPage() {
   if (fitAnalysis.length === 0) {
     return (
       <div className="rolewise-card p-8 max-w-lg mx-auto text-center space-y-4 my-12 animate-in fade-in">
-        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#E87967] flex items-center justify-center mx-auto">
+        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#D97968] flex items-center justify-center mx-auto">
           <AlertCircle className="w-6 h-6" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-[#1F2937]">Role analysis couldn&apos;t be completed.</h2>
-          <p className="text-xs text-[#667085]">
+          <h2 className="text-lg font-semibold text-[#252525]">Role analysis couldn&apos;t be completed.</h2>
+          <p className="text-xs text-[#73757A]">
             Your job and experience are saved. Try analyzing again.{retryError ? ` (${retryError})` : ''}
           </p>
         </div>
@@ -220,7 +220,7 @@ export default function RoleFitPage() {
     const s = status.toLowerCase();
     if (s.includes('strong')) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#EAF6F0] text-[#4E9B76] text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#EEF7F0] text-[#6FA77F] text-xs font-semibold">
           <CheckCircle2 className="w-3.5 h-3.5" />
           <span>Strong alignment</span>
         </span>
@@ -236,14 +236,14 @@ export default function RoleFitPage() {
     }
     if (s.includes('investigation')) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#FFF5DF] text-[#C58A2B] text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#FFF2D2] text-[#C58A2B] text-xs font-semibold">
           <HelpCircle className="w-3.5 h-3.5" />
           <span>Needs investigation</span>
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#FFF0ED] text-[#E87967] text-xs font-semibold">
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#FFF0ED] text-[#D97968] text-xs font-semibold">
         <AlertCircle className="w-3.5 h-3.5" />
         <span>Not demonstrated</span>
       </span>
@@ -255,7 +255,7 @@ export default function RoleFitPage() {
       {/* Back Breadcrumb */}
       <Link
         href="/jobs"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#667085] hover:text-[#1F2937] transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#73757A] hover:text-[#252525] transition-colors"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
         <span>Back to My Jobs</span>
@@ -268,15 +268,15 @@ export default function RoleFitPage() {
             <span className="px-2.5 py-0.5 rounded-md bg-[#FFF2B8] text-[#252525] text-xs font-semibold">
               Requirement Analysis
             </span>
-            <span className="text-xs text-[#667085]">
+            <span className="text-xs text-[#73757A]">
               {role.company} · {role.location || 'Remote'}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#1F2937] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">
             Your fit for this role
           </h1>
-          <p className="text-xs sm:text-sm text-[#667085]">
-            Target Role: <strong className="text-[#1F2937]">{role.title}</strong> at {role.company}
+          <p className="text-xs sm:text-sm text-[#73757A]">
+            Target Role: <strong className="text-[#252525]">{role.title}</strong> at {role.company}
           </p>
         </div>
 
@@ -298,13 +298,13 @@ export default function RoleFitPage() {
           onClick={() => setStatusFilter(statusFilter === 'strong' ? 'all' : 'strong')}
           className={`p-3.5 rounded-xl border text-left transition-all ${
             statusFilter === 'strong'
-              ? 'bg-[#EAF6F0] border-[#4E9B76]'
-              : 'bg-white border-[#E7E8EF] hover:border-[#4E9B76]'
+              ? 'bg-[#EEF7F0] border-[#6FA77F]'
+              : 'bg-white border-[#D9D8D2] hover:border-[#6FA77F]'
           }`}
         >
-          <p className="text-xs font-semibold text-[#4E9B76]">Strong alignment</p>
-          <p className="text-lg font-bold text-[#1F2937]">{counts.strong}</p>
-          <p className="text-[11px] text-[#667085]">Demonstrated experience</p>
+          <p className="text-xs font-semibold text-[#6FA77F]">Strong alignment</p>
+          <p className="text-lg font-bold text-[#252525]">{counts.strong}</p>
+          <p className="text-[11px] text-[#73757A]">Demonstrated experience</p>
         </button>
 
         <button
@@ -312,46 +312,46 @@ export default function RoleFitPage() {
           className={`p-3.5 rounded-xl border text-left transition-all ${
             statusFilter === 'transferable'
               ? 'bg-[#FFF2B8] border-[#252525]'
-              : 'bg-white border-[#E7E8EF] hover:border-[#252525]'
+              : 'bg-white border-[#D9D8D2] hover:border-[#252525]'
           }`}
         >
           <p className="text-xs font-semibold text-[#252525]">Transferable</p>
-          <p className="text-lg font-bold text-[#1F2937]">{counts.transferable}</p>
-          <p className="text-[11px] text-[#667085]">Related competencies</p>
+          <p className="text-lg font-bold text-[#252525]">{counts.transferable}</p>
+          <p className="text-[11px] text-[#73757A]">Related competencies</p>
         </button>
 
         <button
           onClick={() => setStatusFilter(statusFilter === 'investigation' ? 'all' : 'investigation')}
           className={`p-3.5 rounded-xl border text-left transition-all ${
             statusFilter === 'investigation'
-              ? 'bg-[#FFF5DF] border-[#C58A2B]'
-              : 'bg-white border-[#E7E8EF] hover:border-[#C58A2B]'
+              ? 'bg-[#FFF2D2] border-[#C58A2B]'
+              : 'bg-white border-[#D9D8D2] hover:border-[#C58A2B]'
           }`}
         >
           <p className="text-xs font-semibold text-[#C58A2B]">Needs investigation</p>
-          <p className="text-lg font-bold text-[#1F2937]">{counts.investigation}</p>
-          <p className="text-[11px] text-[#667085]">Insufficient evidence</p>
+          <p className="text-lg font-bold text-[#252525]">{counts.investigation}</p>
+          <p className="text-[11px] text-[#73757A]">Insufficient evidence</p>
         </button>
 
         <button
           onClick={() => setStatusFilter(statusFilter === 'not_demonstrated' ? 'all' : 'not_demonstrated')}
           className={`p-3.5 rounded-xl border text-left transition-all ${
             statusFilter === 'not_demonstrated'
-              ? 'bg-[#FFF0ED] border-[#E87967]'
-              : 'bg-white border-[#E7E8EF] hover:border-[#E87967]'
+              ? 'bg-[#FFF0ED] border-[#D97968]'
+              : 'bg-white border-[#D9D8D2] hover:border-[#D97968]'
           }`}
         >
-          <p className="text-xs font-semibold text-[#E87967]">Not demonstrated</p>
-          <p className="text-lg font-bold text-[#1F2937]">{counts.notDemonstrated}</p>
-          <p className="text-[11px] text-[#667085]">Missing from context</p>
+          <p className="text-xs font-semibold text-[#D97968]">Not demonstrated</p>
+          <p className="text-lg font-bold text-[#252525]">{counts.notDemonstrated}</p>
+          <p className="text-[11px] text-[#73757A]">Missing from context</p>
         </button>
       </div>
 
       {/* PRD SCOPE GUIDANCE BANNER (Strict rule: Explain statuses humanely) */}
-      <div className="p-3.5 rounded-xl bg-[#F7F7FB] border border-[#E7E8EF] flex items-start gap-3 text-xs text-[#667085]">
+      <div className="p-3.5 rounded-xl bg-[#F3F2EE] border border-[#D9D8D2] flex items-start gap-3 text-xs text-[#73757A]">
         <Info className="w-4 h-4 text-[#252525] shrink-0 mt-0.5" />
         <div>
-          <span className="font-semibold text-[#1F2937]">How ROLEWISE analyzes your fit: </span>
+          <span className="font-semibold text-[#252525]">How ROLEWISE analyzes your fit: </span>
           <span>
             “Needs investigation” signifies insufficient evidence in the provided materials. “Not demonstrated” means the supplied experience does not mention the requirement. ROLEWISE does not infer a lack of ability from missing evidence.
           </span>
@@ -359,14 +359,14 @@ export default function RoleFitPage() {
       </div>
 
       {/* FILTER TABS */}
-      <div className="flex items-center justify-between border-b border-[#E7E8EF] pb-3">
+      <div className="flex items-center justify-between border-b border-[#D9D8D2] pb-3">
         <div className="flex items-center gap-1.5 overflow-x-auto">
           <button
             onClick={() => setStatusFilter('all')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               statusFilter === 'all'
-                ? 'bg-[#1F2937] text-white'
-                : 'text-[#667085] hover:text-[#1F2937] hover:bg-white'
+                ? 'bg-[#252525] text-white'
+                : 'text-[#73757A] hover:text-[#252525] hover:bg-white'
             }`}
           >
             All Requirements ({counts.total})
@@ -375,8 +375,8 @@ export default function RoleFitPage() {
             onClick={() => setStatusFilter('strong')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               statusFilter === 'strong'
-                ? 'bg-[#4E9B76] text-white'
-                : 'text-[#667085] hover:text-[#4E9B76] hover:bg-white'
+                ? 'bg-[#6FA77F] text-white'
+                : 'text-[#73757A] hover:text-[#6FA77F] hover:bg-white'
             }`}
           >
             Strong Alignment ({counts.strong})
@@ -386,7 +386,7 @@ export default function RoleFitPage() {
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               statusFilter === 'transferable'
                 ? 'bg-[#FFD84D] text-[#252525]'
-                : 'text-[#667085] hover:text-[#252525] hover:bg-white'
+                : 'text-[#73757A] hover:text-[#252525] hover:bg-white'
             }`}
           >
             Transferable ({counts.transferable})
@@ -396,7 +396,7 @@ export default function RoleFitPage() {
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               statusFilter === 'investigation'
                 ? 'bg-[#C58A2B] text-white'
-                : 'text-[#667085] hover:text-[#C58A2B] hover:bg-white'
+                : 'text-[#73757A] hover:text-[#C58A2B] hover:bg-white'
             }`}
           >
             Needs Investigation ({counts.investigation})
@@ -405,8 +405,8 @@ export default function RoleFitPage() {
             onClick={() => setStatusFilter('not_demonstrated')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               statusFilter === 'not_demonstrated'
-                ? 'bg-[#E87967] text-white'
-                : 'text-[#667085] hover:text-[#E87967] hover:bg-white'
+                ? 'bg-[#D97968] text-white'
+                : 'text-[#73757A] hover:text-[#D97968] hover:bg-white'
             }`}
           >
             Not Demonstrated ({counts.notDemonstrated})
@@ -426,48 +426,48 @@ export default function RoleFitPage() {
               {/* Card Header / Summary Clickable */}
               <div
                 onClick={() => toggleExpand(item.id)}
-                className="p-5 flex items-start sm:items-center justify-between gap-4 cursor-pointer select-none bg-white hover:bg-[#F9FAFB]/50 transition-colors"
+                className="p-5 flex items-start sm:items-center justify-between gap-4 cursor-pointer select-none bg-white hover:bg-[#FAF9F4]/50 transition-colors"
               >
                 <div className="space-y-1.5 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     {getStatusBadge(item.status)}
-                    <span className="text-[11px] text-[#98A2B3]">Role Requirement</span>
+                    <span className="text-[11px] text-[#9A9B9E]">Role Requirement</span>
                   </div>
-                  <h3 className="text-sm sm:text-base font-semibold text-[#1F2937] leading-snug">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#252525] leading-snug">
                     {item.requirement_title || 'Core Competency'}
                   </h3>
                 </div>
 
-                <div className="shrink-0 flex items-center gap-2 text-xs font-medium text-[#667085]">
+                <div className="shrink-0 flex items-center gap-2 text-xs font-medium text-[#73757A]">
                   <span className="hidden sm:inline">{isExpanded ? 'Hide evidence' : 'View evidence'}</span>
                   {isExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-[#667085]" />
+                    <ChevronUp className="w-4 h-4 text-[#73757A]" />
                   ) : (
-                    <ChevronDown className="w-4 h-4 text-[#667085]" />
+                    <ChevronDown className="w-4 h-4 text-[#73757A]" />
                   )}
                 </div>
               </div>
 
               {/* Expandable Content (Explanation + Evidence) */}
               {isExpanded && (
-                <div className="p-5 pt-0 border-t border-[#E7E8EF] bg-[#F7F7FB]/40 space-y-4 animate-in fade-in">
+                <div className="p-5 pt-0 border-t border-[#D9D8D2] bg-[#F3F2EE]/40 space-y-4 animate-in fade-in">
                   {/* Qualitative Explanation */}
                   <div className="space-y-1 pt-3">
-                    <p className="text-xs font-semibold text-[#1F2937] uppercase tracking-wider">
+                    <p className="text-xs font-semibold text-[#252525] uppercase tracking-wider">
                       Analysis & Context
                     </p>
-                    <p className="text-xs sm:text-sm text-[#475467] leading-relaxed">
+                    <p className="text-xs sm:text-sm text-[#55565A] leading-relaxed">
                       {item.explanation}
                     </p>
                   </div>
 
                   {/* Concrete Candidate Evidence Quote */}
-                  <div className="space-y-1.5 p-3.5 rounded-xl bg-white border border-[#E7E8EF]">
+                  <div className="space-y-1.5 p-3.5 rounded-xl bg-white border border-[#D9D8D2]">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-[#252525]">
                       <FileCheck className="w-3.5 h-3.5" />
                       <span>Candidate Evidence in Supplied Background</span>
                     </div>
-                    <p className="text-xs text-[#1F2937] leading-relaxed font-sans italic">
+                    <p className="text-xs text-[#252525] leading-relaxed font-sans italic">
                       &ldquo;{item.evidence || 'No direct evidence provided in candidate resume.'}&rdquo;
                     </p>
                   </div>
@@ -481,8 +481,8 @@ export default function RoleFitPage() {
       {/* BOTTOM CTA BAR */}
       <div className="rolewise-card p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h3 className="text-sm font-semibold text-[#1F2937]">Ready to turn findings into preparation?</h3>
-          <p className="text-xs text-[#667085]">
+          <h3 className="text-sm font-semibold text-[#252525]">Ready to turn findings into preparation?</h3>
+          <p className="text-xs text-[#73757A]">
             Target areas needing investigation or practice before your interview.
           </p>
         </div>
