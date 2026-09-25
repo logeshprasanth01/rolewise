@@ -19,7 +19,6 @@ import {
   UserRound,
   ChevronDown,
   PanelLeftClose,
-  PanelLeftOpen,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { AuthView } from '@/components/auth/AuthView';
@@ -84,6 +83,17 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   useEffect(() => {
     setIsProfileOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const handleSidebarShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'b') {
+        event.preventDefault();
+        setIsSidebarCollapsed((value) => !value);
+      }
+    };
+    document.addEventListener('keydown', handleSidebarShortcut);
+    return () => document.removeEventListener('keydown', handleSidebarShortcut);
+  }, []);
 
   useEffect(() => {
     const handleUiSound = (event: MouseEvent) => {
@@ -154,29 +164,31 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           aria-label="Sidebar navigation"
         >
           <div className={`p-3 ${isSidebarCollapsed ? 'lg:p-3' : 'lg:p-5'}`}>
-            <div className="flex items-center justify-between gap-2">
+            <div className={`flex items-center gap-2 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
               {!isSidebarCollapsed ? (
-                <Link href="/" data-ui-sound="click" title="ROLEWISE" aria-label="ROLEWISE home" className="flex items-center gap-3 group min-w-0">
-                  <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#B8B8B8] flex items-center justify-center font-bold text-base transition-transform duration-200 group-hover:scale-[1.04] shrink-0">R</div>
-                  <div className="hidden lg:block min-w-0">
-                    <span className="font-bold text-[15px] tracking-tight text-[#252525]">ROLEWISE</span>
-                    <span className="block text-[9px] uppercase tracking-[0.14em] text-[#8A8B8F] leading-none mt-0.5">Interview workspace</span>
-                  </div>
-                </Link>
+                <>
+                  <Link href="/" data-ui-sound="click" title="ROLEWISE" aria-label="ROLEWISE home" className="flex items-center gap-3 group min-w-0">
+                    <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#B8B8B8] flex items-center justify-center font-bold text-base transition-transform duration-200 group-hover:scale-[1.04] shrink-0">R</div>
+                    <div className="hidden lg:block min-w-0">
+                      <span className="font-bold text-[15px] tracking-tight text-[#252525]">ROLEWISE</span>
+                      <span className="block text-[9px] uppercase tracking-[0.14em] text-[#8A8B8F] leading-none mt-0.5">Interview workspace</span>
+                    </div>
+                  </Link>
+                  <button
+                    type="button"
+                    data-ui-sound="click"
+                    onClick={() => setIsSidebarCollapsed(true)}
+                    title="Close sidebar"
+                    aria-label="Close sidebar"
+                    aria-keyshortcuts="Control+B Meta+B"
+                    className="hidden lg:flex w-9 h-9 items-center justify-center rounded-xl text-[#666A70] hover:text-[#252525] hover:bg-[#EAE9E4] transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
+                  >
+                    <PanelLeftClose className="w-4 h-4" />
+                  </button>
+                </>
               ) : (
-                <Link href="/" data-ui-sound="click" title="ROLEWISE home" aria-label="ROLEWISE home" className="flex items-center justify-center w-full"><div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#D8D8D8] flex items-center justify-center font-bold text-base transition-transform duration-200 hover:scale-[1.04]">R</div></Link>
+                <div className="h-10 w-10" aria-hidden="true" />
               )}
-
-              <button
-                type="button"
-                data-ui-sound="click"
-                onClick={() => setIsSidebarCollapsed((value) => !value)}
-                title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
-                aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
-                className={`hidden lg:flex w-9 h-9 items-center justify-center rounded-xl text-[#666A70] hover:text-[#252525] hover:bg-[#EAE9E4] transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isSidebarCollapsed ? 'mx-auto' : ''}`}
-              >
-                {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
-              </button>
             </div>
           </div>
 
