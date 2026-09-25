@@ -193,10 +193,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   type="button"
                   data-ui-sound="click"
                   onClick={() => setIsSidebarCollapsed(false)}
+                  onPointerDown={(event) => event.preventDefault()}
                   title="Open ROLEWISE sidebar"
                   aria-label="Open ROLEWISE sidebar"
                   aria-expanded={false}
-                  className="w-10 h-10 rounded-[14px] bg-transparent text-[#6B6F73] flex items-center justify-center shadow-none hover:bg-[#F0F0EE] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
+                  className="w-10 h-10 rounded-[14px] bg-transparent text-[#6B6F73] flex items-center justify-center shadow-none hover:bg-[#F0F0EE] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 cursor-pointer select-none" onDoubleClick={(event) => event.preventDefault()}
                 >
                   <PanelLeftOpen className="w-4 h-4" />
                 </button>
@@ -216,11 +217,13 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                     type="button"
                     data-ui-sound="click"
                     onClick={() => setIsSidebarCollapsed(true)}
+                    onPointerDown={(event) => event.preventDefault()}
+                    onDoubleClick={(event) => event.preventDefault()}
                     title="Close sidebar"
                     aria-label="Close sidebar"
                     aria-expanded={true}
                     aria-keyshortcuts="Control+B Meta+B"
-                    className="w-9 h-9 flex items-center justify-center rounded-xl text-[#666A70] hover:text-[#252525] hover:bg-[#EAE9E4] transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
+                    className="w-9 h-9 flex items-center justify-center rounded-xl text-[#666A70] hover:text-[#252525] hover:bg-[#EAE9E4] transition-colors duration-150 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 cursor-pointer select-none"
                   >
                     <PanelLeftClose className="w-4 h-4" />
                   </button>
