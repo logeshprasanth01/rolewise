@@ -408,7 +408,7 @@ export default function VideoPracticePage() {
                 type="button"
                 onClick={handleStartRecording}
                 disabled={isPermissionDenied}
-                className="touch-target inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+                className="touch-target inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-medium transition-colors shadow-sm cursor-pointer disabled:opacity-50"
               >
                 <Video className="w-5 h-5" />
                 <span>Start recording</span>
@@ -464,7 +464,7 @@ export default function VideoPracticePage() {
             <button
               type="button"
               onClick={handleSubmitRecording}
-              className="touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm cursor-pointer"
+              className="touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-medium transition-colors shadow-sm cursor-pointer"
             >
               <span>Submit for feedback</span>
               <ArrowRight className="w-4 h-4" />
@@ -476,7 +476,7 @@ export default function VideoPracticePage() {
       {/* STATE: PROCESSING */}
       {flowState === 'PROCESSING' && (
         <div className="rolewise-card p-8 space-y-3 text-center animate-in fade-in">
-          <Loader2 className="w-6 h-6 animate-spin text-[#6D5DFB] mx-auto" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#252525] mx-auto" />
           <h3 className="text-sm font-semibold text-[#1F2937]">Analyzing your communication...</h3>
           <p className="text-xs text-[#667085]">
             Evaluating clarity, structure, specificity, conciseness, and key actions described.
@@ -496,7 +496,7 @@ export default function VideoPracticePage() {
               <button
                 type="button"
                 onClick={handleReRecord}
-                className="text-xs text-[#6D5DFB] font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs text-[#252525] font-medium hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Practice another take</span>
@@ -576,7 +576,7 @@ export default function VideoPracticePage() {
             <button
               type="button"
               onClick={handleReRecord}
-              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-medium transition-colors shadow-sm cursor-pointer"
+              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-medium transition-colors shadow-sm cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Practice again</span>
