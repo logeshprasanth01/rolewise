@@ -332,7 +332,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
             type="button"
             onClick={handleToday}
             aria-label="Go to today"
-            className="rw-priority px-2 py-0.5 rounded-md text-[11px] font-semibold text-[#FFD84D] hover:bg-[#FFF2B8] transition-colors cursor-pointer"
+            className="rw-priority px-2 py-0.5 rounded-md text-[11px] font-semibold text-[#252525] hover:bg-[#FFF2B8] transition-colors cursor-pointer"
           >
             Today
           </button>
@@ -377,7 +377,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
                 cell.isSelected
                   ? 'bg-[#FFD84D] text-[#252525] font-semibold shadow-xs'
                   : cell.isToday
-                  ? 'border border-[#FFD84D] text-[#FFD84D] font-semibold hover:bg-[#FFF2B8]'
+                  ? 'border border-[#B8A93F] text-[#4A4A4A] font-semibold hover:bg-[#FFF2B8]'
                   : cell.isCurrentMonth
                   ? 'text-[#252525] hover:bg-[#F3F2EE]'
                   : 'text-[#9A9B9E]/50 hover:bg-[#F3F2EE]'
@@ -402,7 +402,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold text-[#252525]">{formattedSelectedDate}</span>
           {eventsOnSelectedDate.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded-md bg-[#FFF2B8] text-[#FFD84D] text-[10px] font-semibold">
+            <span className="px-1.5 py-0.5 rounded-md bg-[#FFF2B8] text-[#4A4A4A] text-[10px] font-semibold">
               {eventsOnSelectedDate.length} {eventsOnSelectedDate.length === 1 ? 'item' : 'items'}
             </span>
           )}
@@ -420,7 +420,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
                     <p className="text-xs font-bold text-[#252525] leading-snug">{ev.title}</p>
                     {ev.company && <p className="text-[11px] text-[#73757A]">{ev.company}</p>}
                   </div>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white border border-[#D9D8D2] text-[#FFD84D] shrink-0">
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white border border-[#D9D8D2] text-[#4A4A4A] shrink-0">
                     {ev.badgeText}
                   </span>
                 </div>
@@ -433,7 +433,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
                   </Link>
                   <Link
                     href={ev.primaryUrl}
-                    className="rw-priority font-semibold text-[#FFD84D] hover:underline flex items-center gap-1"
+                    className="rw-priority font-semibold text-[#4A4A4A] hover:text-[#252525] hover:underline flex items-center gap-1"
                   >
                     <span>{ev.primaryActionText}</span>
                     <ArrowRight className="w-3 h-3" />
@@ -448,7 +448,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
             <div className="flex items-center justify-center gap-2 text-[11px]">
               <Link
                 href="/jobs/new"
-                className="font-semibold text-[#FFD84D] hover:underline flex items-center gap-0.5"
+                className="font-semibold text-[#4A4A4A] hover:text-[#252525] hover:underline flex items-center gap-0.5"
               >
                 <Plus className="w-3 h-3" />
                 <span>Add job</span>
@@ -456,7 +456,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
               <span className="text-[#D0D5DD]">·</span>
               <Link
                 href="/communication-practice"
-                className="font-semibold text-[#FFD84D] hover:underline"
+                className="font-semibold text-[#4A4A4A] hover:text-[#252525] hover:underline"
               >
                 Practice
               </Link>
