@@ -22,12 +22,12 @@
 }
 
 :root {
-  --background: #AEB4C0;
+  --background: #A0A8B5;
   --foreground: #252525;
 }
 
 body {
-  background-color: #AEB4C0;
+  background-color: #A0A8B5;
   color: #252525;
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -41,6 +41,24 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ROLEWISE 2026 visual system: cool grey -> warm ivory -> soft yellow */
+.rw-app-frame {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(255,216,77,.20) 0%, rgba(255,216,77,0) 28%),
+    radial-gradient(circle at 12% 88%, rgba(226,230,236,.42) 0%, rgba(226,230,236,0) 34%),
+    linear-gradient(120deg, #ECEFF2 0%, #F3F2EE 48%, #FFF8D9 100%);
+}
+
+.rw-gradient-hero {
+  background:
+    radial-gradient(circle at 90% 20%, rgba(255,216,77,.28) 0%, rgba(255,216,77,0) 34%),
+    linear-gradient(115deg, #EEF0F3 0%, #F5F3ED 55%, #FFF4C3 100%);
+}
+
+.rw-gradient-surface {
+  background: linear-gradient(135deg, #FAF9F4 0%, #FFFBEF 100%);
 }
 
 /* ROLEWISE editorial SaaS card system */
@@ -142,4 +160,15 @@ body {
     animation: none !important;
     transition: none !important;
   }
+}
+
+
+/* Legacy palette guard: no violet/indigo accents anywhere in the interface. */
+[class*="bg-[#6D5DFB]"], [class*="bg-[#5A48F5]"], [class*="bg-[#8B5CF6]"] { background-color: #FFD84D !important; }
+[class*="bg-[#EEECFF]"], [class*="bg-[#F5F3FF]"], [class*="bg-[#DDD8FE]"], [class*="bg-[#D8D4FD]"], [class*="bg-[#E0DCFE]"] { background-color: #FFF2B8 !important; }
+[class*="text-[#6D5DFB]"], [class*="text-[#5A48F5]"], [class*="text-[#8B5CF6]"] { color: #252525 !important; }
+[class*="border-[#6D5DFB]"], [class*="border-[#5A48F5]"], [class*="border-[#8B5CF6]"] { border-color: #E8D77D !important; }
+
+@media (max-width: 767px) {
+  .rw-app-frame { border-radius: 0; }
 }
