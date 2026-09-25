@@ -17,7 +17,6 @@ import {
   LogOut,
   Plus,
   ChevronDown,
-  MoreHorizontal,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { AuthView } from '@/components/auth/AuthView';
@@ -31,7 +30,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const router = useRouter();
   const { userName, session, isLoading, signOut } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   const navItems = [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -44,8 +42,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     { label: 'Settings', href: '/settings', icon: Settings },
   ];
 
-  const primaryNavItems = navItems.slice(0, 5);
-  const secondaryNavItems = navItems.slice(5);
 
   const isNavActive = (href: string) => {
     if (href === '/') return pathname === '/' || pathname === '/dashboard';
@@ -60,14 +56,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     }
   }, [isLoading, session, pathname, router]);
 
-  useEffect(() => {
-    const closeMenus = () => {
-      setIsUserMenuOpen(false);
-      setIsMoreOpen(false);
-    };
-    document.addEventListener('click', closeMenus);
-    return () => document.removeEventListener('click', closeMenus);
-  }, []);
+
 
   if (isLoading) {
     return (
@@ -104,66 +93,26 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               </div>
             </Link>
 
-            <nav className="hidden lg:flex flex-1 items-center justify-center" aria-label="Primary navigation">
-              <div className="flex items-center gap-1 p-1 bg-[#E7E7EE] rounded-full border border-[#D9D8D2]">
-                {primaryNavItems.map((item) => {
+            <nav className="hidden lg:flex flex-1 min-w-0 px-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Primary navigation">
+              <div className="flex items-center gap-1 p-1 bg-[#E7E7EE] rounded-full border border-[#D9D8D2] mx-auto whitespace-nowrap">
+                {navItems.map((item) => {
                   const Icon = item.icon;
                   const active = isNavActive(item.href);
                   return (
                     <Link
                       key={item.label}
                       href={item.href}
-                      className={`min-h-10 px-3.5 xl:px-4 rounded-full inline-flex items-center gap-2 text-xs font-semibold transition-all ${
+                      className={`min-h-10 px-2.5 xl:px-3 rounded-full inline-flex items-center gap-1.5 text-[11px] xl:text-xs font-semibold transition-all whitespace-nowrap ${
                         active
                           ? 'bg-[#FAF9F4] text-[#252525] shadow-sm border border-[#D9D8D2]'
                           : 'text-[#73757A] hover:text-[#252525] hover:bg-[#F3F2EE]'
                       }`}
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
                       <span>{item.label}</span>
                     </Link>
                   );
                 })}
-
-                <div className="relative" onClick={(event) => event.stopPropagation()}>
-                  <button
-                    type="button"
-                    onClick={() => setIsMoreOpen((value) => !value)}
-                    className={`min-h-10 px-3.5 rounded-full inline-flex items-center gap-2 text-xs font-semibold transition-all ${
-                      secondaryNavItems.some((item) => isNavActive(item.href))
-                        ? 'bg-[#FAF9F4] text-[#252525] shadow-sm border border-[#D9D8D2]'
-                        : 'text-[#73757A] hover:text-[#252525] hover:bg-[#F3F2EE]'
-                    }`}
-                    aria-expanded={isMoreOpen}
-                    aria-label="More navigation"
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                    <span>More</span>
-                  </button>
-
-                  {isMoreOpen && (
-                    <div className="absolute right-0 top-12 w-48 rounded-2xl bg-[#FAF9F4] border border-[#D9D8D2] shadow-[0_12px_30px_rgba(37,37,37,0.12)] p-1.5">
-                      {secondaryNavItems.map((item) => {
-                        const Icon = item.icon;
-                        return (
-                          <Link
-                            key={item.label}
-                            href={item.href}
-                            onClick={() => setIsMoreOpen(false)}
-                            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-medium transition-colors ${
-                              isNavActive(item.href)
-                                ? 'bg-[#FFF2B8] text-[#252525]'
-                                : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'
-                            }`}
-                          >
-                            <Icon className="w-3.5 h-3.5" />
-                            {item.label}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
               </div>
             </nav>
 
@@ -245,7 +194,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           {/* TABLET NAV */}
           <div className="lg:hidden px-4 sm:px-6 pb-3 overflow-x-auto">
             <nav className="flex items-center gap-1.5 min-w-max" aria-label="Tablet navigation">
-              {primaryNavItems.map((item) => {
+              {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = isNavActive(item.href);
                 return (
@@ -257,19 +206,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                         ? 'bg-[#252525] text-[#FFD84D] border-[#252525]'
                         : 'bg-[#FAF9F4] text-[#73757A] border-[#D9D8D2] hover:text-[#252525]'
                     }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-              {secondaryNavItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className="min-h-10 px-3.5 rounded-full inline-flex items-center gap-2 text-xs font-semibold whitespace-nowrap border bg-[#FAF9F4] text-[#73757A] border-[#D9D8D2]"
                   >
                     <Icon className="w-3.5 h-3.5" />
                     {item.label}
@@ -290,7 +226,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           className="md:hidden fixed bottom-0 inset-x-0 bg-[#FAF9F4]/95 backdrop-blur border-t border-[#D9D8D2] z-40 px-1 py-1 flex items-center justify-around shadow-[0_-4px_18px_rgba(37,37,37,0.06)]"
           aria-label="Mobile bottom navigation"
         >
-          {primaryNavItems.map((item) => {
+          {navItems.slice(0, 5).map((item) => {
             const Icon = item.icon;
             const active = isNavActive(item.href);
             return (
