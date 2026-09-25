@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #A0A8B5;
+  --color-canvas: #858B93;
   --color-surface: #FAF9F4;
   --color-surface-warm: #FFFBEF;
   --color-text-primary: #252525;
@@ -22,12 +22,12 @@
 }
 
 :root {
-  --background: #A0A8B5;
+  --background: #858B93;
   --foreground: #252525;
 }
 
 body {
-  background-color: #A0A8B5;
+  background-color: #858B93;
   color: #252525;
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -46,19 +46,19 @@ body {
 /* ROLEWISE 2026 visual system: cool grey -> warm ivory -> soft yellow */
 .rw-app-frame {
   background:
-    radial-gradient(circle at 88% 12%, rgba(255,216,77,.08) 0%, rgba(255,216,77,0) 28%),
+    radial-gradient(circle at 88% 12%, rgba(255,216,77,.05) 0%, rgba(255,216,77,0) 28%),
     radial-gradient(circle at 12% 88%, rgba(226,230,236,.42) 0%, rgba(226,230,236,0) 34%),
-    linear-gradient(120deg, #ECEFF2 0%, #F3F2EE 58%, #F8F5E8 100%);
+    linear-gradient(120deg, #747A82 0%, #858B93 62%, #9A9FA5 100%);
 }
 
 .rw-gradient-hero {
   background:
-    radial-gradient(circle at 90% 20%, rgba(255,216,77,.10) 0%, rgba(255,216,77,0) 34%),
-    linear-gradient(115deg, #EEF0F3 0%, #F5F3ED 65%, #FAF5DE 100%);
+    radial-gradient(circle at 90% 20%, rgba(255,216,77,.06) 0%, rgba(255,216,77,0) 34%),
+    linear-gradient(115deg, #767C84 0%, #8B9097 68%, #A2A6AB 100%);
 }
 
 .rw-gradient-surface {
-  background: linear-gradient(135deg, #FAF9F4 0%, #FFFBEF 100%);
+  background: linear-gradient(135deg, #F7F7F4 0%, #FFFFFF 100%);
 }
 
 /* ROLEWISE editorial SaaS card system */
@@ -358,3 +358,11 @@ html[data-accessibility="enhanced"] .rw-search-input:focus-visible {
     box-shadow: none !important;
   }
 }
+
+
+/* 60/30/10 visual balance: grey/charcoal dominant, white secondary, yellow accent only. */
+.rw-sidebar-nav { background: #2D2D2D !important; color: #A8A8A8 !important; }
+.rw-sidebar-nav a, .rw-sidebar-nav button { color: #A8A8A8 !important; }
+.rw-sidebar-nav a:hover, .rw-sidebar-nav button:hover { color: #E2E2E2 !important; }
+.rw-sidebar-nav a[aria-current="page"] { color: #D8D8D8 !important; background: #444444 !important; }
+.rw-sidebar-nav svg { color: currentColor !important; }
