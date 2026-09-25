@@ -26,7 +26,7 @@ export default function GeneralPreparationRedirect() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
-      <Loader2 className="w-6 h-6 animate-spin text-[#6D5DFB]" />
+      <Loader2 className="w-6 h-6 animate-spin text-[#252525]" />
       <p className="text-sm">Loading your active preparation plan...</p>
     </div>
   );
