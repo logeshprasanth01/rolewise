@@ -139,7 +139,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       touchStartX.current = null;
 
       // Only treat horizontal gestures near the left app edge as sidebar gestures.
-      if (startX > 280 && !isSidebarCollapsed) return;
+      if (startX > 280 && !isSidebarCollapsed) {
+        setIsSidebarDragging(false);
+        return;
+      }
       if (Math.abs(deltaX) < 45) return;
 
       if (deltaX < 0 && !isSidebarCollapsed) {
