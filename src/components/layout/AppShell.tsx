@@ -346,7 +346,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             const active = isNavActive(item.href);
             return (
               <Link key={item.label} href={item.href} data-ui-sound="click" aria-current={active ? 'page' : undefined} className={`touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-inset ${active ? 'text-[#252525]' : 'text-[#686A6D]'}`}>
-                <div className={`w-8 h-6 rounded-full flex items-center justify-center transition-all ${active ? 'bg-[#FFF2B8]' : ''}`}><Icon className="w-4 h-4" /></div>
+                <div className={`w-8 h-6 rounded-full flex items-center justify-center transition-all ${active ? 'bg-[#E7E9EB]' : ''}`}><Icon className="w-4 h-4" /></div>
                 <span className={`text-[10px] mt-0.5 ${active ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
               </Link>
             );
