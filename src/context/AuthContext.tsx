@@ -13,6 +13,7 @@ interface AuthContextType {
   signIn: (email: string, password?: string) => Promise<{ data?: { user?: User | null; session?: Session | null } | null; error: Error | null }>;
   signUp: (email: string, password?: string, fullName?: string) => Promise<{ data?: { user?: User | null; session?: Session | null } | null; error: Error | null }>;
   signOut: () => Promise<void>;
+  updateProfile: (updates: { fullName?: string; email?: string; avatarUrl?: string | null }) => Promise<{ user?: User | null; error: Error | null }>;
   openAuthModal: (mode?: 'signin' | 'signup' | unknown) => void;
   closeAuthModal: () => void;
   isAuthModalOpen: boolean;
@@ -136,6 +137,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfile = async (updates: { fullName?: string; email?: string; avatarUrl?: string | null }) => {
+    const supabase = getSupabaseClient();
+    try {
+      const currentMetadata = (user?.user_metadata || {}) as Record<string, unknown>;
+      const nextMetadata = {
+        ...currentMetadata,
+        ...(updates.fullName !== undefined ? { full_name: updates.fullName } : {}),
+        ...(updates.avatarUrl !== undefined ? { avatar_url: updates.avatarUrl } : {}),
+      };
+
+      const authUpdate: { data: { user: User | null }; error: Error | null } = await supabase.auth.updateUser({
+        ...(updates.email && updates.email !== user?.email ? { email: updates.email } : {}),
+        data: nextMetadata,
+      });
+
+      if (authUpdate.error) return { error: authUpdate.error };
+
+      if (authUpdate.data?.user) {
+        setUser(authUpdate.data.user);
+        setSession((current) => current ? { ...current, user: authUpdate.data.user! } : current);
+        await syncUserProfile(authUpdate.data.user).catch(() => undefined);
+      }
+
+      return { user: authUpdate.data?.user || null, error: null };
+    } catch (err) {
+      return { error: err instanceof Error ? err : new Error('Could not update profile.') };
+    }
+  };
+
   const signOut = async () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('rolewise_demo_user');
@@ -176,6 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         signOut,
+        updateProfile,
         openAuthModal,
         closeAuthModal: () => setIsAuthModalOpen(false),
         isAuthModalOpen,
