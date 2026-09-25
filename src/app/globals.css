@@ -91,18 +91,22 @@ body {
   animation: rw-success 420ms cubic-bezier(.2,.8,.2,1) both;
 }
 
-.rw-interactive {
+.rw-interactive,
+[data-ui-sound] {
   position: relative;
   overflow: hidden;
   transition: transform 180ms cubic-bezier(.2,.8,.2,1), box-shadow 180ms ease, border-color 180ms ease;
 }
-.rw-interactive:hover {
+.rw-interactive:hover,
+[data-ui-sound]:hover {
   transform: translateY(-2px);
 }
-.rw-interactive:active {
+.rw-interactive:active,
+[data-ui-sound]:active {
   transform: translateY(0) scale(0.985);
 }
-.rw-interactive::after {
+.rw-interactive::after,
+[data-ui-sound]::after {
   content: "";
   position: absolute;
   inset: 0 auto 0 -45%;
@@ -112,7 +116,8 @@ body {
   pointer-events: none;
   opacity: 0;
 }
-.rw-interactive:hover::after {
+.rw-interactive:hover::after,
+[data-ui-sound]:hover::after {
   opacity: 1;
   animation: rw-sheen 700ms ease-out both;
 }
@@ -131,6 +136,7 @@ body {
   .animate-rw-pop,
   .animate-rw-success,
   .rw-interactive,
+  [data-ui-sound],
   .rw-input,
   .rw-interactive::after {
     animation: none !important;
