@@ -36,6 +36,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
 
   const navItems = [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -96,6 +97,39 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     return () => document.removeEventListener('click', handleUiSound);
   }, []);
 
+  useEffect(() => {
+    const handleTouchStart = (event: TouchEvent) => {
+      touchStartX.current = event.touches[0]?.clientX ?? null;
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      if (touchStartX.current === null) return;
+
+      const endX = event.changedTouches[0]?.clientX ?? touchStartX.current;
+      const deltaX = endX - touchStartX.current;
+      const startX = touchStartX.current;
+      touchStartX.current = null;
+
+      // Only treat horizontal gestures near the left app edge as sidebar gestures.
+      if (startX > 280 && !isSidebarCollapsed) return;
+      if (Math.abs(deltaX) < 60) return;
+
+      if (deltaX < 0 && !isSidebarCollapsed) {
+        setIsSidebarCollapsed(true);
+      } else if (deltaX > 0 && isSidebarCollapsed && startX < 280) {
+        setIsSidebarCollapsed(false);
+      }
+    };
+
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isSidebarCollapsed]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#AEB4C0] flex flex-col items-center justify-center gap-3 text-[#73757A]">
@@ -111,31 +145,33 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#A0A8B5] text-[#252525] font-sans px-0 md:p-3 lg:p-5">
-      <div className="rw-app-frame min-h-[calc(100vh-1.5rem)] lg:min-h-[calc(100vh-2.5rem)] md:rounded-[30px] lg:rounded-[34px] border border-[#D9D8D2] overflow-hidden flex min-h-0 shadow-[0_16px_50px_rgba(37,37,37,0.12)]">
-
+    <div className="min-h-screen bg-[#A0A8B5] text-[#252525] font-sans">
+      <div className="rw-app-frame min-h-screen w-full border-0 rounded-none overflow-hidden flex min-h-0 shadow-none">
         <aside
           className={`hidden md:flex shrink-0 bg-[#FAF9F4]/88 backdrop-blur-xl border-r border-[#D9D8D2]/90 flex-col z-40 transition-[width] duration-300 ease-out ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`}
           aria-label="Sidebar navigation"
         >
           <div className={`p-3 ${isSidebarCollapsed ? 'lg:p-3' : 'lg:p-5'}`}>
             <div className="flex items-center justify-between gap-2">
-              <Link href="/" data-ui-sound="click" title="ROLEWISE" className="flex items-center gap-3 group min-w-0">
-                <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#FFD84D] flex items-center justify-center font-bold text-base transition-transform duration-200 group-hover:scale-[1.04] shrink-0">R</div>
-                {!isSidebarCollapsed && (
+              {!isSidebarCollapsed ? (
+                <Link href="/" data-ui-sound="click" title="ROLEWISE" className="flex items-center gap-3 group min-w-0">
+                  <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#73757A] flex items-center justify-center font-bold text-base transition-transform duration-200 group-hover:scale-[1.04] shrink-0">R</div>
                   <div className="hidden lg:block min-w-0">
                     <span className="font-bold text-[15px] tracking-tight text-[#252525]">ROLEWISE</span>
                     <span className="block text-[9px] uppercase tracking-[0.14em] text-[#73757A] leading-none mt-0.5">Interview workspace</span>
                   </div>
-                )}
-              </Link>
+                </Link>
+              ) : (
+                <div className="flex-1" aria-hidden="true" />
+              )}
+
               <button
                 type="button"
                 data-ui-sound="click"
                 onClick={() => setIsSidebarCollapsed((value) => !value)}
                 title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
                 aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
-                className="hidden lg:flex w-9 h-9 items-center justify-center rounded-xl text-[#73757A] hover:text-[#252525] hover:bg-[#F3F2EE] transition-colors shrink-0"
+                className={`hidden lg:flex w-9 h-9 items-center justify-center rounded-xl text-[#73757A] hover:text-[#252525] hover:bg-[#F3F2EE] transition-colors shrink-0 ${isSidebarCollapsed ? 'mx-auto' : ''}`}
               >
                 {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
               </button>
@@ -152,10 +188,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   href={item.href}
                   title={item.label}
                   data-ui-sound="click"
-                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 ${active ? 'bg-[#252525] text-[#D8D8D2] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 ${active ? 'bg-[#252525] text-[#73757A] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#D8D8D2]' : 'text-[#73757A]'}`} />
-                  {!isSidebarCollapsed && <span className="hidden lg:inline truncate">{item.label}</span>}
+                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#73757A]' : 'text-[#73757A]'}`} />
+                  {!isSidebarCollapsed && <span className="hidden lg:inline truncate text-[#73757A]">{item.label}</span>}
                 </Link>
               );
             })}
@@ -166,10 +202,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               href="/settings"
               title="Settings"
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all ${isNavActive('/settings') ? 'bg-[#252525] text-[#D8D8D2] border border-[#252525]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all ${isNavActive('/settings') ? 'bg-[#252525] text-[#73757A] border border-[#252525]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
             >
               <Settings className="w-4 h-4 shrink-0 text-[#73757A]" />
-              {!isSidebarCollapsed && <span className="hidden lg:inline">Settings</span>}
+              {!isSidebarCollapsed && <span className="hidden lg:inline text-[#73757A]">Settings</span>}
             </Link>
 
             <div className="relative" ref={profileRef}>
@@ -180,7 +216,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 aria-expanded={isProfileOpen}
                 className="w-full flex items-center gap-3 min-h-12 rounded-[15px] px-2.5 lg:px-3 bg-[#F3F2EE] border border-[#D9D8D2] hover:border-[#C9C7BE] transition-all duration-200"
               >
-                <div className="w-9 h-9 rounded-full bg-[#252525] text-[#D8D8D2] font-bold text-xs flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-full bg-[#252525] text-[#73757A] font-bold text-xs flex items-center justify-center shrink-0">
                   {userName ? userName[0].toUpperCase() : 'U'}
                 </div>
                 {!isSidebarCollapsed && (
