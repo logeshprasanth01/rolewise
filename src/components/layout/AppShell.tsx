@@ -35,6 +35,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const { user, userName, session, isLoading, signOut } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [accessibilityEnabled, setAccessibilityEnabled] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
 
@@ -61,6 +62,20 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       router.replace('/auth');
     }
   }, [isLoading, session, pathname, router]);
+
+  useEffect(() => {
+    const readAccessibilityPreference = () => {
+      setAccessibilityEnabled(window.localStorage.getItem('rolewise-accessibility-enabled-v2') === 'true');
+    };
+
+    readAccessibilityPreference();
+    window.addEventListener('rolewise-accessibility-change', readAccessibilityPreference);
+    window.addEventListener('storage', readAccessibilityPreference);
+    return () => {
+      window.removeEventListener('rolewise-accessibility-change', readAccessibilityPreference);
+      window.removeEventListener('storage', readAccessibilityPreference);
+    };
+  }, []);
 
   useEffect(() => {
     const stored = window.localStorage.getItem('rolewise-sidebar-collapsed');
@@ -157,7 +172,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   return (
     <>
-      <a href="#main-content" className="rw-skip-link">Skip to main content</a>
+      {accessibilityEnabled && <a href="#main-content" className="rw-skip-link">Skip to main content</a>}
       <div className="min-h-screen bg-[#F3F2EE] text-[#252525] font-sans">
       <div className="rw-app-frame min-h-screen w-full border-0 rounded-none overflow-hidden flex min-h-0 shadow-none">
         <aside
