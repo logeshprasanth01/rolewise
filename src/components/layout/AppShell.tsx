@@ -145,7 +145,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F3F2EE] text-[#252525] font-sans">
+    <>
+      <a href="#main-content" className="rw-skip-link">Skip to main content</a>
+      <div className="min-h-screen bg-[#F3F2EE] text-[#252525] font-sans">
       <div className="rw-app-frame min-h-screen w-full border-0 rounded-none overflow-hidden flex min-h-0 shadow-none">
         <aside
           className={`hidden md:flex shrink-0 bg-[#FAF9F4]/88 backdrop-blur-xl border-r border-[#D9D8D2]/90 flex-col z-40 transition-[width] duration-300 ease-out ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`}
@@ -276,7 +278,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             </div>
           </header>
 
-          <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 pb-24 md:pb-12">{children}</main>
+          <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 pb-24 md:pb-12 focus:outline-none">{children}</main>
         </div>
 
         <nav className="md:hidden fixed bottom-0 inset-x-0 bg-[#FAF9F4]/95 backdrop-blur border-t border-[#D9D8D2] z-40 px-1 py-1 flex items-center justify-around shadow-[0_-4px_18px_rgba(37,37,37,0.06)]" aria-label="Mobile bottom navigation">
@@ -293,5 +295,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         </nav>
       </div>
     </div>
+    </>
   );
 };
