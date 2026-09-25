@@ -155,7 +155,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         >
           <div className={`p-3 ${isSidebarCollapsed ? 'lg:p-3' : 'lg:p-5'}`}>
             <div className="flex items-center justify-between gap-2">
-              {!isSidebarCollapsed ? (
+              {!isSidebarCollapsed && (
                 <Link href="/" data-ui-sound="click" title="ROLEWISE" className="flex items-center gap-3 group min-w-0">
                   <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#B8B8B8] flex items-center justify-center font-bold text-base transition-transform duration-200 group-hover:scale-[1.04] shrink-0">R</div>
                   <div className="hidden lg:block min-w-0">
@@ -189,9 +189,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   title={item.label}
                   aria-current={active ? 'page' : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#5F6368] hover:bg-[#E8E7E2] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${active ? 'bg-[#252525] text-[#B8B8B8] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#666A70] hover:bg-[#E8E7E2] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#FFFFFF]' : 'text-[#5F6368] group-hover:text-[#252525]'}`} />
+                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#B8B8B8]' : 'text-[#666A70] group-hover:text-[#252525]'}`} />
                   {!isSidebarCollapsed && <span className="hidden lg:inline truncate text-current">{item.label}</span>}
                 </Link>
               );
@@ -203,9 +203,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               href="/settings"
               title="Settings"
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isNavActive('/settings') ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525]' : 'text-[#5F6368] hover:bg-[#E8E7E2] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isNavActive('/settings') ? 'bg-[#252525] text-[#B8B8B8] border border-[#252525]' : 'text-[#666A70] hover:bg-[#E8E7E2] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
             >
-              <Settings className={`w-4 h-4 shrink-0 ${isNavActive('/settings') ? 'text-[#FFFFFF]' : 'text-[#5F6368]'}`} />
+              <Settings className={`w-4 h-4 shrink-0 ${isNavActive('/settings') ? 'text-[#B8B8B8]' : 'text-[#666A70]'}`} />
               {!isSidebarCollapsed && <span className="hidden lg:inline text-[#73757A]">Settings</span>}
             </Link>
 
