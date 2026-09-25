@@ -256,3 +256,9 @@ button:disabled,
 .rw-skip-link:focus {
   transform: translateY(0);
 }
+
+
+/* Contrast guard for legacy muted text utilities */
+[class*="text-[#8A8B8F]"] { color: #5F6368 !important; }
+[class*="text-[#9A9B9E]"] { color: #73757A !important; }
+[class*="placeholder:text-[#9A9B9E]"]::placeholder { color: #73757A !important; opacity: 1; }
