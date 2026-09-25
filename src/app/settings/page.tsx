@@ -49,10 +49,10 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-300 pb-16">
       {/* Header */}
       <section className="space-y-1">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#1F2937] tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">
           Settings & Preferences
         </h1>
-        <p className="text-xs sm:text-sm text-[#667085]">
+        <p className="text-xs sm:text-sm text-[#73757A]">
           Manage your account and device permissions for interview practice sessions.
         </p>
       </section>
@@ -61,25 +61,25 @@ export default function SettingsPage() {
       <div className="rolewise-card p-6 space-y-4">
         <div className="flex items-center gap-2">
           <User className="w-4 h-4 text-[#252525]" />
-          <h2 className="text-sm font-semibold text-[#1F2937]">Account Information</h2>
+          <h2 className="text-sm font-semibold text-[#252525]">Account Information</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div className="space-y-1">
-            <span className="text-[#667085]">Full Name</span>
-            <p className="font-semibold text-sm text-[#1F2937]">{userName || 'Candidate'}</p>
+            <span className="text-[#73757A]">Full Name</span>
+            <p className="font-semibold text-sm text-[#252525]">{userName || 'Candidate'}</p>
           </div>
           <div className="space-y-1">
-            <span className="text-[#667085]">Email Address</span>
-            <p className="font-semibold text-sm text-[#1F2937]">{session?.user?.email || 'candidate@rolewise.io'}</p>
+            <span className="text-[#73757A]">Email Address</span>
+            <p className="font-semibold text-sm text-[#252525]">{session?.user?.email || 'candidate@rolewise.io'}</p>
           </div>
         </div>
 
-        <div className="pt-2 border-t border-[#E7E8EF] flex items-center justify-between">
-          <span className="text-xs text-[#667085]">Signed in as authenticated candidate</span>
+        <div className="pt-2 border-t border-[#D9D8D2] flex items-center justify-between">
+          <span className="text-xs text-[#73757A]">Signed in as authenticated candidate</span>
           <button
             onClick={() => signOut()}
-            className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#FCDAD5] text-[#E87967] hover:bg-[#FFF0ED] text-xs font-semibold transition-colors cursor-pointer"
+            className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#F6D8D1] text-[#D97968] hover:bg-[#FFF0ED] text-xs font-semibold transition-colors cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign out</span>
@@ -91,9 +91,9 @@ export default function SettingsPage() {
       <div className="rolewise-card p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Mic className="w-4 h-4 text-[#252525]" />
-          <h2 className="text-sm font-semibold text-[#1F2937]">Audio & Video Permissions</h2>
+          <h2 className="text-sm font-semibold text-[#252525]">Audio & Video Permissions</h2>
         </div>
-        <p className="text-xs text-[#667085] leading-relaxed">
+        <p className="text-xs text-[#73757A] leading-relaxed">
           Communication practice relies on standard browser media APIs. You can verify your microphone and camera permissions below.
         </p>
 
@@ -101,21 +101,21 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={handleTestMic}
-            className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#1F2937] transition-all shadow-xs cursor-pointer"
+            className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs font-semibold text-[#252525] transition-all shadow-xs cursor-pointer"
           >
             <Mic className="w-3.5 h-3.5 text-[#252525]" />
             <span>Test Microphone Permission</span>
           </button>
 
           {micTested === true && (
-            <span className="inline-flex items-center gap-1 text-xs text-[#4E9B76] font-semibold">
+            <span className="inline-flex items-center gap-1 text-xs text-[#6FA77F] font-semibold">
               <CheckCircle2 className="w-4 h-4" />
               <span>Microphone available</span>
             </span>
           )}
 
           {micTested === false && (
-            <span className="inline-flex items-center gap-1 text-xs text-[#E87967] font-semibold">
+            <span className="inline-flex items-center gap-1 text-xs text-[#D97968] font-semibold">
               <AlertCircle className="w-4 h-4" />
               <span>Permission denied or unavailable</span>
             </span>
@@ -124,21 +124,21 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={handleTestCamera}
-            className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#1F2937] transition-all shadow-xs cursor-pointer"
+            className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs font-semibold text-[#252525] transition-all shadow-xs cursor-pointer"
           >
             <Video className="w-3.5 h-3.5 text-[#252525]" />
             <span>Test Camera Permission</span>
           </button>
 
           {cameraTested === true && (
-            <span className="inline-flex items-center gap-1 text-xs text-[#4E9B76] font-semibold">
+            <span className="inline-flex items-center gap-1 text-xs text-[#6FA77F] font-semibold">
               <CheckCircle2 className="w-4 h-4" />
               <span>Camera available</span>
             </span>
           )}
 
           {cameraTested === false && (
-            <span className="inline-flex items-center gap-1 text-xs text-[#E87967] font-semibold">
+            <span className="inline-flex items-center gap-1 text-xs text-[#D97968] font-semibold">
               <AlertCircle className="w-4 h-4" />
               <span>Permission denied or unavailable</span>
             </span>
@@ -150,9 +150,9 @@ export default function SettingsPage() {
       <div className="rolewise-card p-6 space-y-3">
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-[#252525]" />
-          <h2 className="text-sm font-semibold text-[#1F2937]">Privacy & Workspace Security</h2>
+          <h2 className="text-sm font-semibold text-[#252525]">Privacy & Workspace Security</h2>
         </div>
-        <p className="text-xs text-[#667085] leading-relaxed">
+        <p className="text-xs text-[#73757A] leading-relaxed">
           ROLEWISE keeps your job descriptions, resume details, and interview practice recordings private and tied exclusively to your authenticated account.
         </p>
       </div>
