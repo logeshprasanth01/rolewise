@@ -46,15 +46,15 @@ body {
 /* ROLEWISE 2026 visual system: cool grey -> warm ivory -> soft yellow */
 .rw-app-frame {
   background:
-    radial-gradient(circle at 88% 12%, rgba(255,216,77,.20) 0%, rgba(255,216,77,0) 28%),
+    radial-gradient(circle at 88% 12%, rgba(255,216,77,.08) 0%, rgba(255,216,77,0) 28%),
     radial-gradient(circle at 12% 88%, rgba(226,230,236,.42) 0%, rgba(226,230,236,0) 34%),
-    linear-gradient(120deg, #ECEFF2 0%, #F3F2EE 48%, #FFF8D9 100%);
+    linear-gradient(120deg, #ECEFF2 0%, #F3F2EE 58%, #F8F5E8 100%);
 }
 
 .rw-gradient-hero {
   background:
-    radial-gradient(circle at 90% 20%, rgba(255,216,77,.28) 0%, rgba(255,216,77,0) 34%),
-    linear-gradient(115deg, #EEF0F3 0%, #F5F3ED 55%, #FFF4C3 100%);
+    radial-gradient(circle at 90% 20%, rgba(255,216,77,.10) 0%, rgba(255,216,77,0) 34%),
+    linear-gradient(115deg, #EEF0F3 0%, #F5F3ED 65%, #FAF5DE 100%);
 }
 
 .rw-gradient-surface {
@@ -63,7 +63,7 @@ body {
 
 /* ROLEWISE editorial SaaS card system */
 .rolewise-card {
-  background: #FAF9F4;
+  background: #FAFAF8;
   border: 1px solid #D9D8D2;
   border-radius: 26px;
   box-shadow: 0 1px 3px 0 rgba(37, 37, 37, 0.04);
@@ -328,3 +328,33 @@ html[data-accessibility="enhanced"] .rw-search-input:focus-visible {
   outline-offset: 2px;
 }
 
+
+
+/* Sidebar: neutral-first navigation inspired by clean job-directory interfaces. */
+.rw-sidebar-nav {
+  color: #686A6D;
+}
+.rw-sidebar-nav a,
+.rw-sidebar-nav button {
+  color: #686A6D;
+}
+.rw-sidebar-nav a:hover,
+.rw-sidebar-nav button:hover {
+  color: #303234;
+}
+.rw-sidebar-nav a[aria-current="page"] {
+  color: #C8C8C8;
+}
+
+/* Keep the yellow accent intentionally sparse: primary actions and small highlights only. */
+.rw-accent-yellow {
+  background: #FFD84D;
+  color: #252525;
+}
+
+@media (min-width: 768px) {
+  .rw-app-frame {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
