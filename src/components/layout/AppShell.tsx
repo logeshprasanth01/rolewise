@@ -123,9 +123,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   href={item.href}
                   title={item.label}
                   data-ui-sound="click"
-                  className={\`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 \${active ? 'bg-[#FFF2B8] text-[#252525] border border-[#E8D77D] shadow-[0_2px_8px_rgba(37,37,37,0.04)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}\`}
+                  className={\`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 \${active ? 'bg-[#252525] text-[#FFD84D] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}\`}
                 >
-                  <Icon className={\`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 \${active ? 'text-[#252525]' : ''}\`} />
+                  <Icon className={\`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 \${active ? 'text-[#FFD84D]' : ''}\`} />
                   <span className="hidden lg:inline truncate">{item.label}</span>
                 </Link>
               );
@@ -137,7 +137,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               href="/settings"
               title="Settings"
               data-ui-sound="click"
-              className={\`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all \${isNavActive('/settings') ? 'bg-[#FFF2B8] text-[#252525] border border-[#E8D77D]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}\`}
+              className={\`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all \${isNavActive('/settings') ? 'bg-[#252525] text-[#FFD84D] border border-[#252525]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}\`}
             >
               <Settings className="w-4 h-4 shrink-0" />
               <span className="hidden lg:inline">Settings</span>
