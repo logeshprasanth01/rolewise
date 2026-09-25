@@ -305,3 +305,26 @@ html[data-reduced-motion="true"] *::after {
   transition-duration: 0.001ms !important;
   scroll-behavior: auto !important;
 }
+
+/* Search focus is intentionally tied to ROLEWISE accessibility preference. */
+.rw-search-input {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+.rw-search-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+html[data-accessibility="enhanced"] .rw-search-shell:focus-within {
+  border-color: #252525;
+  box-shadow: 0 0 0 3px rgba(37,37,37,.16);
+}
+
+html[data-accessibility="enhanced"] .rw-search-input:focus-visible {
+  outline: 3px solid #252525 !important;
+  outline-offset: 2px;
+}
+
