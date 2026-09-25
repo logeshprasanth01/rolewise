@@ -19,6 +19,7 @@ import {
   UserRound,
   ChevronDown,
   PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { AuthView } from '@/components/auth/AuthView';
@@ -163,36 +164,25 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           className={`hidden md:flex shrink-0 bg-[#FAF9F4]/96 backdrop-blur-xl border-r border-[#D9D8D2] flex-col z-40 transition-[width] duration-300 ease-out overflow-hidden ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`}
           aria-label="Sidebar navigation"
         >
-          <div className={`p-3 ${isSidebarCollapsed ? 'lg:p-3' : 'lg:p-5'}`}>
+          <div className={`p-3 ${isSidebarCollapsed ? 'md:p-3' : 'md:p-5'}`}>
             <div className={`flex items-center gap-2 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
-              {!isSidebarCollapsed ? (
-                <>
-                  <Link href="/" data-ui-sound="click" title="ROLEWISE" aria-label="ROLEWISE home" className="flex items-center gap-3 group min-w-0">
-                    <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#B8B8B8] flex items-center justify-center font-bold text-base transition-transform duration-200 group-hover:scale-[1.04] shrink-0">R</div>
-                    <div className="hidden lg:block min-w-0">
+              <div className="flex items-center gap-2 w-full">
+                <Link href="/" data-ui-sound="click" title="ROLEWISE" aria-label="ROLEWISE home" className={`flex items-center gap-3 group min-w-0 ${isSidebarCollapsed ? 'justify-center flex-1' : 'flex-1'}`}>
+                  <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#B8B8B8] flex items-center justify-center font-bold text-base transition-transform duration-200 group-hover:scale-[1.04] shrink-0">R</div>
+                  {!isSidebarCollapsed && (
+                    <div className="min-w-0">
                       <span className="font-bold text-[15px] tracking-tight text-[#252525]">ROLEWISE</span>
-                      <span className="block text-[9px] uppercase tracking-[0.14em] text-[#8A8B8F] leading-none mt-0.5">Interview workspace</span>
+                      <span className="block text-[9px] uppercase tracking-[0.14em] text-[#5F6368] leading-none mt-0.5">Interview workspace</span>
                     </div>
-                  </Link>
-                  <button
-                    type="button"
-                    data-ui-sound="click"
-                    onClick={() => setIsSidebarCollapsed(true)}
-                    title="Close sidebar"
-                    aria-label="Close sidebar"
-                    aria-keyshortcuts="Control+B Meta+B"
-                    className="hidden lg:flex w-9 h-9 items-center justify-center rounded-xl text-[#666A70] hover:text-[#252525] hover:bg-[#EAE9E4] transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
-                  >
-                    <PanelLeftClose className="w-4 h-4" />
-                  </button>
-                </>
-              ) : (
-                <div className="h-10 w-10" aria-hidden="true" />
-              )}
-            </div>
+                  )}
+                </Link>
+                <button type="button" data-ui-sound="click" onClick={() => setIsSidebarCollapsed((value) => !value)} title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'} aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'} aria-expanded={!isSidebarCollapsed} aria-keyshortcuts="Control+B Meta+B" className="w-9 h-9 flex items-center justify-center rounded-xl text-[#73757A] hover:text-[#252525] hover:bg-[#EAE9E4] transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2">
+                  {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+                </button>
+              </div>            </div>
           </div>
 
-          <nav className="px-2 lg:px-3 space-y-1 flex-1 overflow-y-auto" aria-label="Primary navigation">
+          <nav className="px-2 md:px-3 space-y-1 flex-1 overflow-y-auto" aria-label="Primary navigation">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isNavActive(item.href);
@@ -203,24 +193,24 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   title={item.label}
                   aria-current={active ? 'page' : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${active ? 'bg-[#252525] text-[#C7C7C7] border border-[#252525]' : 'text-[#73757A] hover:bg-[#E8E7E2] hover:text-[#3F4246]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 md:px-3.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${active ? 'bg-[#252525] text-[#C7C7C7] border border-[#252525]' : 'text-[#73757A] hover:bg-[#E8E7E2] hover:text-[#3F4246]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
                 >
                   <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#C7C7C7]' : 'text-[#73757A] group-hover:text-[#3F4246]'}`} />
-                  {!isSidebarCollapsed && <span className="hidden lg:inline truncate text-current">{item.label}</span>}
+                  {!isSidebarCollapsed && <span className="inline truncate text-current">{item.label}</span>}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="p-2 lg:p-3 space-y-2 border-t border-[#D9D8D2]">
+          <div className="p-2 md:p-3 space-y-2 border-t border-[#D9D8D2]">
             <Link
               href="/settings"
               title="Settings"
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isNavActive('/settings') ? 'bg-[#252525] text-[#C7C7C7] border border-[#252525]' : 'text-[#73757A] hover:bg-[#E8E7E2] hover:text-[#3F4246]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 md:px-3.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isNavActive('/settings') ? 'bg-[#252525] text-[#C7C7C7] border border-[#252525]' : 'text-[#73757A] hover:bg-[#E8E7E2] hover:text-[#3F4246]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
             >
               <Settings className={`w-4 h-4 shrink-0 ${isNavActive('/settings') ? 'text-[#C7C7C7]' : 'text-[#73757A]'}`} />
-              {!isSidebarCollapsed && <span className="hidden lg:inline text-current">Settings</span>}
+              {!isSidebarCollapsed && <span className="inline text-current">Settings</span>}
             </Link>
 
             <div className="relative" ref={profileRef}>
@@ -239,13 +229,13 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   </div>
                 )}
                 {!isSidebarCollapsed && (
-                  <div className="hidden lg:block min-w-0 text-left flex-1">
+                  <div className="block min-w-0 text-left flex-1">
                     <p className="text-xs font-bold text-[#252525] truncate">My account</p>
                     <p className="text-[10px] text-[#73757A] truncate">Account settings</p>
                   </div>
                 )}
                 {!isSidebarCollapsed && (
-                  <ChevronDown className={`hidden lg:block w-3.5 h-3.5 text-[#73757A] transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`block w-3.5 h-3.5 text-[#73757A] transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                 )}
               </button>
 
@@ -269,7 +259,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               )}
             </div>
 
-            <button type="button" data-ui-sound="click" onClick={() => signOut()} className="hidden lg:flex w-full items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-xs font-semibold text-[#73757A] hover:bg-[#FFF0ED] hover:text-[#B84F3D] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2">
+            <button type="button" data-ui-sound="click" onClick={() => signOut()} className="flex w-full items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-xs font-semibold text-[#73757A] hover:bg-[#FFF0ED] hover:text-[#B84F3D] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2">
               <LogOut className="w-4 h-4" /> Sign out
             </button>
           </div>
