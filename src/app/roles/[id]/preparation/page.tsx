@@ -75,7 +75,7 @@ export default function PreparationPage() {
           className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FFD84D] text-[#252525] text-xs font-semibold"
         >
           <span>Return to My Jobs</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3.5 h-3.5 pointer-events-none shrink-0" />
         </Link>
       </div>
     );
@@ -247,7 +247,7 @@ export default function PreparationPage() {
                 <span className="text-[11px] text-[#9A9B9E]">Derived from role fit findings</span>
                 <Link
                   href={`/roles/${role.id}/interview`}
-                  className="touch-target inline-flex items-center gap-1 text-xs font-semibold text-[#252525] hover:text-[#E7C43E] transition-colors"
+                  className="touch-target inline-flex items-center gap-1 text-xs font-semibold text-[#252525] hover:text-[#303234] transition-colors select-none cursor-pointer"
                 >
                   {getActionBadge(item.status)}
                 </Link>
