@@ -145,7 +145,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#A0A8B5] text-[#252525] font-sans">
+    <div className="min-h-screen bg-[#F3F2EE] text-[#252525] font-sans">
       <div className="rw-app-frame min-h-screen w-full border-0 rounded-none overflow-hidden flex min-h-0 shadow-none">
         <aside
           className={`hidden md:flex shrink-0 bg-[#FAF9F4]/88 backdrop-blur-xl border-r border-[#D9D8D2]/90 flex-col z-40 transition-[width] duration-300 ease-out ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`}
@@ -185,10 +185,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   key={item.label}
                   href={item.href}
                   title={item.label}
+                  aria-current={active ? 'page' : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 ${active ? 'bg-[#252525] text-[#B8B8B8] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#8A8B8F] hover:bg-[#F3F2EE] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#5F6368] hover:bg-[#E8E7E2] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#B8B8B8]' : 'text-[#8A8B8F]'}`} />
+                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#FFFFFF]' : 'text-[#5F6368] group-hover:text-[#252525]'}`} />
                   {!isSidebarCollapsed && <span className="hidden lg:inline truncate text-current">{item.label}</span>}
                 </Link>
               );
@@ -200,9 +201,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               href="/settings"
               title="Settings"
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all ${isNavActive('/settings') ? 'bg-[#252525] text-[#B8B8B8] border border-[#252525]' : 'text-[#8A8B8F] hover:bg-[#F3F2EE] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isNavActive('/settings') ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525]' : 'text-[#5F6368] hover:bg-[#E8E7E2] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
             >
-              <Settings className="w-4 h-4 shrink-0 text-[#8A8B8F]" />
+              <Settings className={`w-4 h-4 shrink-0 ${isNavActive('/settings') ? 'text-[#FFFFFF]' : 'text-[#5F6368]'}`} />
               {!isSidebarCollapsed && <span className="hidden lg:inline text-[#73757A]">Settings</span>}
             </Link>
 
@@ -212,7 +213,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 onClick={() => setIsProfileOpen((value) => !value)}
                 title="Profile"
                 aria-expanded={isProfileOpen}
-                className="w-full flex items-center gap-3 min-h-12 rounded-[15px] px-2.5 lg:px-3 bg-[#F3F2EE] border border-[#D9D8D2] hover:border-[#C9C7BE] transition-all duration-200"
+                className="w-full flex items-center gap-3 min-h-12 rounded-[15px] px-2.5 lg:px-3 bg-[#F3F2EE] border border-[#D9D8D2] hover:border-[#A9A9A4] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
               >
                 <div className="w-9 h-9 rounded-full bg-[#252525] text-[#B8B8B8] font-bold text-xs flex items-center justify-center shrink-0">
                   {userName ? userName[0].toUpperCase() : 'U'}
@@ -248,7 +249,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               )}
             </div>
 
-            <button type="button" data-ui-sound="click" onClick={() => signOut()} className="hidden lg:flex w-full items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-xs font-semibold text-[#73757A] hover:bg-[#FFF0ED] hover:text-[#D97968] transition-colors">
+            <button type="button" data-ui-sound="click" onClick={() => signOut()} className="hidden lg:flex w-full items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-xs font-semibold text-[#5F6368] hover:bg-[#FFF0ED] hover:text-[#B84F3D] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2">
               <LogOut className="w-4 h-4" /> Sign out
             </button>
           </div>
@@ -283,7 +284,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             const Icon = item.icon;
             const active = isNavActive(item.href);
             return (
-              <Link key={item.label} href={item.href} data-ui-sound="click" className={`touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors ${active ? 'text-[#252525]' : 'text-[#73757A]'}`}>
+              <Link key={item.label} href={item.href} data-ui-sound="click" aria-current={active ? 'page' : undefined} className={`touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-inset ${active ? 'text-[#252525]' : 'text-[#5F6368]'}`}>
                 <div className={`w-8 h-6 rounded-full flex items-center justify-center transition-all ${active ? 'bg-[#FFD84D]' : ''}`}><Icon className="w-4 h-4" /></div>
                 <span className={`text-[10px] mt-0.5 ${active ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
               </Link>
