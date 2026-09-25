@@ -188,7 +188,7 @@ export default function DashboardPage() {
                     </Link>
                     <Link data-ui-sound="click"
                       href={`/roles/${role.id}/interview`}
-                      className="touch-target px-3.5 py-1.5 rounded-lg bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-semibold transition-all shadow-xs"
+                      className="touch-target px-3.5 py-1.5 rounded-lg bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-semibold transition-all shadow-xs rw-primary-action"
                     >
                       AI Interview →
                     </Link>
