@@ -72,7 +72,7 @@ export default function DashboardPage() {
 
       {/* 2. STAT SUMMARY COUNTERS (PRD: Truthful, no fake data) */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Link
+        <Link data-ui-sound="click"
           href="/jobs"
           className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#C9C7BE] transition-all group"
         >
@@ -88,7 +88,7 @@ export default function DashboardPage() {
           <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
         </Link>
 
-        <Link
+        <Link data-ui-sound="click"
           href={roles.length > 0 ? `/roles/${roles[0].id}/interview` : '/jobs/new'}
           className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#C9C7BE] transition-all group"
         >
@@ -104,7 +104,7 @@ export default function DashboardPage() {
           <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
         </Link>
 
-        <Link
+        <Link data-ui-sound="click"
           href="/communication-practice"
           className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#C9C7BE] transition-all group"
         >
@@ -120,7 +120,7 @@ export default function DashboardPage() {
           <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
         </Link>
 
-        <Link
+        <Link data-ui-sound="click"
           href="/feedback"
           className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#C9C7BE] transition-all group"
         >
@@ -149,7 +149,7 @@ export default function DashboardPage() {
                   <h2 className="text-base font-semibold text-[#252525]">Your Active Role</h2>
                   <p className="text-xs text-[#73757A]">Currently connected job and preparation roadmap</p>
                 </div>
-                <Link
+                <Link data-ui-sound="click"
                   href="/jobs/new"
                   className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs font-semibold text-[#252525] transition-colors"
                 >
@@ -174,19 +174,19 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <Link
+                    <Link data-ui-sound="click"
                       href={`/roles/${role.id}/fit`}
                       className="touch-target px-3.5 py-1.5 rounded-lg bg-white border border-[#D9D8D2] hover:border-[#C8B33E] text-xs font-semibold text-[#252525] transition-all"
                     >
                       Role Fit
                     </Link>
-                    <Link
+                    <Link data-ui-sound="click"
                       href={`/roles/${role.id}/preparation`}
                       className="touch-target px-3.5 py-1.5 rounded-lg bg-white border border-[#D9D8D2] hover:border-[#C8B33E] text-xs font-semibold text-[#252525] transition-all"
                     >
                       Preparation
                     </Link>
-                    <Link
+                    <Link data-ui-sound="click"
                       href={`/roles/${role.id}/interview`}
                       className="touch-target px-3.5 py-1.5 rounded-lg bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-semibold transition-all shadow-xs"
                     >
@@ -217,7 +217,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <div className="pt-2">
-                  <Link
+                  <Link data-ui-sound="click"
                     href="/jobs/new"
                     className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
                   >
@@ -237,7 +237,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <Link
+              <Link data-ui-sound="click"
                 href="/communication-practice/voice"
                 className="p-4 rounded-xl border border-[#D9D8D2] hover:border-[#C8B33E] bg-white transition-all group flex items-start gap-3.5"
               >
@@ -255,7 +255,7 @@ export default function DashboardPage() {
                 </div>
               </Link>
 
-              <Link
+              <Link data-ui-sound="click"
                 href="/communication-practice/video"
                 className="p-4 rounded-xl border border-[#D9D8D2] hover:border-[#C8B33E] bg-white transition-all group flex items-start gap-3.5"
               >
@@ -289,21 +289,21 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-2 text-xs">
-              <Link
+              <Link data-ui-sound="click"
                 href="/jobs/new"
                 className="p-2.5 rounded-lg border border-[#D9D8D2] hover:border-[#C8B33E] bg-[#FAF9F4] flex items-center justify-between text-[#252525] transition-all"
               >
                 <span>Add a job to get personalized questions</span>
                 <ChevronRight className="w-3.5 h-3.5 text-[#9A9B9E]" />
               </Link>
-              <Link
+              <Link data-ui-sound="click"
                 href="/communication-practice"
                 className="p-2.5 rounded-lg border border-[#D9D8D2] hover:border-[#C8B33E] bg-[#FAF9F4] flex items-center justify-between text-[#252525] transition-all"
               >
                 <span>Practice communication regularly</span>
                 <ChevronRight className="w-3.5 h-3.5 text-[#9A9B9E]" />
               </Link>
-              <Link
+              <Link data-ui-sound="click"
                 href="/feedback"
                 className="p-2.5 rounded-lg border border-[#D9D8D2] hover:border-[#C8B33E] bg-[#FAF9F4] flex items-center justify-between text-[#252525] transition-all"
               >
@@ -328,7 +328,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link
+            <Link data-ui-sound="click"
               href="/communication-practice"
               className="rolewise-card p-4 hover:border-[#C8B33E] transition-all flex items-center justify-between group"
             >
@@ -346,7 +346,7 @@ export default function DashboardPage() {
               <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors shrink-0" />
             </Link>
 
-            <Link
+            <Link data-ui-sound="click"
               href="/communication-practice/voice"
               className="rolewise-card p-4 hover:border-[#C8B33E] transition-all flex items-center justify-between group"
             >
@@ -364,7 +364,7 @@ export default function DashboardPage() {
               <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors shrink-0" />
             </Link>
 
-            <Link
+            <Link data-ui-sound="click"
               href="/communication-practice"
               className="rolewise-card p-4 hover:border-[#C8B33E] transition-all flex items-center justify-between group"
             >
@@ -382,7 +382,7 @@ export default function DashboardPage() {
               <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors shrink-0" />
             </Link>
 
-            <Link
+            <Link data-ui-sound="click"
               href="/communication-practice"
               className="rolewise-card p-4 hover:border-[#C8B33E] transition-all flex items-center justify-between group"
             >
