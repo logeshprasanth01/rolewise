@@ -54,7 +54,7 @@ export default function PreparationPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
-        <Loader2 className="w-6 h-6 animate-spin text-[#6D5DFB]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[#252525]" />
         <p className="text-xs sm:text-sm">Building your role preparation roadmap...</p>
       </div>
     );
@@ -72,7 +72,7 @@ export default function PreparationPage() {
         </div>
         <Link
           href="/jobs"
-          className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#6D5DFB] text-white text-xs font-semibold"
+          className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FFD84D] text-[#252525] text-xs font-semibold"
         >
           <span>Return to My Jobs</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -101,7 +101,7 @@ export default function PreparationPage() {
     }
     if (combined.includes('transferable')) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#EEECFF] text-[#6D5DFB] text-[11px] font-semibold">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FFF2B8] text-[#252525] text-[11px] font-semibold">
           <Sparkles className="w-3 h-3" />
           <span>Transferable</span>
         </span>
@@ -126,7 +126,7 @@ export default function PreparationPage() {
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#6D5DFB]">
+      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#252525]">
         <span>Practice</span>
         <ArrowRight className="w-3.5 h-3.5" />
       </span>
@@ -158,7 +158,7 @@ export default function PreparationPage() {
 
   const focusAreas = [
     highPriorityItem ? { label: 'Needs Attention', item: highPriorityItem, color: 'text-[#E87967]', bg: 'bg-[#FFF0ED]', border: 'border-[#FCDAD5]' } : null,
-    practiceItem && practiceItem.id !== highPriorityItem?.id ? { label: 'Practice & Frame', item: practiceItem, color: 'text-[#6D5DFB]', bg: 'bg-[#EEECFF]', border: 'border-[#DDD8FE]' } : null,
+    practiceItem && practiceItem.id !== highPriorityItem?.id ? { label: 'Practice & Frame', item: practiceItem, color: 'text-[#252525]', bg: 'bg-[#FFF2B8]', border: 'border-[#DDD8FE]' } : null,
     strengthItem && strengthItem.id !== highPriorityItem?.id && strengthItem.id !== practiceItem?.id ? { label: 'Key Strength', item: strengthItem, color: 'text-[#4E9B76]', bg: 'bg-[#EAF6F0]', border: 'border-[#CEECD9]' } : null,
   ].filter(Boolean) as { label: string; item: PreparationItem; color: string; bg: string; border: string }[];
 
@@ -177,7 +177,7 @@ export default function PreparationPage() {
         <div className="flex items-center justify-center gap-3 pt-2">
           <Link
             href={`/roles/${role.id}/fit`}
-            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#252525] hover:bg-[#E7C43E] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
           >
             <span>Go to Role Fit</span>
             <ArrowRight className="w-4 h-4" />
@@ -247,7 +247,7 @@ export default function PreparationPage() {
                 <span className="text-[11px] text-[#98A2B3]">Derived from role fit findings</span>
                 <Link
                   href={`/roles/${role.id}/interview`}
-                  className="touch-target inline-flex items-center gap-1 text-xs font-semibold text-[#6D5DFB] hover:text-[#5A48F5] transition-colors"
+                  className="touch-target inline-flex items-center gap-1 text-xs font-semibold text-[#252525] hover:text-[#E7C43E] transition-colors"
                 >
                   {getActionBadge(item.status)}
                 </Link>
@@ -256,8 +256,8 @@ export default function PreparationPage() {
           ))}
 
           {/* Practical Tip Callout */}
-          <div className="p-4 rounded-xl bg-[#EEECFF]/60 border border-[#DDD8FE] flex items-start gap-3 text-xs text-[#1F2937]">
-            <Lightbulb className="w-4 h-4 text-[#6D5DFB] shrink-0 mt-0.5" />
+          <div className="p-4 rounded-xl bg-[#FFF2B8]/60 border border-[#DDD8FE] flex items-start gap-3 text-xs text-[#1F2937]">
+            <Lightbulb className="w-4 h-4 text-[#252525] shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <span className="font-semibold">Preparation Strategy: </span>
               <span className="text-[#475467]">
@@ -272,7 +272,7 @@ export default function PreparationPage() {
           {/* Target Role Pill */}
           <div className="rolewise-card p-5 space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center">
                 <Briefcase className="w-5 h-5" />
               </div>
               <div className="min-w-0">
@@ -285,7 +285,7 @@ export default function PreparationPage() {
             <div className="pt-2 space-y-2">
               <Link
                 href={`/roles/${role.id}/interview`}
-                className="w-full touch-target inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-sm"
+                className="w-full touch-target inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#252525] hover:bg-[#E7C43E] text-white text-xs sm:text-sm font-semibold transition-all shadow-sm"
               >
                 <span>Start AI interview</span>
                 <ArrowRight className="w-4 h-4" />
@@ -325,29 +325,29 @@ export default function PreparationPage() {
           {/* Before Your Interview Checklist (Image 5) */}
           <div className="rolewise-card p-5 space-y-3">
             <h4 className="text-xs font-semibold text-[#1F2937] flex items-center gap-1.5">
-              <CheckSquare className="w-3.5 h-3.5 text-[#6D5DFB]" />
+              <CheckSquare className="w-3.5 h-3.5 text-[#252525]" />
               <span>Before your interview</span>
             </h4>
 
             <ul className="space-y-2.5 text-xs text-[#475467]">
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#6D5DFB] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#252525] shrink-0 mt-0.5" />
                 <span>Review your strongest project examples</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#6D5DFB] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#252525] shrink-0 mt-0.5" />
                 <span>Prepare specific outcomes and quantifiable impact</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#6D5DFB] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#252525] shrink-0 mt-0.5" />
                 <span>Clarify identified experience gaps</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#6D5DFB] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#252525] shrink-0 mt-0.5" />
                 <span>Practice explaining your design decisions</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#6D5DFB] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#252525] shrink-0 mt-0.5" />
                 <span>Take a mock interview with voice or typed answers</span>
               </li>
             </ul>
