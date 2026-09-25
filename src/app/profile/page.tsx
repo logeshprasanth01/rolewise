@@ -35,7 +35,7 @@ export default function ProfilePage() {
       {/* Account Card */}
       <section className="rolewise-card p-6 space-y-5">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center font-bold text-xl shadow-sm">
+          <div className="w-14 h-14 rounded-2xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center font-bold text-xl shadow-sm">
             {userName ? userName[0].toUpperCase() : 'U'}
           </div>
           <div>
@@ -66,7 +66,7 @@ export default function ProfilePage() {
           ) : (
             <button
               onClick={() => openAuthModal('signin')}
-              className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#6D5DFB] text-white hover:bg-[#5A48F5] transition-colors shadow-sm"
+              className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#FFD84D] text-[#252525] hover:bg-[#E7C43E] transition-colors shadow-sm"
             >
               <User className="w-3.5 h-3.5" />
               <span>Sign In / Create Account</span>
@@ -80,7 +80,7 @@ export default function ProfilePage() {
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1">
             <h3 className="text-base font-semibold text-[#1F2937] flex items-center gap-2">
-              <Shield className="w-4 h-4 text-[#6D5DFB]" />
+              <Shield className="w-4 h-4 text-[#252525]" />
               <span>Workspace & Privacy</span>
             </h3>
             <p className="text-xs text-[#667085]">
@@ -102,7 +102,7 @@ export default function ProfilePage() {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[#667085]">Workspace Plan</span>
-            <span className="text-[#6D5DFB] font-medium">Rolewise Standard</span>
+            <span className="text-[#252525] font-medium">Rolewise Standard</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[#667085]">Practice Recordings</span>
