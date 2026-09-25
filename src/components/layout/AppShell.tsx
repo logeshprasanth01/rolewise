@@ -123,9 +123,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   href={item.href}
                   title={item.label}
                   data-ui-sound="click"
-                  className={\`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 \${active ? 'bg-[#252525] text-[#FFD84D] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}\`}
+                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 \${active ? 'bg-[#252525] text-[#FFD84D] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
                 >
-                  <Icon className={\`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 \${active ? 'text-[#FFD84D]' : ''}\`} />
+                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 \${active ? 'text-[#FFD84D]' : ''}`} />
                   <span className="hidden lg:inline truncate">{item.label}</span>
                 </Link>
               );
@@ -137,7 +137,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               href="/settings"
               title="Settings"
               data-ui-sound="click"
-              className={\`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all \${isNavActive('/settings') ? 'bg-[#252525] text-[#FFD84D] border border-[#252525]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}\`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all \${isNavActive('/settings') ? 'bg-[#252525] text-[#FFD84D] border border-[#252525]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
             >
               <Settings className="w-4 h-4 shrink-0" />
               <span className="hidden lg:inline">Settings</span>
@@ -158,7 +158,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   <p className="text-xs font-bold text-[#252525] truncate">{userName || 'Candidate'}</p>
                   <p className="text-[10px] text-[#73757A] truncate">{session.user?.email || 'Profile'}</p>
                 </div>
-                <ChevronDown className={\`hidden lg:block w-3.5 h-3.5 text-[#73757A] transition-transform \${isProfileOpen ? 'rotate-180' : ''}\`} />
+                <ChevronDown className={`hidden lg:block w-3.5 h-3.5 text-[#73757A] transition-transform \${isProfileOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isProfileOpen && (
@@ -216,9 +216,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             const Icon = item.icon;
             const active = isNavActive(item.href);
             return (
-              <Link key={item.label} href={item.href} data-ui-sound="click" className={\`touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors \${active ? 'text-[#252525]' : 'text-[#73757A]'}\`}>
-                <div className={\`w-8 h-6 rounded-full flex items-center justify-center transition-all \${active ? 'bg-[#FFD84D]' : ''}\`}><Icon className="w-4 h-4" /></div>
-                <span className={\`text-[10px] mt-0.5 \${active ? 'font-bold' : 'font-medium'}\`}>{item.label}</span>
+              <Link key={item.label} href={item.href} data-ui-sound="click" className={`touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors \${active ? 'text-[#252525]' : 'text-[#73757A]'}`}>
+                <div className={`w-8 h-6 rounded-full flex items-center justify-center transition-all \${active ? 'bg-[#FFD84D]' : ''}`}><Icon className="w-4 h-4" /></div>
+                <span className={`text-[10px] mt-0.5 \${active ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
               </Link>
             );
           })}
