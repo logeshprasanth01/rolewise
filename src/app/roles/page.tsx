@@ -25,7 +25,7 @@ export default function RolesRedirectPage() {
   }, [router]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
+    <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#73757A]">
       <Loader2 className="w-6 h-6 animate-spin text-[#252525]" />
       <p className="text-xs sm:text-sm">Connecting to your role interview session...</p>
     </div>
