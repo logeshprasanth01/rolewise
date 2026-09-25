@@ -3,7 +3,6 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import {
   User,
-  Mail,
   Shield,
   CheckCircle2,
   AlertCircle,
@@ -12,7 +11,6 @@ import {
   Video,
   Accessibility,
   Bell,
-  Moon,
   Save,
   Upload,
   RotateCcw,
