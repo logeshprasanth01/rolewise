@@ -180,7 +180,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       <div className="min-h-screen bg-[#F3F2EE] text-[#252525] font-sans">
       <div className="rw-app-frame min-h-screen w-full border-0 rounded-none overflow-hidden flex min-h-0 shadow-none">
         <aside
-          className={`hidden md:flex shrink-0 bg-[#F7F7F5]/96 backdrop-blur-xl border-r border-[#D9D8D2] flex-col z-40 transition-[width] duration-300 ease-out overflow-hidden ${isSidebarDragging ? 'select-none' : ''} ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`} style={{ touchAction: 'pan-y' }}
+          className={`rw-sidebar-nav hidden md:flex shrink-0 bg-[#F7F7F5]/96 backdrop-blur-xl border-r border-[#D9D8D2] flex-col z-40 transition-[width] duration-300 ease-out overflow-hidden ${isSidebarDragging ? 'select-none' : ''} ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`} style={{ touchAction: 'pan-y' }}
           aria-label="Sidebar navigation"
         >
           <div className={`p-3 ${isSidebarCollapsed ? 'md:p-3' : 'md:p-5'}`}>
