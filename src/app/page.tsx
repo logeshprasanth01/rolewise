@@ -20,21 +20,49 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { getUserRoles } from '@/services/api';
+import { getPreparationItems, getUserRoles } from '@/services/api';
 import { Role } from '@/types/database';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 
 export default function DashboardPage() {
   const { userName } = useAuth();
   const [roles, setRoles] = useState<Role[]>([]);
+  const [preparationStats, setPreparationStats] = useState({
+    completed: 0,
+    inProgress: 0,
+    notStarted: 0,
+  });
 
   useEffect(() => {
     async function loadDashboardData() {
       try {
         const userRoles = await getUserRoles();
         setRoles(userRoles);
+
+        if (userRoles.length === 0) {
+          setPreparationStats({ completed: 0, inProgress: 0, notStarted: 0 });
+          return;
+        }
+
+        const preparationByRole = await Promise.all(
+          userRoles.map((role) => getPreparationItems(role.id))
+        );
+
+        const nextStats = preparationByRole
+          .flatMap((result) => result.items)
+          .reduce(
+            (stats, item) => {
+              if (item.status === 'completed') stats.completed += 1;
+              else if (item.status === 'in_progress') stats.inProgress += 1;
+              else stats.notStarted += 1;
+              return stats;
+            },
+            { completed: 0, inProgress: 0, notStarted: 0 }
+          );
+
+        setPreparationStats(nextStats);
       } catch (err) {
-        console.error('Error fetching dashboard roles:', err);
+        console.error('Error fetching dashboard preparation analytics:', err);
       }
     }
     loadDashboardData();
@@ -227,6 +255,70 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Functional preparation analytics — derived only from the user's real preparation items */}
+          {roles.length > 0 && (
+            <section className="rolewise-card p-5 sm:p-6 space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-[#73757A]" />
+                    <h2 className="text-sm sm:text-base font-semibold text-[#252525]">Preparation progress</h2>
+                  </div>
+                  <p className="text-xs text-[#73757A] mt-1">
+                    Your current preparation items across active roles.
+                  </p>
+                </div>
+                <Link
+                  data-ui-sound="click"
+                  href="/preparation"
+                  className="text-[11px] font-semibold text-[#73757A] hover:text-[#252525] transition-colors shrink-0"
+                >
+                  View preparation →
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-5 items-center">
+                <div className="space-y-3">
+                  {[
+                    { label: 'Completed', value: preparationStats.completed, track: 'bg-[#E7F2EA]', fill: 'bg-[#6FA77F]' },
+                    { label: 'In progress', value: preparationStats.inProgress, track: 'bg-[#FFF2B8]', fill: 'bg-[#D49A35]' },
+                    { label: 'Not started', value: preparationStats.notStarted, track: 'bg-[#ECEDEF]', fill: 'bg-[#9A9B9E]' },
+                  ].map((item) => {
+                    const total =
+                      preparationStats.completed +
+                      preparationStats.inProgress +
+                      preparationStats.notStarted;
+                    const width = total > 0 ? Math.max((item.value / total) * 100, item.value > 0 ? 8 : 0) : 0;
+
+                    return (
+                      <div key={item.label} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-medium text-[#73757A]">{item.label}</span>
+                          <span className="font-semibold text-[#252525]">{item.value}</span>
+                        </div>
+                        <div className={`h-2.5 rounded-full ${item.track}`} aria-hidden="true">
+                          <div
+                            className={`h-full rounded-full ${item.fill} transition-all duration-500`}
+                            style={{ width: `${width}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="w-full sm:w-[132px] h-[132px] rounded-[22px] bg-[#FFFBEF] border border-[#E8E3CE] flex flex-col items-center justify-center">
+                  <span className="text-2xl font-bold text-[#252525]">
+                    {preparationStats.completed + preparationStats.inProgress + preparationStats.notStarted}
+                  </span>
+                  <span className="text-[10px] font-medium text-[#73757A] text-center leading-tight px-3">
+                    preparation items
+                  </span>
+                </div>
+              </div>
+            </section>
           )}
 
           {/* Supporting Communication Practice (PRD: Voice & Video) */}
