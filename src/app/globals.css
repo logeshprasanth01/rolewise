@@ -1,32 +1,34 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #F7F7FB;
-  --color-surface: #FFFFFF;
-  --color-text-primary: #1F2937;
-  --color-text-secondary: #667085;
-  --color-brand: #6D5DFB;
-  --color-brand-soft: #EEECFF;
-  --color-brand-hover: #5A48F5;
-  --color-status-success: #4E9B76;
-  --color-status-success-light: #EAF6F0;
-  --color-status-warning: #C58A2B;
+  --color-canvas: #AEB4C0;
+  --color-surface: #FAF9F4;
+  --color-surface-warm: #FFFBEF;
+  --color-text-primary: #252525;
+  --color-text-secondary: #73757A;
+  --color-brand: #FFD84D;
+  --color-brand-soft: #FFF2B8;
+  --color-brand-hover: #E7C43E;
+  --color-status-success: #6FA77F;
+  --color-status-success-light: #EEF7F0;
+  --color-status-warning: #D49A35;
   --color-status-warning-light: #FFF5DF;
-  --color-status-attention: #E87967;
+  --color-status-attention: #D97968;
   --color-status-attention-light: #FFF0ED;
-  --color-border-subtle: #E7E8EF;
-  --radius-card: 18px;
+  --color-border-subtle: #D9D8D2;
+  --color-secondary-lavender: #E7E7EE;
+  --radius-card: 26px;
   --font-inter: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
-  --background: #F7F7FB;
-  --foreground: #1F2937;
+  --background: #AEB4C0;
+  --foreground: #252525;
 }
 
 body {
-  background-color: #F7F7FB;
-  color: #1F2937;
+  background-color: #AEB4C0;
+  color: #252525;
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -41,12 +43,12 @@ body {
   justify-content: center;
 }
 
-/* Subtle card styling adhering strictly to 2026 SaaS aesthetic */
+/* ROLEWISE editorial SaaS card system */
 .rolewise-card {
-  background: #FFFFFF;
-  border: 1px solid #E7E8EF;
-  border-radius: 18px;
-  box-shadow: 0 1px 3px 0 rgba(16, 24, 40, 0.03), 0 1px 2px 0 rgba(16, 24, 40, 0.02);
+  background: #FAF9F4;
+  border: 1px solid #D9D8D2;
+  border-radius: 26px;
+  box-shadow: 0 1px 3px 0 rgba(37, 37, 37, 0.04);
 }
 
 /* Custom scrollbars */
@@ -58,9 +60,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #E7E8EF;
+  background: #D9D8D2;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #D0D5DD;
+  background: #BFC0BA;
 }
