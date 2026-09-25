@@ -43,18 +43,18 @@ body {
   justify-content: center;
 }
 
-/* ROLEWISE 2026 visual system: cool grey -> warm ivory -> soft yellow */
+/* ROLEWISE 2026 visual system: neutral-first grey / ivory. Yellow is reserved for primary CTAs and priority actions. */
 .rw-app-frame {
   background:
-    radial-gradient(circle at 88% 12%, rgba(255,216,77,.18) 0%, rgba(255,216,77,0) 30%),
+    radial-gradient(circle at 88% 12%, rgba(210,213,216,.32) 0%, rgba(210,213,216,0) 30%),
     radial-gradient(circle at 10% 88%, rgba(232,235,237,.75) 0%, rgba(232,235,237,0) 38%),
-    linear-gradient(120deg, #EEF0F1 0%, #F3F2EE 58%, #FFF7D8 100%);
+    linear-gradient(120deg, #EEF0F1 0%, #F3F2EE 58%, #E7E9EB 100%);
 }
 
 .rw-gradient-hero {
   background:
-    radial-gradient(circle at 90% 20%, rgba(255,216,77,.20) 0%, rgba(255,216,77,0) 34%),
-    linear-gradient(115deg, #EEF0F1 0%, #F4F3EF 68%, #FFF5C9 100%);
+    radial-gradient(circle at 90% 20%, rgba(214,216,219,.30) 0%, rgba(214,216,219,0) 34%),
+    linear-gradient(115deg, #EEF0F1 0%, #F4F3EF 68%, #E9EAEC 100%);
 }
 
 .rw-gradient-surface {
@@ -150,9 +150,9 @@ body {
 }
 .rw-input:focus {
   transform: translateY(-1px);
-  border-color: #C8B33E !important;
-  box-shadow: 0 0 0 4px rgba(255,216,77,.18);
-  background: #FFFBEF;
+  border-color: #9EA2A6 !important;
+  box-shadow: 0 0 0 3px rgba(37,37,37,.10);
+  background: #FFFFFF;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -171,10 +171,12 @@ body {
 
 
 /* Legacy palette guard: no violet/indigo accents anywhere in the interface. */
-[class*="bg-[#6D5DFB]"], [class*="bg-[#5A48F5]"], [class*="bg-[#8B5CF6]"] { background-color: #FFD84D !important; }
-[class*="bg-[#EEECFF]"], [class*="bg-[#F5F3FF]"], [class*="bg-[#DDD8FE]"], [class*="bg-[#D8D4FD]"], [class*="bg-[#E0DCFE]"] { background-color: #FFF2B8 !important; }
+[class*="bg-[#6D5DFB]"], [class*="bg-[#5A48F5]"], [class*="bg-[#8B5CF6]"] { background-color: #E7E9EB !important; }
+[class*="bg-[#EEECFF]"], [class*="bg-[#F5F3FF]"], [class*="bg-[#DDD8FE]"], [class*="bg-[#D8D4FD]"], [class*="bg-[#E0DCFE]"] { background-color: #E7E9EB !important; }
 [class*="text-[#6D5DFB]"], [class*="text-[#5A48F5]"], [class*="text-[#8B5CF6]"] { color: #252525 !important; }
-[class*="border-[#6D5DFB]"], [class*="border-[#5A48F5]"], [class*="border-[#8B5CF6]"] { border-color: #E8D77D !important; }
+[class*="border-[#6D5DFB]"], [class*="border-[#5A48F5]"], [class*="border-[#8B5CF6]"] { border-color: #D9D8D2 !important; }
+[class*="bg-[#FFF2B8]"], [class*="bg-[#FFF5C9]"], [class*="bg-[#FFF7D8]"], [class*="bg-[#FFFBEF]"] { background-color: #F0F1F1 !important; }
+[class*="border-[#E8D77D]"] { border-color: #D9D8D2 !important; }
 
 @media (max-width: 767px) {
   .rw-app-frame { border-radius: 0; }
