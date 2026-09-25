@@ -66,3 +66,74 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #BFC0BA;
 }
+
+
+/* ROLEWISE micro-interactions: restrained, tactile, editorial */
+@keyframes rw-pop {
+  0% { opacity: 0; transform: translateY(6px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes rw-success {
+  0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+  60% { transform: translateY(-2px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes rw-sheen {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+
+.animate-rw-pop {
+  animation: rw-pop 180ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+.animate-rw-success {
+  animation: rw-success 420ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+.rw-interactive {
+  position: relative;
+  overflow: hidden;
+  transition: transform 180ms cubic-bezier(.2,.8,.2,1), box-shadow 180ms ease, border-color 180ms ease;
+}
+.rw-interactive:hover {
+  transform: translateY(-2px);
+}
+.rw-interactive:active {
+  transform: translateY(0) scale(0.985);
+}
+.rw-interactive::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -45%;
+  width: 30%;
+  transform: skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.38), transparent);
+  pointer-events: none;
+  opacity: 0;
+}
+.rw-interactive:hover::after {
+  opacity: 1;
+  animation: rw-sheen 700ms ease-out both;
+}
+
+.rw-input {
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, background-color 180ms ease;
+}
+.rw-input:focus {
+  transform: translateY(-1px);
+  border-color: #C8B33E !important;
+  box-shadow: 0 0 0 4px rgba(255,216,77,.18);
+  background: #FFFBEF;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rw-pop,
+  .animate-rw-success,
+  .rw-interactive,
+  .rw-input,
+  .rw-interactive::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
