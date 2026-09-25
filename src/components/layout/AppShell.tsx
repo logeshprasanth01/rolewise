@@ -99,10 +99,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#AEB4C0] text-[#252525] font-sans px-0 md:p-3 lg:p-5">
-      <div className="min-h-[calc(100vh-1.5rem)] lg:min-h-[calc(100vh-2.5rem)] bg-[#F3F2EE] md:rounded-[30px] lg:rounded-[34px] border border-[#D9D8D2] overflow-hidden flex min-h-0 shadow-[0_8px_30px_rgba(37,37,37,0.08)]">
+    <div className="min-h-screen bg-[#A0A8B5] text-[#252525] font-sans px-0 md:p-3 lg:p-5">
+      <div className="rw-app-frame min-h-[calc(100vh-1.5rem)] lg:min-h-[calc(100vh-2.5rem)] md:rounded-[30px] lg:rounded-[34px] border border-[#D9D8D2] overflow-hidden flex min-h-0 shadow-[0_16px_50px_rgba(37,37,37,0.12)]">
 
-        <aside className="hidden md:flex w-[76px] lg:w-[232px] shrink-0 bg-[#FAF9F4] border-r border-[#D9D8D2] flex-col z-40">
+        <aside className="hidden md:flex w-[76px] lg:w-[232px] shrink-0 bg-[#FAF9F4]/88 backdrop-blur-xl border-r border-[#D9D8D2]/90 flex-col z-40">
           <div className="p-3 lg:p-5">
             <Link href="/" data-ui-sound="click" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#FFD84D] flex items-center justify-center font-bold text-base transition-transform duration-200 group-hover:scale-[1.04]">R</div>
@@ -188,7 +188,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         </aside>
 
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
-          <header className="sticky top-0 z-30 bg-[#F3F2EE]/95 backdrop-blur-md border-b border-[#D9D8D2]">
+          <header className="sticky top-0 z-30 bg-[#F3F2EE]/55 backdrop-blur-xl border-b border-[#D9D8D2]/75">
             <div className="px-4 sm:px-6 lg:px-7 py-3 flex items-center gap-3">
               <div className="flex items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FAF9F4] border border-[#D9D8D2] text-[#73757A] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all">
                 <Search className="w-3.5 h-3.5 shrink-0" />
