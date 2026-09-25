@@ -45,7 +45,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-7 animate-in fade-in duration-300">
       {/* 1. HERO GREETING BANNER (Image 3) */}
-      <section className="relative overflow-hidden rounded-2xl bg-[#FFF2B8]/60 border border-[#E8D77D] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+      <section className="rw-gradient-hero relative overflow-hidden rounded-[26px] border border-[#D9D8D2] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-[0_8px_28px_rgba(37,37,37,0.06)]">
         <div className="space-y-1.5 z-10">
           <p className="text-xs sm:text-sm font-medium text-[#73757A]">Good morning,</p>
           <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight flex items-center gap-2">
