@@ -45,10 +45,29 @@ body {
 
 /* ROLEWISE 2026 visual system: neutral-first grey / ivory. Yellow is reserved for primary CTAs and priority actions. */
 .rw-app-frame {
+  position: relative;
+  isolation: isolate;
+  background: #EEF0F1;
+}
+
+/* Soft, low-opacity background glow — intentionally behind the interface surfaces. */
+.rw-app-frame::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  z-index: -1;
+  pointer-events: none;
   background:
-    radial-gradient(circle at 88% 12%, rgba(210,213,216,.32) 0%, rgba(210,213,216,0) 30%),
-    radial-gradient(circle at 10% 88%, rgba(232,235,237,.75) 0%, rgba(232,235,237,0) 38%),
-    linear-gradient(120deg, #EEF0F1 0%, #F3F2EE 58%, #E7E9EB 100%);
+    radial-gradient(circle at 88% 10%, rgba(255,216,77,.16) 0%, rgba(255,216,77,0) 28%),
+    radial-gradient(circle at 14% 84%, rgba(196,205,214,.24) 0%, rgba(196,205,214,0) 34%),
+    linear-gradient(120deg, rgba(238,240,241,.82) 0%, rgba(243,242,238,.78) 58%, rgba(231,233,235,.72) 100%);
+  filter: blur(46px);
+  transform: scale(1.04);
+}
+
+.rw-app-frame > * {
+  position: relative;
+  z-index: 1;
 }
 
 .rw-gradient-hero {
