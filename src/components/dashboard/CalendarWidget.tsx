@@ -324,7 +324,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
     <div className="rolewise-card p-5 space-y-4">
       {/* Month Navigation & Today Controls */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-[#1F2937]">
+        <span className="text-xs font-semibold text-[#252525]">
           {monthName} {currentYear}
         </span>
         <div className="flex items-center gap-1">
@@ -332,7 +332,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
             type="button"
             onClick={handleToday}
             aria-label="Go to today"
-            className="px-2 py-0.5 rounded-md text-[11px] font-semibold text-[#6D5DFB] hover:bg-[#EEECFF] transition-colors cursor-pointer"
+            className="px-2 py-0.5 rounded-md text-[11px] font-semibold text-[#FFD84D] hover:bg-[#FFF2B8] transition-colors cursor-pointer"
           >
             Today
           </button>
@@ -340,7 +340,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
             type="button"
             onClick={handlePrevMonth}
             aria-label="Previous month"
-            className="p-1 rounded-md text-[#667085] hover:text-[#1F2937] hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+            className="p-1 rounded-md text-[#73757A] hover:text-[#252525] hover:bg-[#FAF9F4] transition-colors cursor-pointer"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -348,7 +348,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
             type="button"
             onClick={handleNextMonth}
             aria-label="Next month"
-            className="p-1 rounded-md text-[#667085] hover:text-[#1F2937] hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+            className="p-1 rounded-md text-[#73757A] hover:text-[#252525] hover:bg-[#FAF9F4] transition-colors cursor-pointer"
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
@@ -358,7 +358,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
       {/* Weekday Header */}
       <div className="grid grid-cols-7 gap-1 text-center text-[11px]">
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, idx) => (
-          <span key={idx} className="text-[#98A2B3] font-medium py-0.5">
+          <span key={idx} className="text-[#9A9B9E] font-medium py-0.5">
             {d}
           </span>
         ))}
@@ -375,12 +375,12 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
               aria-current={cell.isToday ? 'date' : undefined}
               className={`py-1.5 px-0.5 rounded-md text-[11px] flex flex-col items-center justify-center transition-all cursor-pointer relative group ${
                 cell.isSelected
-                  ? 'bg-[#6D5DFB] text-white font-semibold shadow-xs'
+                  ? 'bg-[#FFD84D] text-white font-semibold shadow-xs'
                   : cell.isToday
-                  ? 'border border-[#6D5DFB] text-[#6D5DFB] font-semibold hover:bg-[#EEECFF]'
+                  ? 'border border-[#FFD84D] text-[#FFD84D] font-semibold hover:bg-[#FFF2B8]'
                   : cell.isCurrentMonth
-                  ? 'text-[#1F2937] hover:bg-[#F7F7FB]'
-                  : 'text-[#98A2B3]/50 hover:bg-[#F7F7FB]'
+                  ? 'text-[#252525] hover:bg-[#F3F2EE]'
+                  : 'text-[#9A9B9E]/50 hover:bg-[#F3F2EE]'
               }`}
             >
               <span>{cell.day}</span>
@@ -388,7 +388,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
               {cell.hasEvents && (
                 <span
                   className={`w-1 h-1 rounded-full mt-0.5 ${
-                    cell.isSelected ? 'bg-white' : 'bg-[#6D5DFB]'
+                    cell.isSelected ? 'bg-white' : 'bg-[#FFD84D]'
                   }`}
                 />
               )}
@@ -398,11 +398,11 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
       </div>
 
       {/* Selected Date Details & Real Event List (Requirement 5 & 6) */}
-      <div className="pt-3 border-t border-[#E7E8EF] space-y-2">
+      <div className="pt-3 border-t border-[#D9D8D2] space-y-2">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-[#1F2937]">{formattedSelectedDate}</span>
+          <span className="font-semibold text-[#252525]">{formattedSelectedDate}</span>
           {eventsOnSelectedDate.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded-md bg-[#EEECFF] text-[#6D5DFB] text-[10px] font-semibold">
+            <span className="px-1.5 py-0.5 rounded-md bg-[#FFF2B8] text-[#FFD84D] text-[10px] font-semibold">
               {eventsOnSelectedDate.length} {eventsOnSelectedDate.length === 1 ? 'item' : 'items'}
             </span>
           )}
@@ -413,27 +413,27 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
             {eventsOnSelectedDate.map((ev) => (
               <div
                 key={ev.id}
-                className="p-2.5 rounded-xl border border-[#E7E8EF] bg-[#F9FAFB] hover:border-[#6D5DFB] transition-all space-y-1"
+                className="p-2.5 rounded-xl border border-[#D9D8D2] bg-[#FAF9F4] hover:border-[#FFD84D] transition-all space-y-1"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5">
-                    <p className="text-xs font-bold text-[#1F2937] leading-snug">{ev.title}</p>
-                    {ev.company && <p className="text-[11px] text-[#667085]">{ev.company}</p>}
+                    <p className="text-xs font-bold text-[#252525] leading-snug">{ev.title}</p>
+                    {ev.company && <p className="text-[11px] text-[#73757A]">{ev.company}</p>}
                   </div>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white border border-[#E7E8EF] text-[#6D5DFB] shrink-0">
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white border border-[#D9D8D2] text-[#FFD84D] shrink-0">
                     {ev.badgeText}
                   </span>
                 </div>
                 <div className="pt-1 flex items-center justify-between text-[11px]">
                   <Link
                     href={`/roles/${ev.roleId}/fit`}
-                    className="text-[#667085] hover:text-[#1F2937] font-medium transition-colors"
+                    className="text-[#73757A] hover:text-[#252525] font-medium transition-colors"
                   >
                     View Fit
                   </Link>
                   <Link
                     href={ev.primaryUrl}
-                    className="font-semibold text-[#6D5DFB] hover:underline flex items-center gap-1"
+                    className="font-semibold text-[#FFD84D] hover:underline flex items-center gap-1"
                   >
                     <span>{ev.primaryActionText}</span>
                     <ArrowRight className="w-3 h-3" />
@@ -443,12 +443,12 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
             ))}
           </div>
         ) : (
-          <div className="py-2.5 px-3 rounded-xl bg-[#F9FAFB] border border-[#E7E8EF] text-center space-y-1">
-            <p className="text-xs text-[#667085]">No activity scheduled</p>
+          <div className="py-2.5 px-3 rounded-xl bg-[#FAF9F4] border border-[#D9D8D2] text-center space-y-1">
+            <p className="text-xs text-[#73757A]">No activity scheduled</p>
             <div className="flex items-center justify-center gap-2 text-[11px]">
               <Link
                 href="/jobs/new"
-                className="font-semibold text-[#6D5DFB] hover:underline flex items-center gap-0.5"
+                className="font-semibold text-[#FFD84D] hover:underline flex items-center gap-0.5"
               >
                 <Plus className="w-3 h-3" />
                 <span>Add job</span>
@@ -456,7 +456,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
               <span className="text-[#D0D5DD]">·</span>
               <Link
                 href="/communication-practice"
-                className="font-semibold text-[#6D5DFB] hover:underline"
+                className="font-semibold text-[#FFD84D] hover:underline"
               >
                 Practice
               </Link>
