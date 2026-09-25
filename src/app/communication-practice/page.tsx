@@ -40,7 +40,7 @@ export default function CommunicationPracticePage() {
     <div className="space-y-8 max-w-5xl mx-auto animate-in fade-in duration-300 pb-16">
       {/* Header */}
       <section className="space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EEECFF] text-[#6D5DFB] text-xs font-semibold">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFF2B8] text-[#252525] text-xs font-semibold">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Independent Practice Hub</span>
         </div>
@@ -55,7 +55,7 @@ export default function CommunicationPracticePage() {
         <div className="pt-2">
           {activeRole ? (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E7E8EF] text-xs sm:text-sm text-[#1F2937]">
-              <Briefcase className="w-4 h-4 text-[#6D5DFB]" />
+              <Briefcase className="w-4 h-4 text-[#252525]" />
               <span className="text-[#667085]">Contextual prompt available:</span>
               <span className="font-semibold text-[#1F2937]">{activeRole.title}</span>
               <span>·</span>
@@ -63,7 +63,7 @@ export default function CommunicationPracticePage() {
             </div>
           ) : (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E7E8EF] text-xs text-[#667085]">
-              <Sparkles className="w-3.5 h-3.5 text-[#6D5DFB]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#252525]" />
               <span>General communication drills (accessible anytime without a job)</span>
             </div>
           )}
@@ -73,13 +73,13 @@ export default function CommunicationPracticePage() {
       {/* Practice Modes Selection (Voice Practice & Video Practice) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Mode 1: Voice Practice (Screen 9) */}
-        <div className="rolewise-card p-6 flex flex-col justify-between space-y-6 hover:border-[#6D5DFB] transition-all group">
+        <div className="rolewise-card p-6 flex flex-col justify-between space-y-6 hover:border-[#252525] transition-all group">
           <div className="space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center">
               <Mic className="w-6 h-6" />
             </div>
             <div className="space-y-1.5">
-              <h2 className="text-lg font-bold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
+              <h2 className="text-lg font-bold text-[#1F2937] group-hover:text-[#252525] transition-colors">
                 Voice Practice
               </h2>
               <p className="text-xs sm:text-sm text-[#667085] leading-relaxed">
@@ -106,7 +106,7 @@ export default function CommunicationPracticePage() {
           <div className="pt-4 border-t border-[#E7E8EF]">
             <Link
               href="/communication-practice/voice"
-              className="touch-target w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+              className="touch-target w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
             >
               <span>Start Voice Practice</span>
               <ArrowRight className="w-4 h-4" />
@@ -115,13 +115,13 @@ export default function CommunicationPracticePage() {
         </div>
 
         {/* Mode 2: Video Practice (Screen 10) */}
-        <div className="rolewise-card p-6 flex flex-col justify-between space-y-6 hover:border-[#6D5DFB] transition-all group">
+        <div className="rolewise-card p-6 flex flex-col justify-between space-y-6 hover:border-[#252525] transition-all group">
           <div className="space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-[#F5F3FF] text-[#8B5CF6] flex items-center justify-center">
               <Video className="w-6 h-6" />
             </div>
             <div className="space-y-1.5">
-              <h2 className="text-lg font-bold text-[#1F2937] group-hover:text-[#6D5DFB] transition-colors">
+              <h2 className="text-lg font-bold text-[#1F2937] group-hover:text-[#252525] transition-colors">
                 Video Practice
               </h2>
               <p className="text-xs sm:text-sm text-[#667085] leading-relaxed">
@@ -148,7 +148,7 @@ export default function CommunicationPracticePage() {
           <div className="pt-4 border-t border-[#E7E8EF]">
             <Link
               href="/communication-practice/video"
-              className="touch-target w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+              className="touch-target w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
             >
               <span>Start Video Practice</span>
               <ArrowRight className="w-4 h-4" />
