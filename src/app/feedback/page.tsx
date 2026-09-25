@@ -45,7 +45,7 @@ export default function FeedbackPage() {
     <div className="space-y-7 max-w-5xl mx-auto animate-in fade-in duration-300 pb-16">
       {/* Header */}
       <section className="space-y-1.5">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EEECFF] text-[#6D5DFB] text-xs font-semibold">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFF2B8] text-[#252525] text-xs font-semibold">
           <Clock className="w-3.5 h-3.5" />
           <span>Qualitative Review</span>
         </div>
@@ -61,7 +61,7 @@ export default function FeedbackPage() {
       {activeRole && (
         <div className="p-3.5 rounded-xl bg-white border border-[#E7E8EF] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#FFF2B8] text-[#252525] flex items-center justify-center">
               <Briefcase className="w-4 h-4" />
             </div>
             <div>
@@ -72,7 +72,7 @@ export default function FeedbackPage() {
 
           <Link
             href={`/roles/${activeRole.id}/interview`}
-            className="touch-target inline-flex items-center gap-1 text-xs font-semibold text-[#6D5DFB] hover:text-[#5A48F5]"
+            className="touch-target inline-flex items-center gap-1 text-xs font-semibold text-[#252525] hover:text-[#E7C43E]"
           >
             <span>Practice this role again</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -143,22 +143,22 @@ export default function FeedbackPage() {
         </div>
 
         {/* 3. Practice Next (Actionable drills) */}
-        <div className="rolewise-card p-6 space-y-4 bg-[#EEECFF]/30 border-[#DDD8FE]">
-          <div className="flex items-center gap-2 text-sm font-semibold text-[#6D5DFB]">
+        <div className="rolewise-card p-6 space-y-4 bg-[#FFF2B8]/30 border-[#DDD8FE]">
+          <div className="flex items-center gap-2 text-sm font-semibold text-[#252525]">
             <Award className="w-5 h-5" />
             <h2 className="text-base text-[#1F2937] font-semibold">Practice next</h2>
           </div>
 
           <div className="space-y-3">
             <div className="p-4 rounded-xl bg-white border border-[#DDD8FE] space-y-1">
-              <p className="text-xs font-semibold text-[#6D5DFB]">1. Outcome Articulation Drill</p>
+              <p className="text-xs font-semibold text-[#252525]">1. Outcome Articulation Drill</p>
               <p className="text-xs text-[#475467] leading-relaxed">
                 Prepare a dedicated 20-second summary answering: <em>&ldquo;What changed in the business or for the user because this work was completed?&rdquo;</em>
               </p>
             </div>
 
             <div className="p-4 rounded-xl bg-white border border-[#DDD8FE] space-y-1">
-              <p className="text-xs font-semibold text-[#6D5DFB]">2. Stakeholder Tradeoff Narrative</p>
+              <p className="text-xs font-semibold text-[#252525]">2. Stakeholder Tradeoff Narrative</p>
               <p className="text-xs text-[#475467] leading-relaxed">
                 Practice explaining a moment of pushback between engineering constraints and design ambition, detailing how you navigated the compromise.
               </p>
@@ -229,7 +229,7 @@ export default function FeedbackPage() {
 
           <Link
             href={activeRole ? `/roles/${activeRole.id}/interview` : '/jobs/new'}
-            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
           >
             <RotateCcw className="w-4 h-4" />
             <span>Practice again</span>
