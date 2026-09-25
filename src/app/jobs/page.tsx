@@ -107,8 +107,8 @@ export default function MyJobsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#1F2937] tracking-tight">My Jobs</h1>
-          <p className="text-xs sm:text-sm text-[#667085]">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">My Jobs</h1>
+          <p className="text-xs sm:text-sm text-[#73757A]">
             Manage your target job opportunities and access role-specific preparation plans.
           </p>
         </div>
@@ -129,9 +129,9 @@ export default function MyJobsPage() {
         <div className="space-y-4">
           {[1, 2].map((i) => (
             <div key={i} className="rolewise-card p-6 space-y-4 animate-pulse">
-              <div className="h-4 bg-[#E7E8EF] rounded-md w-36" />
-              <div className="h-6 bg-[#E7E8EF] rounded-md w-64" />
-              <div className="h-4 bg-[#E7E8EF] rounded-md w-48" />
+              <div className="h-4 bg-[#D9D8D2] rounded-md w-36" />
+              <div className="h-6 bg-[#D9D8D2] rounded-md w-64" />
+              <div className="h-4 bg-[#D9D8D2] rounded-md w-48" />
             </div>
           ))}
         </div>
@@ -148,18 +148,18 @@ export default function MyJobsPage() {
                   <span className="px-2.5 py-0.5 rounded-md bg-[#FFF2B8] text-[#252525] text-[11px] font-semibold">
                     Target Opportunity
                   </span>
-                  <span className="text-xs text-[#667085]">
+                  <span className="text-xs text-[#73757A]">
                     Added {role.created_at ? new Date(role.created_at).toLocaleDateString() : 'Recently'}
                   </span>
                 </div>
 
-                <h3 className="text-base sm:text-lg font-bold text-[#1F2937]">{role.title}</h3>
+                <h3 className="text-base sm:text-lg font-bold text-[#252525]">{role.title}</h3>
 
-                <div className="flex flex-wrap items-center gap-3 text-xs text-[#667085]">
-                  <span className="font-semibold text-[#1F2937]">{role.company}</span>
+                <div className="flex flex-wrap items-center gap-3 text-xs text-[#73757A]">
+                  <span className="font-semibold text-[#252525]">{role.company}</span>
                   <span>·</span>
                   <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#98A2B3]" />
+                    <MapPin className="w-3.5 h-3.5 text-[#9A9B9E]" />
                     {role.location || 'Remote'}
                   </span>
                   <span>·</span>
@@ -171,13 +171,13 @@ export default function MyJobsPage() {
               <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                 <Link
                   href={`/roles/${role.id}/fit`}
-                  className="touch-target px-3.5 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:border-[#252525] text-xs font-semibold text-[#1F2937] transition-all"
+                  className="touch-target px-3.5 py-2 rounded-xl bg-white border border-[#D9D8D2] hover:border-[#252525] text-xs font-semibold text-[#252525] transition-all"
                 >
                   View Fit
                 </Link>
                 <Link
                   href={`/roles/${role.id}/preparation`}
-                  className="touch-target px-3.5 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:border-[#252525] text-xs font-semibold text-[#1F2937] transition-all"
+                  className="touch-target px-3.5 py-2 rounded-xl bg-white border border-[#D9D8D2] hover:border-[#252525] text-xs font-semibold text-[#252525] transition-all"
                 >
                   Preparation Plan
                 </Link>
@@ -197,7 +197,7 @@ export default function MyJobsPage() {
                     onClick={() => setOpenMenuRoleId(openMenuRoleId === role.id ? null : role.id)}
                     aria-label="More actions"
                     aria-expanded={openMenuRoleId === role.id}
-                    className="touch-target w-9 h-9 rounded-xl bg-white border border-[#E7E8EF] hover:border-[#D0D5DD] hover:bg-[#F9FAFB] text-[#667085] hover:text-[#1F2937] transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+                    className="touch-target w-9 h-9 rounded-xl bg-white border border-[#D9D8D2] hover:border-[#D0D5DD] hover:bg-[#FAF9F4] text-[#73757A] hover:text-[#252525] transition-all flex items-center justify-center cursor-pointer shadow-2xs"
                   >
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
@@ -205,7 +205,7 @@ export default function MyJobsPage() {
                   {openMenuRoleId === role.id && (
                     <div
                       ref={menuRef}
-                      className="absolute right-0 top-full mt-1.5 w-40 bg-white border border-[#E7E8EF] rounded-xl shadow-lg py-1 z-30 animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute right-0 top-full mt-1.5 w-40 bg-white border border-[#D9D8D2] rounded-xl shadow-lg py-1 z-30 animate-in fade-in zoom-in-95 duration-150"
                     >
                       <button
                         type="button"
@@ -214,7 +214,7 @@ export default function MyJobsPage() {
                           setRoleToDelete(role);
                         }}
                         aria-label="Remove job"
-                        className="w-full px-3.5 py-2 text-left text-xs font-medium text-[#DC2626] hover:bg-[#FEF2F2] flex items-center gap-2 transition-colors cursor-pointer"
+                        className="w-full px-3.5 py-2 text-left text-xs font-medium text-[#C85C4D] hover:bg-[#FFF0ED] flex items-center gap-2 transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         <span>Remove job</span>
@@ -233,8 +233,8 @@ export default function MyJobsPage() {
             <Briefcase className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-base font-semibold text-[#1F2937]">No jobs added yet</h3>
-            <p className="text-xs text-[#667085]">
+            <h3 className="text-base font-semibold text-[#252525]">No jobs added yet</h3>
+            <p className="text-xs text-[#73757A]">
               Add a job to start building your role-specific preparation plan.
             </p>
           </div>
@@ -261,11 +261,11 @@ export default function MyJobsPage() {
           onClick={() => !isDeleting && setRoleToDelete(null)}
         >
           <div
-            className="w-full max-w-md bg-white rounded-2xl border border-[#E7E8EF] shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200"
+            className="w-full max-w-md bg-white rounded-2xl border border-[#D9D8D2] shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#FEE4E2] text-[#D92D20] flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#FBE3DE] text-[#C85C4D] flex items-center justify-center shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
               <button
@@ -273,14 +273,14 @@ export default function MyJobsPage() {
                 onClick={() => !isDeleting && setRoleToDelete(null)}
                 disabled={isDeleting}
                 aria-label="Close dialog"
-                className="text-[#98A2B3] hover:text-[#1F2937] p-1 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                className="text-[#9A9B9E] hover:text-[#252525] p-1 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-1.5">
-              <h2 id="remove-job-title" className="text-lg font-bold text-[#1F2937] tracking-tight">
+              <h2 id="remove-job-title" className="text-lg font-bold text-[#252525] tracking-tight">
                 Remove this job?
               </h2>
               <p className="text-sm font-medium text-[#344054]">
@@ -288,7 +288,7 @@ export default function MyJobsPage() {
                   ? `Are you sure you want to remove ${roleToDelete.title} at ${roleToDelete.company}?`
                   : `Are you sure you want to remove ${roleToDelete.title}?`}
               </p>
-              <p className="text-xs text-[#667085] leading-relaxed">
+              <p className="text-xs text-[#73757A] leading-relaxed">
                 This will remove the job from My Jobs and its role-specific preparation data.
               </p>
             </div>
@@ -298,7 +298,7 @@ export default function MyJobsPage() {
                 type="button"
                 onClick={() => setRoleToDelete(null)}
                 disabled={isDeleting}
-                className="touch-target px-4 py-2.5 rounded-xl bg-white border border-[#E7E8EF] hover:bg-[#F9FAFB] text-xs font-semibold text-[#344054] transition-all cursor-pointer disabled:opacity-50"
+                className="touch-target px-4 py-2.5 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs font-semibold text-[#344054] transition-all cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -306,7 +306,7 @@ export default function MyJobsPage() {
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={isDeleting}
-                className="touch-target inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                className="touch-target inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#C85C4D] hover:bg-[#A94B3F] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer disabled:opacity-50"
               >
                 {isDeleting ? (
                   <>
@@ -327,16 +327,16 @@ export default function MyJobsPage() {
         <div
           className={`fixed bottom-6 right-6 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg border text-xs sm:text-sm font-medium flex items-center gap-2.5 animate-in slide-in-from-bottom-5 duration-200 ${
             toastMessage.type === 'success'
-              ? 'bg-white border-[#A6F4C5] text-[#067647] shadow-emerald-500/10'
-              : 'bg-white border-[#FECDCA] text-[#B42318] shadow-rose-500/10'
+              ? 'bg-white border-[#DDEEDF] text-[#4E7D5C] shadow-emerald-500/10'
+              : 'bg-white border-[#FECDCA] text-[#A94B3F] shadow-rose-500/10'
           }`}
           role="status"
           aria-live="polite"
         >
           {toastMessage.type === 'success' ? (
-            <CheckCircle2 className="w-4 h-4 text-[#12B76A] shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-[#6FA77F] shrink-0" />
           ) : (
-            <AlertCircle className="w-4 h-4 text-[#F04438] shrink-0" />
+            <AlertCircle className="w-4 h-4 text-[#C85C4D] shrink-0" />
           )}
           <span className="flex-1">{toastMessage.text}</span>
           <button
