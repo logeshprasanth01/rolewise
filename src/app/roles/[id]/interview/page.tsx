@@ -746,7 +746,7 @@ export default function InterviewPage() {
   if ((isAuthLoading || isLoadingSession) && !hasExistingSession && !questionError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
-        <Loader2 className="w-7 h-7 animate-spin text-[#6D5DFB]" />
+        <Loader2 className="w-7 h-7 animate-spin text-[#252525]" />
         <p className="text-sm font-medium">Setting up interview session…</p>
       </div>
     );
@@ -770,7 +770,7 @@ export default function InterviewPage() {
           <div className="pt-2">
             <Link
               href="/jobs"
-              className="touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm"
+              className="touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#252525] hover:bg-[#E7C43E] text-white text-sm font-medium transition-colors shadow-sm"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to My Jobs</span>
@@ -939,8 +939,8 @@ export default function InterviewPage() {
             </div>
           </div>
 
-          <div className="rolewise-card p-6 space-y-3 bg-[#EEECFF]/30 border-[#D8D4FD]">
-            <h2 className="text-sm font-semibold text-[#6D5DFB] flex items-center gap-2">
+          <div className="rolewise-card p-6 space-y-3 bg-[#FFF2B8]/30 border-[#D8D4FD]">
+            <h2 className="text-sm font-semibold text-[#252525] flex items-center gap-2">
               <Award className="w-4 h-4" />
               <span>Practice next</span>
             </h2>
@@ -948,7 +948,7 @@ export default function InterviewPage() {
               {finalExercises ? (
                 finalExercises.map((exercise, idx) => (
                   <div key={idx} className="p-3 rounded-xl bg-white border border-[#D8D4FD]/60">
-                    <p className="font-semibold text-xs text-[#6D5DFB]">
+                    <p className="font-semibold text-xs text-[#252525]">
                       {idx + 1}. Recommended Drill
                     </p>
                     <p className="text-xs text-[#667085] mt-0.5 leading-relaxed">{exercise}</p>
@@ -957,7 +957,7 @@ export default function InterviewPage() {
               ) : (
                 <>
                   <div className="p-3 rounded-xl bg-white border border-[#D8D4FD]/60">
-                    <p className="font-semibold text-xs text-[#6D5DFB]">
+                    <p className="font-semibold text-xs text-[#252525]">
                       1. Behavioral Structure Exercise
                     </p>
                     <p className="text-xs text-[#667085] mt-0.5 leading-relaxed">
@@ -967,7 +967,7 @@ export default function InterviewPage() {
                     </p>
                   </div>
                   <div className="p-3 rounded-xl bg-white border border-[#D8D4FD]/60">
-                    <p className="font-semibold text-xs text-[#6D5DFB]">
+                    <p className="font-semibold text-xs text-[#252525]">
                       2. Measurable Outcome Drill
                     </p>
                     <p className="text-xs text-[#667085] mt-0.5 leading-relaxed">
@@ -984,7 +984,7 @@ export default function InterviewPage() {
             <button
               type="button"
               onClick={handlePracticeAgain}
-              className="w-full sm:w-1/2 touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-sm font-medium transition-colors shadow-sm cursor-pointer"
+              className="w-full sm:w-1/2 touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#252525] hover:bg-[#E7C43E] text-white text-sm font-medium transition-colors shadow-sm cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Practice again</span>
@@ -1028,7 +1028,7 @@ export default function InterviewPage() {
         </Link>
 
         {/* Progress Counter */}
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEECFF] text-[#6D5DFB] border border-[#D8D4FD]">
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFF2B8] text-[#252525] border border-[#D8D4FD]">
           Question {questionNumber} of {totalQuestions}
         </span>
       </div>
@@ -1110,7 +1110,7 @@ export default function InterviewPage() {
       {/* QUESTION CARD (Requirements 8, 9, 10, 12, 20) */}
       <section className="rolewise-card p-6 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEECFF] text-[#6D5DFB] border border-[#D8D4FD]">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFF2B8] text-[#252525] border border-[#D8D4FD]">
             <Sparkles className="w-3.5 h-3.5" />
             {currentCompetency || 'Role Competency'}
           </span>
@@ -1123,7 +1123,7 @@ export default function InterviewPage() {
         {isGeneratingQuestion && !questionTimeoutOccurred && !questionError && (
           <div className="space-y-3 py-1 animate-in fade-in">
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs font-medium text-[#6D5DFB]">
+              <div className="flex items-center gap-2 text-xs font-medium text-[#252525]">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 <span>
                   {questionNumber === 1
@@ -1135,8 +1135,8 @@ export default function InterviewPage() {
             </div>
             {/* Animated Skeleton Placeholder */}
             <div className="space-y-2 pt-1 animate-pulse">
-              <div className="h-4 bg-[#EEECFF] rounded-md w-11/12" />
-              <div className="h-4 bg-[#EEECFF]/60 rounded-md w-4/5" />
+              <div className="h-4 bg-[#FFF2B8] rounded-md w-11/12" />
+              <div className="h-4 bg-[#FFF2B8]/60 rounded-md w-4/5" />
             </div>
           </div>
         )}
@@ -1160,7 +1160,7 @@ export default function InterviewPage() {
               <button
                 type="button"
                 onClick={handleRetryQuestionGeneration}
-                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs font-medium transition-colors shadow-sm cursor-pointer"
+                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#252525] hover:bg-[#E7C43E] text-white text-xs font-medium transition-colors shadow-sm cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Try again</span>
@@ -1183,7 +1183,7 @@ export default function InterviewPage() {
               {questionError.type === 'AUTH_ERROR' ? (
                 <Link
                   href="/auth"
-                  className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs font-medium transition-colors shadow-sm"
+                  className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#252525] hover:bg-[#E7C43E] text-white text-xs font-medium transition-colors shadow-sm"
                 >
                   <span>Sign in again</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -1191,7 +1191,7 @@ export default function InterviewPage() {
               ) : questionError.type === 'ROLE_NOT_FOUND' ? (
                 <Link
                   href="/jobs"
-                  className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs font-medium transition-colors shadow-sm"
+                  className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#252525] hover:bg-[#E7C43E] text-white text-xs font-medium transition-colors shadow-sm"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Back to My Jobs</span>
@@ -1200,7 +1200,7 @@ export default function InterviewPage() {
                 <button
                   type="button"
                   onClick={handleRetryQuestionGeneration}
-                  className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs font-medium transition-colors shadow-sm cursor-pointer"
+                  className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#252525] hover:bg-[#E7C43E] text-white text-xs font-medium transition-colors shadow-sm cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>Try again</span>
@@ -1242,7 +1242,7 @@ export default function InterviewPage() {
             }}
             placeholder="Type your answer here, or tap the microphone to speak..."
             disabled={isRecording || isAnalyzing}
-            className={`w-full p-4 pr-16 pb-12 rounded-xl border border-[#E7E8EF] text-xs sm:text-sm text-[#1F2937] placeholder:text-[#667085]/60 focus:outline-none focus:border-[#6D5DFB] bg-white transition-colors resize-y leading-relaxed font-normal min-h-[140px] ${
+            className={`w-full p-4 pr-16 pb-12 rounded-xl border border-[#E7E8EF] text-xs sm:text-sm text-[#1F2937] placeholder:text-[#667085]/60 focus:outline-none focus:border-[#252525] bg-white transition-colors resize-y leading-relaxed font-normal min-h-[140px] ${
               isRecording ? 'bg-[#FFF0ED]/10 border-[#FBD2CB]' : ''
             }`}
           />
@@ -1265,7 +1265,7 @@ export default function InterviewPage() {
                 onClick={handleStartRecording}
                 title="Tap microphone to speak"
                 aria-label="Tap microphone to speak"
-                className="touch-target w-11 h-11 rounded-full bg-[#EEECFF] hover:bg-[#E0DCFE] text-[#6D5DFB] flex items-center justify-center shadow-sm cursor-pointer transition-all active:scale-95"
+                className="touch-target w-11 h-11 rounded-full bg-[#FFF2B8] hover:bg-[#E0DCFE] text-[#252525] flex items-center justify-center shadow-sm cursor-pointer transition-all active:scale-95"
               >
                 <Mic className="w-5 h-5" />
               </button>
@@ -1305,7 +1305,7 @@ export default function InterviewPage() {
                   Recording captured · {lastRecordedDuration || formattedDuration}
                 </p>
                 {isTranscribing ? (
-                  <p className="text-[11px] text-[#6D5DFB] flex items-center gap-1.5 mt-0.5">
+                  <p className="text-[11px] text-[#252525] flex items-center gap-1.5 mt-0.5">
                     <Loader2 className="w-3 h-3 animate-spin" />
                     <span>Transcribing your answer...</span>
                   </p>
@@ -1329,12 +1329,12 @@ export default function InterviewPage() {
               >
                 {isPlayingAudio ? (
                   <>
-                    <Pause className="w-3.5 h-3.5 text-[#6D5DFB]" />
+                    <Pause className="w-3.5 h-3.5 text-[#252525]" />
                     <span>Pause</span>
                   </>
                 ) : (
                   <>
-                    <Play className="w-3.5 h-3.5 fill-current text-[#6D5DFB]" />
+                    <Play className="w-3.5 h-3.5 fill-current text-[#252525]" />
                     <span>Listen</span>
                   </>
                 )}
@@ -1371,7 +1371,7 @@ export default function InterviewPage() {
                 onClick={handleTogglePlayAudio}
                 className="touch-target inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#FBD2CB] text-[#1F2937] text-xs font-medium hover:bg-[#FFF0ED] transition-colors cursor-pointer"
               >
-                <Play className="w-3.5 h-3.5 fill-current text-[#6D5DFB]" />
+                <Play className="w-3.5 h-3.5 fill-current text-[#252525]" />
                 <span>Listen</span>
               </button>
               <button
@@ -1405,7 +1405,7 @@ export default function InterviewPage() {
             disabled={!answerText.trim() || isAnalyzing || isRecording}
             className={`w-full sm:w-auto touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-colors shadow-sm ${
               answerText.trim() && !isAnalyzing && !isRecording
-                ? 'bg-[#6D5DFB] hover:bg-[#5A48F5] text-white cursor-pointer'
+                ? 'bg-[#252525] hover:bg-[#E7C43E] text-white cursor-pointer'
                 : 'bg-[#E7E8EF] text-[#667085] cursor-not-allowed opacity-80'
             }`}
           >
@@ -1427,7 +1427,7 @@ export default function InterviewPage() {
       {/* STATE: ANALYZING LOADING (Requirement 11) */}
       {isAnalyzing && (
         <div className="rolewise-card p-8 space-y-3 text-center animate-in fade-in">
-          <Loader2 className="w-6 h-6 animate-spin text-[#6D5DFB] mx-auto" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#252525] mx-auto" />
           <h3 className="text-sm font-semibold text-[#1F2937]">
             Analyzing communication quality…
           </h3>
@@ -1508,7 +1508,7 @@ export default function InterviewPage() {
               <button
                 type="button"
                 onClick={handleContinueInterview}
-                className="touch-target w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-medium transition-colors shadow-sm cursor-pointer"
+                className="touch-target w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#252525] hover:bg-[#E7C43E] text-white text-xs sm:text-sm font-medium transition-colors shadow-sm cursor-pointer"
               >
                 <span>
                   {questionNumber >= totalQuestions ? 'View feedback' : 'Continue interview →'}
