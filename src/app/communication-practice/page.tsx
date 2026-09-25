@@ -44,25 +44,25 @@ export default function CommunicationPracticePage() {
           <Sparkles className="w-3.5 h-3.5" />
           <span>Independent Practice Hub</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#1F2937] tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">
           Communication Practice
         </h1>
-        <p className="text-xs sm:text-base text-[#667085] leading-relaxed max-w-2xl">
+        <p className="text-xs sm:text-base text-[#73757A] leading-relaxed max-w-2xl">
           Build fluency and clarity by practicing how you communicate, independent of any specific job application.
         </p>
 
         {/* Dynamic Context Header */}
         <div className="pt-2">
           {activeRole ? (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E7E8EF] text-xs sm:text-sm text-[#1F2937]">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#D9D8D2] text-xs sm:text-sm text-[#252525]">
               <Briefcase className="w-4 h-4 text-[#252525]" />
-              <span className="text-[#667085]">Contextual prompt available:</span>
-              <span className="font-semibold text-[#1F2937]">{activeRole.title}</span>
+              <span className="text-[#73757A]">Contextual prompt available:</span>
+              <span className="font-semibold text-[#252525]">{activeRole.title}</span>
               <span>·</span>
-              <span className="font-medium text-[#667085]">{activeRole.company}</span>
+              <span className="font-medium text-[#73757A]">{activeRole.company}</span>
             </div>
           ) : (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E7E8EF] text-xs text-[#667085]">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#D9D8D2] text-xs text-[#73757A]">
               <Sparkles className="w-3.5 h-3.5 text-[#252525]" />
               <span>General communication drills (accessible anytime without a job)</span>
             </div>
@@ -79,31 +79,31 @@ export default function CommunicationPracticePage() {
               <Mic className="w-6 h-6" />
             </div>
             <div className="space-y-1.5">
-              <h2 className="text-lg font-bold text-[#1F2937] group-hover:text-[#252525] transition-colors">
+              <h2 className="text-lg font-bold text-[#252525] group-hover:text-[#252525] transition-colors">
                 Voice Practice
               </h2>
-              <p className="text-xs sm:text-sm text-[#667085] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#73757A] leading-relaxed">
                 Record your spoken responses using your microphone. Listen to your playback and receive observable feedback on clarity, structure, and conciseness.
               </p>
             </div>
 
-            <div className="space-y-2 pt-2 text-xs text-[#475467]">
+            <div className="space-y-2 pt-2 text-xs text-[#55565A]">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#4E9B76]" />
+                <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
                 <span>Real microphone recording with instant audio review</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#4E9B76]" />
+                <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
                 <span>Usable playback even when AI analysis is offline</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#4E9B76]" />
+                <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
                 <span>Observable clarity, structure, and speaking pace feedback</span>
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#E7E8EF]">
+          <div className="pt-4 border-t border-[#D9D8D2]">
             <Link
               href="/communication-practice/voice"
               className="touch-target w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
@@ -117,35 +117,35 @@ export default function CommunicationPracticePage() {
         {/* Mode 2: Video Practice (Screen 10) */}
         <div className="rolewise-card p-6 flex flex-col justify-between space-y-6 hover:border-[#252525] transition-all group">
           <div className="space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#F5F3FF] text-[#8B5CF6] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#E7E7EE] text-[#FFD84D] flex items-center justify-center">
               <Video className="w-6 h-6" />
             </div>
             <div className="space-y-1.5">
-              <h2 className="text-lg font-bold text-[#1F2937] group-hover:text-[#252525] transition-colors">
+              <h2 className="text-lg font-bold text-[#252525] group-hover:text-[#252525] transition-colors">
                 Video Practice
               </h2>
-              <p className="text-xs sm:text-sm text-[#667085] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#73757A] leading-relaxed">
                 Simulate a real video conference interview with live camera and microphone preview. Review your captured recording and re-record as needed.
               </p>
             </div>
 
-            <div className="space-y-2 pt-2 text-xs text-[#475467]">
+            <div className="space-y-2 pt-2 text-xs text-[#55565A]">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#4E9B76]" />
+                <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
                 <span>Live video mirror and recording playback</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#4E9B76]" />
+                <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
                 <span>Re-record anytime with preserved media controls</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#4E9B76]" />
+                <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
                 <span>Focuses strictly on observable delivery (no personality judgments)</span>
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#E7E8EF]">
+          <div className="pt-4 border-t border-[#D9D8D2]">
             <Link
               href="/communication-practice/video"
               className="touch-target w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
