@@ -332,7 +332,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
             type="button"
             onClick={handleToday}
             aria-label="Go to today"
-            className="px-2 py-0.5 rounded-md text-[11px] font-semibold text-[#FFD84D] hover:bg-[#FFF2B8] transition-colors cursor-pointer"
+            className="rw-priority px-2 py-0.5 rounded-md text-[11px] font-semibold text-[#FFD84D] hover:bg-[#FFF2B8] transition-colors cursor-pointer"
           >
             Today
           </button>
@@ -433,7 +433,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
                   </Link>
                   <Link
                     href={ev.primaryUrl}
-                    className="font-semibold text-[#FFD84D] hover:underline flex items-center gap-1"
+                    className="rw-priority font-semibold text-[#FFD84D] hover:underline flex items-center gap-1"
                   >
                     <span>{ev.primaryActionText}</span>
                     <ArrowRight className="w-3 h-3" />
