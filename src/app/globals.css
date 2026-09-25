@@ -111,7 +111,6 @@ body {
 
 .rw-interactive,
 [data-ui-sound] {
-  position: relative;
   overflow: hidden;
   transition: transform 180ms cubic-bezier(.2,.8,.2,1), box-shadow 180ms ease, border-color 180ms ease;
 }
@@ -171,4 +170,15 @@ body {
 
 @media (max-width: 767px) {
   .rw-app-frame { border-radius: 0; }
+}
+
+
+/* Keep the password visibility control positioned inside its input. */
+.relative > [data-ui-sound][aria-label*="password" i] {
+  position: absolute;
+}
+
+/* Full application viewport stays square; cards provide the rounded surfaces. */
+.rw-app-frame {
+  border-radius: 0 !important;
 }
