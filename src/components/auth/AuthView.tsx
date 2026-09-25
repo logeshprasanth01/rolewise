@@ -19,6 +19,7 @@ import {
 import { getSupabaseClient } from '@/lib/supabase/client';
 import type { Provider } from '@supabase/supabase-js';
 import { useAuth } from '@/context/AuthContext';
+import { playUiSound } from '@/lib/ui-sound';
 
 export const AuthView: React.FC = () => {
   const { signIn, signUp } = useAuth();
@@ -82,6 +83,7 @@ export const AuthView: React.FC = () => {
           setErrorMessage(error.message || 'Invalid login credentials. Please check your email and password.');
         } else {
           setSuccessMessage('Signed in successfully! Entering workspace...');
+          playUiSound('success');
         }
       } else {
         const { data, error } = await signUp(email.trim(), password, fullName.trim() || undefined);
@@ -89,11 +91,13 @@ export const AuthView: React.FC = () => {
           setErrorMessage(error.message || 'Could not create account. Please try again.');
         } else if (data?.session) {
           setSuccessMessage('Account created! Entering workspace...');
+          playUiSound('success');
         } else {
           // If Supabase didn't issue an immediate session, attempt signIn
           const { error: signInErr } = await signIn(email.trim(), password);
           if (signInErr) {
             setSuccessMessage('Account created! Please check your email to verify your account, or sign in.');
+            playUiSound('success');
           } else {
             setSuccessMessage('Account created! Entering workspace...');
           }
