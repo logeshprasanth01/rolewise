@@ -159,7 +159,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#AEB4C0] flex flex-col items-center justify-center gap-3 text-[#73757A]">
-        <div className="w-11 h-11 rounded-2xl bg-[#FFD84D] text-[#252525] flex items-center justify-center font-bold text-lg shadow-sm animate-pulse">R</div>
+        <img src="/rolewise-logo.svg" alt="ROLEWISE" width={176} height={37} className="w-[176px] h-auto animate-pulse" />
         <p className="text-xs font-medium tracking-wide">Loading ROLEWISE workspace...</p>
       </div>
     );
