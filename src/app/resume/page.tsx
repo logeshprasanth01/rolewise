@@ -38,7 +38,7 @@ export default function ResumePage() {
       <div className="rolewise-card p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#EEECFF] text-[#6D5DFB] font-bold text-base flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#FFF2B8] text-[#252525] font-bold text-base flex items-center justify-center">
               {userName ? userName[0].toUpperCase() : 'L'}
             </div>
             <div>
@@ -53,7 +53,7 @@ export default function ResumePage() {
 
           <Link
             href="/jobs/new"
-            className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs font-semibold shadow-xs"
+            className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-semibold shadow-xs"
           >
             <span>Analyze for a new role</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -67,12 +67,12 @@ export default function ResumePage() {
         <div className="rolewise-card p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#6D5DFB]" />
+              <Sparkles className="w-4 h-4 text-[#252525]" />
               <h3 className="text-sm font-semibold text-[#1F2937]">Key Skills & Specializations</h3>
             </div>
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="text-xs font-semibold text-[#6D5DFB] hover:underline inline-flex items-center gap-1"
+              className="text-xs font-semibold text-[#252525] hover:underline inline-flex items-center gap-1"
             >
               <Edit3 className="w-3 h-3" />
               <span>{isEditing ? 'Save' : 'Edit'}</span>
@@ -84,7 +84,7 @@ export default function ResumePage() {
               rows={4}
               value={manualSkills}
               onChange={(e) => setManualSkills(e.target.value)}
-              className="w-full p-3 rounded-xl border border-[#E7E8EF] text-xs text-[#1F2937] focus:outline-none focus:border-[#6D5DFB]"
+              className="w-full p-3 rounded-xl border border-[#E7E8EF] text-xs text-[#1F2937] focus:outline-none focus:border-[#252525]"
             />
           ) : (
             <div className="flex flex-wrap gap-2 pt-1">
