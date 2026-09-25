@@ -150,7 +150,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       <div className="min-h-screen bg-[#F3F2EE] text-[#252525] font-sans">
       <div className="rw-app-frame min-h-screen w-full border-0 rounded-none overflow-hidden flex min-h-0 shadow-none">
         <aside
-          className={`hidden md:flex shrink-0 bg-[#FAF9F4]/88 backdrop-blur-xl border-r border-[#D9D8D2]/90 flex-col z-40 transition-[width] duration-300 ease-out ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`}
+          className={`hidden md:flex shrink-0 bg-[#FAF9F4]/96 backdrop-blur-xl border-r border-[#D9D8D2] flex-col z-40 transition-[width] duration-300 ease-out ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`}
           aria-label="Sidebar navigation"
         >
           <div className={`p-3 ${isSidebarCollapsed ? 'lg:p-3' : 'lg:p-5'}`}>
@@ -171,7 +171,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 onClick={() => setIsSidebarCollapsed((value) => !value)}
                 title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
                 aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
-                className={`hidden lg:flex w-9 h-9 items-center justify-center rounded-xl text-[#8A8B8F] hover:text-[#252525] hover:bg-[#F3F2EE] transition-colors shrink-0 ${isSidebarCollapsed ? 'mx-auto' : ''}`}
+                className={`hidden lg:flex w-9 h-9 items-center justify-center rounded-xl text-[#666A70] hover:text-[#252525] hover:bg-[#EAE9E4] transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${isSidebarCollapsed ? 'mx-auto' : ''}`}
               >
                 {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
               </button>
