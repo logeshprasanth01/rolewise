@@ -189,7 +189,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 ${active ? 'bg-[#252525] text-[#B8B8B8] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#8A8B8F] hover:bg-[#F3F2EE] hover:text-[#252525]'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
                 >
                   <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${active ? 'text-[#B8B8B8]' : 'text-[#8A8B8F]'}`} />
-                  {!isSidebarCollapsed && <span className="hidden lg:inline truncate text-[#73757A]">{item.label}</span>}
+                  {!isSidebarCollapsed && <span className="hidden lg:inline truncate text-current">{item.label}</span>}
                 </Link>
               );
             })}
