@@ -360,9 +360,3 @@ html[data-accessibility="enhanced"] .rw-search-input:focus-visible {
 }
 
 
-/* 60/30/10 visual balance: grey/charcoal dominant, white secondary, yellow accent only. */
-.rw-sidebar-nav { background: #2D2D2D !important; color: #A8A8A8 !important; }
-.rw-sidebar-nav a, .rw-sidebar-nav button { color: #A8A8A8 !important; }
-.rw-sidebar-nav a:hover, .rw-sidebar-nav button:hover { color: #E2E2E2 !important; }
-.rw-sidebar-nav a[aria-current="page"] { color: #D8D8D8 !important; background: #444444 !important; }
-.rw-sidebar-nav svg { color: currentColor !important; }
