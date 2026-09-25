@@ -18,7 +18,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { playUiSound } from '@/lib/ui-sound';
 
-const ACCESSIBILITY_KEY = 'rolewise-accessibility-enabled';
+const ACCESSIBILITY_KEY = 'rolewise-accessibility-enabled-v2';
 const REDUCED_MOTION_KEY = 'rolewise-reduced-motion';
 const NOTIFICATIONS_KEY = 'rolewise-notifications';
 
