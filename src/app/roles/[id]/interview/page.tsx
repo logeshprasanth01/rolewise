@@ -745,7 +745,7 @@ export default function InterviewPage() {
   const hasExistingSession = Boolean(currentQuestion || completedRounds.length > 0);
   if ((isAuthLoading || isLoadingSession) && !hasExistingSession && !questionError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#667085]">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#73757A]">
         <Loader2 className="w-7 h-7 animate-spin text-[#252525]" />
         <p className="text-sm font-medium">Setting up interview session…</p>
       </div>
@@ -760,12 +760,12 @@ export default function InterviewPage() {
     return (
       <div className="space-y-6 max-w-xl mx-auto py-12 text-center animate-in fade-in">
         <div className="rolewise-card p-8 space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#FFF0ED] text-[#E87967] flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-[#FFF0ED] text-[#D97968] flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-xl font-semibold text-[#1F2937]">Role not found</h2>
-            <p className="text-sm text-[#667085]">Please select an active role from My Jobs.</p>
+            <h2 className="text-xl font-semibold text-[#252525]">Role not found</h2>
+            <p className="text-sm text-[#73757A]">Please select an active role from My Jobs.</p>
           </div>
           <div className="pt-2">
             <Link
@@ -843,19 +843,19 @@ export default function InterviewPage() {
         <div className="flex items-center justify-between">
           <Link
             href={`/roles/${roleId}/preparation`}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#667085] hover:text-[#1F2937] transition-colors touch-target"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#73757A] hover:text-[#252525] transition-colors touch-target"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to preparation</span>
           </Link>
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EAF6F0] text-[#4E9B76] border border-[#C6EBD7]">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEF7F0] text-[#6FA77F] border border-[#DDEEDF]">
             Session Completed
           </span>
         </div>
 
         <section className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-medium text-[#667085]">
-            <span className="font-semibold text-[#1F2937]">{role?.title || 'Target Role'}</span>
+          <div className="flex items-center gap-2 text-xs font-medium text-[#73757A]">
+            <span className="font-semibold text-[#252525]">{role?.title || 'Target Role'}</span>
             {role?.company && (
               <>
                 <span>·</span>
@@ -863,30 +863,30 @@ export default function InterviewPage() {
               </>
             )}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-[#1F2937] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-[#252525] tracking-tight">
             Your interview feedback
           </h1>
-          <p className="text-xs sm:text-sm text-[#667085]">
+          <p className="text-xs sm:text-sm text-[#73757A]">
             Communication practice review based on your spoken and written responses.
           </p>
         </section>
 
         <div className="space-y-4">
           <div className="rolewise-card p-6 space-y-3">
-            <h2 className="text-sm font-semibold text-[#1F2937] flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#4E9B76]" />
+            <h2 className="text-sm font-semibold text-[#252525] flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
               <span>What went well</span>
             </h2>
-            <ul className="space-y-2 text-xs sm:text-sm text-[#1F2937]">
+            <ul className="space-y-2 text-xs sm:text-sm text-[#252525]">
               {finalStrengths.length > 0 ? (
                 finalStrengths.map((strength, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="text-[#4E9B76] font-bold">✓</span>
+                    <span className="text-[#6FA77F] font-bold">✓</span>
                     <span>{strength}</span>
                   </li>
                 ))
               ) : (
-                <li className="text-[#667085]">
+                <li className="text-[#73757A]">
                   Demonstrated role familiarity and communicated your experience.
                 </li>
               )}
@@ -894,11 +894,11 @@ export default function InterviewPage() {
           </div>
 
           <div className="rolewise-card p-6 space-y-3">
-            <h2 className="text-sm font-semibold text-[#1F2937] flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-[#252525] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-[#C58A2B]" />
               <span>What to improve</span>
             </h2>
-            <ul className="space-y-2 text-xs sm:text-sm text-[#1F2937]">
+            <ul className="space-y-2 text-xs sm:text-sm text-[#252525]">
               {finalImprovements.length > 0 ? (
                 finalImprovements.map((improvement, i) => (
                   <li key={i} className="flex items-start gap-2">
@@ -907,7 +907,7 @@ export default function InterviewPage() {
                   </li>
                 ))
               ) : (
-                <li className="text-[#667085]">
+                <li className="text-[#73757A]">
                   Continue practicing structuring actions and articulating measurable outcomes.
                 </li>
               )}
@@ -915,62 +915,62 @@ export default function InterviewPage() {
           </div>
 
           <div className="rolewise-card p-6 space-y-4">
-            <h2 className="text-sm font-semibold text-[#1F2937]">Communication patterns</h2>
+            <h2 className="text-sm font-semibold text-[#252525]">Communication patterns</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div className="p-3.5 rounded-xl bg-[#F7F7FB] border border-[#E7E8EF] space-y-1">
-                <span className="text-xs font-semibold text-[#1F2937]">Clarity</span>
-                <p className="text-xs text-[#667085] leading-relaxed">{finalClarity}</p>
+              <div className="p-3.5 rounded-xl bg-[#F3F2EE] border border-[#D9D8D2] space-y-1">
+                <span className="text-xs font-semibold text-[#252525]">Clarity</span>
+                <p className="text-xs text-[#73757A] leading-relaxed">{finalClarity}</p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-[#F7F7FB] border border-[#E7E8EF] space-y-1">
-                <span className="text-xs font-semibold text-[#1F2937]">Structure</span>
-                <p className="text-xs text-[#667085] leading-relaxed">{finalStructure}</p>
+              <div className="p-3.5 rounded-xl bg-[#F3F2EE] border border-[#D9D8D2] space-y-1">
+                <span className="text-xs font-semibold text-[#252525]">Structure</span>
+                <p className="text-xs text-[#73757A] leading-relaxed">{finalStructure}</p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-[#F7F7FB] border border-[#E7E8EF] space-y-1">
-                <span className="text-xs font-semibold text-[#1F2937]">Specificity</span>
-                <p className="text-xs text-[#667085] leading-relaxed">{finalSpecificity}</p>
+              <div className="p-3.5 rounded-xl bg-[#F3F2EE] border border-[#D9D8D2] space-y-1">
+                <span className="text-xs font-semibold text-[#252525]">Specificity</span>
+                <p className="text-xs text-[#73757A] leading-relaxed">{finalSpecificity}</p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-[#F7F7FB] border border-[#E7E8EF] space-y-1">
-                <span className="text-xs font-semibold text-[#1F2937]">Conciseness</span>
-                <p className="text-xs text-[#667085] leading-relaxed">{finalConciseness}</p>
+              <div className="p-3.5 rounded-xl bg-[#F3F2EE] border border-[#D9D8D2] space-y-1">
+                <span className="text-xs font-semibold text-[#252525]">Conciseness</span>
+                <p className="text-xs text-[#73757A] leading-relaxed">{finalConciseness}</p>
               </div>
             </div>
           </div>
 
-          <div className="rolewise-card p-6 space-y-3 bg-[#FFF2B8]/30 border-[#D8D4FD]">
+          <div className="rolewise-card p-6 space-y-3 bg-[#FFF2B8]/30 border-[#FFF2B8]">
             <h2 className="text-sm font-semibold text-[#252525] flex items-center gap-2">
               <Award className="w-4 h-4" />
               <span>Practice next</span>
             </h2>
-            <div className="space-y-2.5 text-xs sm:text-sm text-[#1F2937]">
+            <div className="space-y-2.5 text-xs sm:text-sm text-[#252525]">
               {finalExercises ? (
                 finalExercises.map((exercise, idx) => (
-                  <div key={idx} className="p-3 rounded-xl bg-white border border-[#D8D4FD]/60">
+                  <div key={idx} className="p-3 rounded-xl bg-white border border-[#FFF2B8]/60">
                     <p className="font-semibold text-xs text-[#252525]">
                       {idx + 1}. Recommended Drill
                     </p>
-                    <p className="text-xs text-[#667085] mt-0.5 leading-relaxed">{exercise}</p>
+                    <p className="text-xs text-[#73757A] mt-0.5 leading-relaxed">{exercise}</p>
                   </div>
                 ))
               ) : (
                 <>
-                  <div className="p-3 rounded-xl bg-white border border-[#D8D4FD]/60">
+                  <div className="p-3 rounded-xl bg-white border border-[#FFF2B8]/60">
                     <p className="font-semibold text-xs text-[#252525]">
                       1. Behavioral Structure Exercise
                     </p>
-                    <p className="text-xs text-[#667085] mt-0.5 leading-relaxed">
+                    <p className="text-xs text-[#73757A] mt-0.5 leading-relaxed">
                       Practice answering behavioral questions using:{' '}
                       <strong>Situation → Action → Result</strong>. Ensure your Action receives 60%
                       of your answer time.
                     </p>
                   </div>
-                  <div className="p-3 rounded-xl bg-white border border-[#D8D4FD]/60">
+                  <div className="p-3 rounded-xl bg-white border border-[#FFF2B8]/60">
                     <p className="font-semibold text-xs text-[#252525]">
                       2. Measurable Outcome Drill
                     </p>
-                    <p className="text-xs text-[#667085] mt-0.5 leading-relaxed">
+                    <p className="text-xs text-[#73757A] mt-0.5 leading-relaxed">
                       For every project scenario, prepare one metric of success (e.g., user
                       completion rate, latency reduction, cross-team adoption).
                     </p>
@@ -992,7 +992,7 @@ export default function InterviewPage() {
 
             <Link
               href={`/roles/${roleId}/preparation`}
-              className="w-full sm:w-1/2 touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-[#F7F7FB] text-[#1F2937] border border-[#E7E8EF] text-sm font-medium transition-colors shadow-sm"
+              className="w-full sm:w-1/2 touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-[#F3F2EE] text-[#252525] border border-[#D9D8D2] text-sm font-medium transition-colors shadow-sm"
             >
               <span>Back to preparation</span>
               <ArrowRight className="w-4 h-4" />
@@ -1021,22 +1021,22 @@ export default function InterviewPage() {
       <div className="flex items-center justify-between">
         <Link
           href={`/roles/${roleId}/preparation`}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#667085] hover:text-[#1F2937] transition-colors touch-target"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#73757A] hover:text-[#252525] transition-colors touch-target"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Exit to preparation</span>
         </Link>
 
         {/* Progress Counter */}
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFF2B8] text-[#252525] border border-[#D8D4FD]">
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFF2B8] text-[#252525] border border-[#FFF2B8]">
           Question {questionNumber} of {totalQuestions}
         </span>
       </div>
 
       {/* Role Header */}
       <section className="space-y-1">
-        <div className="flex items-center gap-2 text-xs font-medium text-[#667085]">
-          <span className="font-semibold text-[#1F2937]">{role?.title || 'Target Role'}</span>
+        <div className="flex items-center gap-2 text-xs font-medium text-[#73757A]">
+          <span className="font-semibold text-[#252525]">{role?.title || 'Target Role'}</span>
           {role?.company && (
             <>
               <span>·</span>
@@ -1044,19 +1044,19 @@ export default function InterviewPage() {
             </>
           )}
         </div>
-        <h1 className="text-2xl sm:text-3xl font-semibold text-[#1F2937] tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-[#252525] tracking-tight">
           AI Interview
         </h1>
       </section>
 
       {/* Microphone Permission Notice (Requirement 5) */}
       {isPermissionDenied && (
-        <div className="p-4 rounded-xl bg-[#FFF0ED] border border-[#FBD2CB] text-[#E87967] text-xs sm:text-sm space-y-2 animate-in fade-in">
+        <div className="p-4 rounded-xl bg-[#FFF0ED] border border-[#F6D8D1] text-[#D97968] text-xs sm:text-sm space-y-2 animate-in fade-in">
           <div className="flex items-start gap-2.5">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">Microphone notice</p>
-              <p className="text-xs mt-0.5 text-[#1F2937]">
+              <p className="text-xs mt-0.5 text-[#252525]">
                 {permissionError ||
                   'Microphone access is blocked. Allow microphone access in your browser settings and try again.'}
               </p>
@@ -1066,7 +1066,7 @@ export default function InterviewPage() {
             <button
               type="button"
               onClick={handleStartRecording}
-              className="touch-target px-3 py-1.5 rounded-lg bg-white border border-[#E87967]/40 text-[#E87967] hover:bg-[#FFF0ED] text-xs font-medium transition-colors cursor-pointer"
+              className="touch-target px-3 py-1.5 rounded-lg bg-white border border-[#D97968]/40 text-[#D97968] hover:bg-[#FFF0ED] text-xs font-medium transition-colors cursor-pointer"
             >
               Try again
             </button>
@@ -1076,7 +1076,7 @@ export default function InterviewPage() {
                 clearPermissionError();
                 textareaRef.current?.focus();
               }}
-              className="touch-target px-3 py-1.5 rounded-lg bg-[#1F2937] text-white hover:bg-black text-xs font-medium transition-colors cursor-pointer"
+              className="touch-target px-3 py-1.5 rounded-lg bg-[#252525] text-white hover:bg-black text-xs font-medium transition-colors cursor-pointer"
             >
               Type answer
             </button>
@@ -1086,19 +1086,19 @@ export default function InterviewPage() {
 
       {/* General Error Notice */}
       {generalError && (
-        <div className="p-4 rounded-xl bg-[#FFF0ED] border border-[#FBD2CB] text-[#E87967] text-xs sm:text-sm space-y-2 animate-in fade-in">
+        <div className="p-4 rounded-xl bg-[#FFF0ED] border border-[#F6D8D1] text-[#D97968] text-xs sm:text-sm space-y-2 animate-in fade-in">
           <div className="flex items-start gap-2.5">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">Notice</p>
-              <p className="text-xs mt-0.5 text-[#1F2937]">{generalError}</p>
+              <p className="text-xs mt-0.5 text-[#252525]">{generalError}</p>
             </div>
           </div>
           <div className="pt-1 flex items-center gap-3">
             <button
               type="button"
               onClick={() => handleContinueWithAnswer()}
-              className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#E87967]/40 text-[#E87967] hover:bg-[#FFF0ED] text-xs font-medium transition-colors cursor-pointer"
+              className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#D97968]/40 text-[#D97968] hover:bg-[#FFF0ED] text-xs font-medium transition-colors cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Retry submission</span>
@@ -1110,11 +1110,11 @@ export default function InterviewPage() {
       {/* QUESTION CARD (Requirements 8, 9, 10, 12, 20) */}
       <section className="rolewise-card p-6 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFF2B8] text-[#252525] border border-[#D8D4FD]">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFF2B8] text-[#252525] border border-[#FFF2B8]">
             <Sparkles className="w-3.5 h-3.5" />
             {currentCompetency || 'Role Competency'}
           </span>
-          <span className="text-xs text-[#667085]">
+          <span className="text-xs text-[#73757A]">
             Question {questionNumber} of {totalQuestions}
           </span>
         </div>
@@ -1131,7 +1131,7 @@ export default function InterviewPage() {
                     : 'Generating next question'}
                 </span>
               </div>
-              <p className="text-xs text-[#667085]">Based on this role and your experience...</p>
+              <p className="text-xs text-[#73757A]">Based on this role and your experience...</p>
             </div>
             {/* Animated Skeleton Placeholder */}
             <div className="space-y-2 pt-1 animate-pulse">
@@ -1143,14 +1143,14 @@ export default function InterviewPage() {
 
         {/* State B: Timeout Message (Requirement 9) */}
         {questionTimeoutOccurred && !currentQuestion && !questionError && (
-          <div className="p-3.5 rounded-xl bg-[#FFF0ED]/40 border border-[#FBD2CB] space-y-2.5 animate-in fade-in">
+          <div className="p-3.5 rounded-xl bg-[#FFF0ED]/40 border border-[#F6D8D1] space-y-2.5 animate-in fade-in">
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-[#E87967] flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-4 h-4 text-[#D97968] flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-semibold text-[#E87967]">
+                <p className="text-xs font-semibold text-[#D97968]">
                   Question generation is taking longer than expected.
                 </p>
-                <p className="text-[11px] text-[#667085] mt-0.5">
+                <p className="text-[11px] text-[#73757A] mt-0.5">
                   Synthesizing questions based on role requirements is taking a bit longer. You can
                   try again safely.
                 </p>
@@ -1171,12 +1171,12 @@ export default function InterviewPage() {
 
         {/* State C: Question Error (Requirement 12) */}
         {questionError && !currentQuestion && (
-          <div className="p-3.5 rounded-xl bg-[#FFF0ED]/40 border border-[#FBD2CB] space-y-2.5 animate-in fade-in">
+          <div className="p-3.5 rounded-xl bg-[#FFF0ED]/40 border border-[#F6D8D1] space-y-2.5 animate-in fade-in">
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-[#E87967] flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-4 h-4 text-[#D97968] flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-semibold text-[#E87967]">{questionError.title}</p>
-                <p className="text-[11px] text-[#667085] mt-0.5">{questionError.description}</p>
+                <p className="text-xs font-semibold text-[#D97968]">{questionError.title}</p>
+                <p className="text-[11px] text-[#73757A] mt-0.5">{questionError.description}</p>
               </div>
             </div>
             <div>
@@ -1212,12 +1212,12 @@ export default function InterviewPage() {
 
         {/* State D: Question Displayed */}
         {currentQuestion && (
-          <h2 className="text-base sm:text-lg font-semibold text-[#1F2937] leading-relaxed">
+          <h2 className="text-base sm:text-lg font-semibold text-[#252525] leading-relaxed">
             &ldquo;{currentQuestion}&rdquo;
           </h2>
         )}
 
-        <p className="text-xs text-[#667085] pt-1">
+        <p className="text-xs text-[#73757A] pt-1">
           Answer naturally. ROLEWISE will evaluate both your response and how you communicate it.
         </p>
       </section>
@@ -1225,8 +1225,8 @@ export default function InterviewPage() {
       {/* UNIFIED ANSWER CARD (Requirements 1, 2, 6, 7, 13, 14, 15, 18, 19, 20) */}
       <section className="rolewise-card p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[#1F2937]">Answer your question</h3>
-          <span className="text-xs text-[#667085]">{answerText.length} characters</span>
+          <h3 className="text-sm font-semibold text-[#252525]">Answer your question</h3>
+          <span className="text-xs text-[#73757A]">{answerText.length} characters</span>
         </div>
 
         {/* Textarea container with embedded bottom-right microphone */}
@@ -1242,8 +1242,8 @@ export default function InterviewPage() {
             }}
             placeholder="Type your answer here, or tap the microphone to speak..."
             disabled={isRecording || isAnalyzing}
-            className={`w-full p-4 pr-16 pb-12 rounded-xl border border-[#E7E8EF] text-xs sm:text-sm text-[#1F2937] placeholder:text-[#667085]/60 focus:outline-none focus:border-[#252525] bg-white transition-colors resize-y leading-relaxed font-normal min-h-[140px] ${
-              isRecording ? 'bg-[#FFF0ED]/10 border-[#FBD2CB]' : ''
+            className={`w-full p-4 pr-16 pb-12 rounded-xl border border-[#D9D8D2] text-xs sm:text-sm text-[#252525] placeholder:text-[#73757A]/60 focus:outline-none focus:border-[#252525] bg-white transition-colors resize-y leading-relaxed font-normal min-h-[140px] ${
+              isRecording ? 'bg-[#FFF0ED]/10 border-[#F6D8D1]' : ''
             }`}
           />
 
@@ -1255,7 +1255,7 @@ export default function InterviewPage() {
                 onClick={handleStopRecording}
                 title="Stop recording"
                 aria-label="Stop recording"
-                className="touch-target w-11 h-11 rounded-full bg-[#E87967] hover:bg-[#D96B5A] text-white flex items-center justify-center shadow-md ring-4 ring-[#FBD2CB] animate-pulse cursor-pointer transition-all"
+                className="touch-target w-11 h-11 rounded-full bg-[#D97968] hover:bg-[#C96555] text-white flex items-center justify-center shadow-md ring-4 ring-[#F6D8D1] animate-pulse cursor-pointer transition-all"
               >
                 <Square className="w-4 h-4 fill-current" />
               </button>
@@ -1265,7 +1265,7 @@ export default function InterviewPage() {
                 onClick={handleStartRecording}
                 title="Tap microphone to speak"
                 aria-label="Tap microphone to speak"
-                className="touch-target w-11 h-11 rounded-full bg-[#FFF2B8] hover:bg-[#E0DCFE] text-[#252525] flex items-center justify-center shadow-sm cursor-pointer transition-all active:scale-95"
+                className="touch-target w-11 h-11 rounded-full bg-[#FFF2B8] hover:bg-[#FFF2B8] text-[#252525] flex items-center justify-center shadow-sm cursor-pointer transition-all active:scale-95"
               >
                 <Mic className="w-5 h-5" />
               </button>
@@ -1275,17 +1275,17 @@ export default function InterviewPage() {
 
         {/* Live Recording State (Requirement 2 & 13) */}
         {isRecording && (
-          <div className="flex items-center justify-between p-3 rounded-xl bg-[#FFF0ED] border border-[#FBD2CB] animate-in fade-in">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-[#FFF0ED] border border-[#F6D8D1] animate-in fade-in">
             <div className="flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#E87967] animate-pulse" />
-              <span className="text-xs font-semibold text-[#E87967]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#D97968] animate-pulse" />
+              <span className="text-xs font-semibold text-[#D97968]">
                 🔴 Recording · {formattedDuration}
               </span>
             </div>
             <button
               type="button"
               onClick={handleStopRecording}
-              className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E87967] hover:bg-[#D96B5A] text-white text-xs font-medium transition-colors cursor-pointer"
+              className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D97968] hover:bg-[#C96555] text-white text-xs font-medium transition-colors cursor-pointer"
             >
               <Square className="w-3 h-3 fill-current" />
               <span>Stop</span>
@@ -1295,13 +1295,13 @@ export default function InterviewPage() {
 
         {/* Captured Recording & Audio Playback (Requirements 2, 3, 6, 13) */}
         {recordedAudioUrl && !isRecording && (
-          <div className="p-3.5 rounded-xl bg-[#F7F7FB] border border-[#E7E8EF] flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
+          <div className="p-3.5 rounded-xl bg-[#F3F2EE] border border-[#D9D8D2] flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-[#EAF6F0] text-[#4E9B76] flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[#EEF7F0] text-[#6FA77F] flex items-center justify-center flex-shrink-0">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-[#1F2937]">
+                <p className="text-xs font-semibold text-[#252525]">
                   Recording captured · {lastRecordedDuration || formattedDuration}
                 </p>
                 {isTranscribing ? (
@@ -1310,11 +1310,11 @@ export default function InterviewPage() {
                     <span>Transcribing your answer...</span>
                   </p>
                 ) : transcriptionError ? (
-                  <p className="text-[11px] text-[#E87967] mt-0.5">
+                  <p className="text-[11px] text-[#D97968] mt-0.5">
                     Transcription temporarily unavailable
                   </p>
                 ) : (
-                  <p className="text-[11px] text-[#4E9B76] mt-0.5">
+                  <p className="text-[11px] text-[#6FA77F] mt-0.5">
                     Transcript added to answer box
                   </p>
                 )}
@@ -1325,7 +1325,7 @@ export default function InterviewPage() {
               <button
                 type="button"
                 onClick={handleTogglePlayAudio}
-                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#E7E8EF] hover:bg-white text-xs font-medium text-[#1F2937] transition-colors shadow-2xs cursor-pointer"
+                className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#D9D8D2] hover:bg-white text-xs font-medium text-[#252525] transition-colors shadow-2xs cursor-pointer"
               >
                 {isPlayingAudio ? (
                   <>
@@ -1342,7 +1342,7 @@ export default function InterviewPage() {
               <button
                 type="button"
                 onClick={handleDiscardRecording}
-                className="touch-target text-xs text-[#667085] hover:text-[#E87967] px-2.5 py-1.5 transition-colors cursor-pointer"
+                className="touch-target text-xs text-[#73757A] hover:text-[#D97968] px-2.5 py-1.5 transition-colors cursor-pointer"
                 title="Discard recording"
               >
                 Clear
@@ -1353,14 +1353,14 @@ export default function InterviewPage() {
 
         {/* Transcription Error Banner (Requirement 7) */}
         {transcriptionError && (
-          <div className="p-3.5 rounded-xl bg-[#FFF0ED] border border-[#FBD2CB] space-y-2 animate-in fade-in">
+          <div className="p-3.5 rounded-xl bg-[#FFF0ED] border border-[#F6D8D1] space-y-2 animate-in fade-in">
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-[#E87967] flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-4 h-4 text-[#D97968] flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-semibold text-[#E87967]">
+                <p className="text-xs font-semibold text-[#D97968]">
                   Your recording was captured, but transcription is temporarily unavailable.
                 </p>
-                <p className="text-[11px] text-[#667085] mt-0.5">
+                <p className="text-[11px] text-[#73757A] mt-0.5">
                   You can listen to your recording, retry transcription, or type your answer.
                 </p>
               </div>
@@ -1369,7 +1369,7 @@ export default function InterviewPage() {
               <button
                 type="button"
                 onClick={handleTogglePlayAudio}
-                className="touch-target inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#FBD2CB] text-[#1F2937] text-xs font-medium hover:bg-[#FFF0ED] transition-colors cursor-pointer"
+                className="touch-target inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#F6D8D1] text-[#252525] text-xs font-medium hover:bg-[#FFF0ED] transition-colors cursor-pointer"
               >
                 <Play className="w-3.5 h-3.5 fill-current text-[#252525]" />
                 <span>Listen</span>
@@ -1377,7 +1377,7 @@ export default function InterviewPage() {
               <button
                 type="button"
                 onClick={handleRetryTranscription}
-                className="touch-target inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#FBD2CB] text-[#1F2937] text-xs font-medium hover:bg-[#FFF0ED] transition-colors cursor-pointer"
+                className="touch-target inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#F6D8D1] text-[#252525] text-xs font-medium hover:bg-[#FFF0ED] transition-colors cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Try transcription again</span>
@@ -1385,7 +1385,7 @@ export default function InterviewPage() {
               <button
                 type="button"
                 onClick={() => textareaRef.current?.focus()}
-                className="touch-target inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E7E8EF] text-[#667085] text-xs font-medium hover:text-[#1F2937] transition-colors cursor-pointer"
+                className="touch-target inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#D9D8D2] text-[#73757A] text-xs font-medium hover:text-[#252525] transition-colors cursor-pointer"
               >
                 <span>Type answer</span>
               </button>
@@ -1394,8 +1394,8 @@ export default function InterviewPage() {
         )}
 
         {/* Card Footer: Helper copy & Primary CTA (Requirement 13) */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E7E8EF]/60">
-          <p className="text-xs text-[#667085] text-center sm:text-left">
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#D9D8D2]/60">
+          <p className="text-xs text-[#73757A] text-center sm:text-left">
             Prefer speaking? Your recorded answer can be transcribed automatically.
           </p>
 
@@ -1406,7 +1406,7 @@ export default function InterviewPage() {
             className={`w-full sm:w-auto touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-colors shadow-sm ${
               answerText.trim() && !isAnalyzing && !isRecording
                 ? 'bg-[#252525] hover:bg-[#E7C43E] text-white cursor-pointer'
-                : 'bg-[#E7E8EF] text-[#667085] cursor-not-allowed opacity-80'
+                : 'bg-[#D9D8D2] text-[#73757A] cursor-not-allowed opacity-80'
             }`}
           >
             {isAnalyzing ? (
@@ -1428,10 +1428,10 @@ export default function InterviewPage() {
       {isAnalyzing && (
         <div className="rolewise-card p-8 space-y-3 text-center animate-in fade-in">
           <Loader2 className="w-6 h-6 animate-spin text-[#252525] mx-auto" />
-          <h3 className="text-sm font-semibold text-[#1F2937]">
+          <h3 className="text-sm font-semibold text-[#252525]">
             Analyzing communication quality…
           </h3>
-          <p className="text-xs text-[#667085]">
+          <p className="text-xs text-[#73757A]">
             Evaluating relevance, clarity, structure, and outcome alignment.
           </p>
         </div>
@@ -1440,19 +1440,19 @@ export default function InterviewPage() {
       {/* STATE: REVIEWED ANSWER FEEDBACK */}
       {flowState === 'REVIEWED' && currentAnalysis && (
         <div className="space-y-4 animate-in fade-in">
-          <section className="rolewise-card p-6 space-y-4 border-[#4E9B76]/30 bg-[#EAF6F0]/20">
-            <div className="flex items-center gap-2 text-sm font-semibold text-[#4E9B76]">
+          <section className="rolewise-card p-6 space-y-4 border-[#6FA77F]/30 bg-[#EEF7F0]/20">
+            <div className="flex items-center gap-2 text-sm font-semibold text-[#6FA77F]">
               <CheckCircle2 className="w-4 h-4" />
               <span>Answer reviewed</span>
             </div>
 
             {/* What worked */}
             <div className="space-y-1.5">
-              <span className="text-xs font-semibold text-[#1F2937]">What worked</span>
-              <ul className="space-y-1 text-xs text-[#1F2937]">
+              <span className="text-xs font-semibold text-[#252525]">What worked</span>
+              <ul className="space-y-1 text-xs text-[#252525]">
                 {currentAnalysis.strengths.map((str, idx) => (
                   <li key={idx} className="flex items-start gap-1.5">
-                    <span className="text-[#4E9B76] font-bold">✓</span>
+                    <span className="text-[#6FA77F] font-bold">✓</span>
                     <span>{str}</span>
                   </li>
                 ))}
@@ -1460,9 +1460,9 @@ export default function InterviewPage() {
             </div>
 
             {/* Improve */}
-            <div className="space-y-1.5 pt-1 border-t border-[#E7E8EF]">
-              <span className="text-xs font-semibold text-[#1F2937]">Improve</span>
-              <ul className="space-y-1 text-xs text-[#1F2937]">
+            <div className="space-y-1.5 pt-1 border-t border-[#D9D8D2]">
+              <span className="text-xs font-semibold text-[#252525]">Improve</span>
+              <ul className="space-y-1 text-xs text-[#252525]">
                 {currentAnalysis.improvements.map((imp, idx) => (
                   <li key={idx} className="flex items-start gap-1.5">
                     <span className="text-[#C58A2B] font-bold">•</span>
@@ -1473,30 +1473,30 @@ export default function InterviewPage() {
             </div>
 
             {/* Communication dimensions */}
-            <div className="space-y-2 pt-1 border-t border-[#E7E8EF]">
-              <span className="text-xs font-semibold text-[#1F2937]">Communication</span>
+            <div className="space-y-2 pt-1 border-t border-[#D9D8D2]">
+              <span className="text-xs font-semibold text-[#252525]">Communication</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div className="p-2.5 rounded-xl bg-white border border-[#E7E8EF] space-y-0.5">
-                  <span className="text-[#667085] text-[11px]">Clarity</span>
-                  <p className="font-semibold text-[#1F2937]">
+                <div className="p-2.5 rounded-xl bg-white border border-[#D9D8D2] space-y-0.5">
+                  <span className="text-[#73757A] text-[11px]">Clarity</span>
+                  <p className="font-semibold text-[#252525]">
                     {currentAnalysis.communication_feedback.clarity}
                   </p>
                 </div>
-                <div className="p-2.5 rounded-xl bg-white border border-[#E7E8EF] space-y-0.5">
-                  <span className="text-[#667085] text-[11px]">Structure</span>
-                  <p className="font-semibold text-[#1F2937]">
+                <div className="p-2.5 rounded-xl bg-white border border-[#D9D8D2] space-y-0.5">
+                  <span className="text-[#73757A] text-[11px]">Structure</span>
+                  <p className="font-semibold text-[#252525]">
                     {currentAnalysis.communication_feedback.structure}
                   </p>
                 </div>
-                <div className="p-2.5 rounded-xl bg-white border border-[#E7E8EF] space-y-0.5">
-                  <span className="text-[#667085] text-[11px]">Specificity</span>
-                  <p className="font-semibold text-[#1F2937]">
+                <div className="p-2.5 rounded-xl bg-white border border-[#D9D8D2] space-y-0.5">
+                  <span className="text-[#73757A] text-[11px]">Specificity</span>
+                  <p className="font-semibold text-[#252525]">
                     {currentAnalysis.communication_feedback.specificity}
                   </p>
                 </div>
-                <div className="p-2.5 rounded-xl bg-white border border-[#E7E8EF] space-y-0.5">
-                  <span className="text-[#667085] text-[11px]">Conciseness</span>
-                  <p className="font-semibold text-[#1F2937]">
+                <div className="p-2.5 rounded-xl bg-white border border-[#D9D8D2] space-y-0.5">
+                  <span className="text-[#73757A] text-[11px]">Conciseness</span>
+                  <p className="font-semibold text-[#252525]">
                     {currentAnalysis.communication_feedback.conciseness}
                   </p>
                 </div>
