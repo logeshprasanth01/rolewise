@@ -116,7 +116,7 @@ export default function MyJobsPage() {
         {!isLoading && roles.length > 0 && (
           <Link
             href="/jobs/new"
-            className="touch-target inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+            className="touch-target inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
           >
             <Plus className="w-4 h-4" />
             <span>Add new job</span>
@@ -145,7 +145,7 @@ export default function MyJobsPage() {
             >
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-md bg-[#EEECFF] text-[#6D5DFB] text-[11px] font-semibold">
+                  <span className="px-2.5 py-0.5 rounded-md bg-[#FFF2B8] text-[#252525] text-[11px] font-semibold">
                     Target Opportunity
                   </span>
                   <span className="text-xs text-[#667085]">
@@ -171,19 +171,19 @@ export default function MyJobsPage() {
               <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                 <Link
                   href={`/roles/${role.id}/fit`}
-                  className="touch-target px-3.5 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:border-[#6D5DFB] text-xs font-semibold text-[#1F2937] transition-all"
+                  className="touch-target px-3.5 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:border-[#252525] text-xs font-semibold text-[#1F2937] transition-all"
                 >
                   View Fit
                 </Link>
                 <Link
                   href={`/roles/${role.id}/preparation`}
-                  className="touch-target px-3.5 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:border-[#6D5DFB] text-xs font-semibold text-[#1F2937] transition-all"
+                  className="touch-target px-3.5 py-2 rounded-xl bg-white border border-[#E7E8EF] hover:border-[#252525] text-xs font-semibold text-[#1F2937] transition-all"
                 >
                   Preparation Plan
                 </Link>
                 <Link
                   href={`/roles/${role.id}/interview`}
-                  className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs font-semibold transition-all shadow-xs"
+                  className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-semibold transition-all shadow-xs"
                 >
                   <Bot className="w-3.5 h-3.5" />
                   <span>Start Interview</span>
@@ -229,7 +229,7 @@ export default function MyJobsPage() {
       ) : (
         /* Empty State */
         <div className="rolewise-card p-10 text-center space-y-4 max-w-lg mx-auto my-8">
-          <div className="w-12 h-12 rounded-2xl bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center mx-auto">
             <Briefcase className="w-6 h-6" />
           </div>
           <div className="space-y-1">
@@ -242,7 +242,7 @@ export default function MyJobsPage() {
             <Link
               href="/jobs/new"
               aria-label="+ Add job"
-              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6D5DFB] hover:bg-[#5A48F5] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
+              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
             >
               <Plus className="w-4 h-4" />
               <span>Add job</span>
