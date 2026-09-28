@@ -171,7 +171,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             )}
           </div>
 
-          <nav className="px-0 py-3 flex-1 overflow-y-auto overflow-x-hidden" aria-label="Primary navigation">
+          <nav className={`py-3 flex-1 overflow-y-auto overflow-x-hidden ${isSidebarCollapsed ? "px-0" : "px-2 lg:px-3"}`} aria-label="Primary navigation">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isNavActive(item.href);
@@ -181,7 +181,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   href={item.href}
                   title={isSidebarCollapsed ? item.label : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center min-h-11 text-xs font-semibold transition-all duration-300 ease-out ${isSidebarCollapsed ? 'w-full h-10 min-h-10 p-0 justify-center' : 'w-full gap-3 rounded-[14px] px-3 lg:px-3.5'} ${!isSidebarCollapsed && (active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]')}`}
+                  className={`group flex items-center min-h-11 text-xs font-semibold transition-all duration-300 ease-out ${isSidebarCollapsed ? 'w-full h-10 min-h-10 p-0 justify-center' : 'w-full h-12 min-h-12 gap-3 rounded-[14px] px-3.5'} ${!isSidebarCollapsed && (active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]')}`}
                 >
                   <span className={`flex items-center justify-center shrink-0 transition-all duration-200 ${isSidebarCollapsed ? `w-10 h-10 rounded-xl ${active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A]'}` : ''}`}>
                     <Icon className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105" />
