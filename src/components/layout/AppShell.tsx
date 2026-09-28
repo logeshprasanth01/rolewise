@@ -134,8 +134,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           className={`hidden lg:flex shrink-0 bg-[#FAF9F4] border-r border-[#D9D8D2] flex-col z-40 transition-[width] duration-300 ease-out ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`}
           aria-label="Sidebar navigation"
         >
-          <div className={`p-3 ${isSidebarCollapsed ? 'lg:p-3' : 'lg:p-5'}`}>
-            <div className="flex items-center justify-center">
+          <div className={`p-3 ${isSidebarCollapsed ? 'lg:p-3' : 'lg:p-5'} border-b border-[#D9D8D2]/70`}>
+            <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} gap-2`}>
               <Link
                 href="/"
                 data-ui-sound="click"
@@ -152,6 +152,17 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   </div>
                 )}
               </Link>
+
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
+                title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
+                data-ui-sound="click"
+                className={`w-9 h-9 rounded-full border border-[#D9D8D2] bg-[#F3F2EE] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 ${isSidebarCollapsed ? 'hidden' : ''}`}
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
@@ -311,16 +322,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <div className="flex-1 min-w-0 flex flex-col min-h-screen">
           <header className="sticky top-0 z-30 bg-[#F3F2EE]/95 backdrop-blur-xl border-b border-[#D9D8D2]/75">
             <div className="px-4 sm:px-6 lg:px-7 py-3 flex items-center gap-3">
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
-                title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
-                data-ui-sound="click"
-                className="hidden lg:inline-flex w-10 h-10 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200"
-              >
-                {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
-              </button>
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(true)}
