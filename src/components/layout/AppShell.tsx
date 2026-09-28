@@ -21,7 +21,6 @@ import {
   UserRound,
   ChevronDown,
   PanelLeftClose,
-  PanelLeftOpen,
   Menu,
   X,
 } from 'lucide-react';
@@ -135,26 +134,41 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           className={`hidden lg:flex shrink-0 bg-[#FAF9F4] border-r border-[#D9D8D2] flex-col z-40 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-[68px]' : 'w-[280px]'}`}
           aria-label="Sidebar navigation"
         >
-          <div className="relative h-[60px] shrink-0 border-b border-[#D9D8D2]/70 flex items-center">
-            <Link
-              href="/"
-              data-ui-sound="click"
-              title="ROLEWISE"
-              className={`flex items-center overflow-hidden shrink-0 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'ml-3 w-8 h-8' : 'ml-4 w-[172px] h-9'}`}
-            >
-              <RolewiseLogo collapsed={isSidebarCollapsed} className={isSidebarCollapsed ? 'w-8 h-8' : 'w-[172px] h-auto'} />
-            </Link>
+          <div className={`relative h-[60px] shrink-0 border-b border-[#D9D8D2]/70 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+            {isSidebarCollapsed ? (
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                aria-label="Open sidebar"
+                title="Open sidebar"
+                data-ui-sound="click"
+                className="w-9 h-9 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer"
+              >
+                <RolewiseLogo collapsed className="w-9 h-9" />
+              </button>
+            ) : (
+              <>
+                <Link
+                  href="/"
+                  data-ui-sound="click"
+                  title="ROLEWISE"
+                  className="ml-4 flex items-center overflow-hidden shrink-0 w-[172px] h-9"
+                >
+                  <RolewiseLogo className="w-[172px] h-auto" />
+                </Link>
 
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
-              title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
-              data-ui-sound="click"
-              className={`flex items-center justify-center shrink-0 text-[#73757A] hover:text-[#252525] transition-colors duration-200 ${isSidebarCollapsed ? 'ml-auto mr-3 w-7 h-7' : 'ml-auto mr-4 w-7 h-7'}`}
-            >
-              {isSidebarCollapsed ? <PanelLeftOpen className="w-[18px] h-[18px]" /> : <PanelLeftClose className="w-[18px] h-[18px]" />}
-            </button>
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  aria-label="Close sidebar"
+                  title="Close sidebar"
+                  data-ui-sound="click"
+                  className="mr-4 flex items-center justify-center shrink-0 w-7 h-7 text-[#73757A] hover:text-[#252525] transition-colors duration-200"
+                >
+                  <PanelLeftClose className="w-[18px] h-[18px]" />
+                </button>
+              </>
+            )}
           </div>
 
           <nav className="px-2 lg:px-3 py-3 space-y-1 flex-1 overflow-y-auto overflow-x-hidden" aria-label="Primary navigation">
