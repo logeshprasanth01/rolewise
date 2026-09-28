@@ -132,58 +132,41 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       <div className="min-h-screen w-full bg-[#F3F2EE] flex min-w-0">
 
         <aside
-          className={`hidden lg:flex shrink-0 bg-[#FAF9F4] border-r border-[#D9D8D2] flex-col z-40 transition-[width] duration-300 ease-out ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`}
+          className={`hidden lg:flex shrink-0 bg-[#FAF9F4] border-r border-[#D9D8D2] flex-col z-40 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-[68px]' : 'w-[280px]'}`}
           aria-label="Sidebar navigation"
         >
-          <div className={`p-3 ${isSidebarCollapsed ? 'lg:p-3' : 'lg:p-5'} border-b border-[#D9D8D2]/70`}>
-            {!isSidebarCollapsed ? (
-              <div className="flex items-center justify-between gap-2">
-                <Link
-                  href="/"
-                  data-ui-sound="click"
-                  title="ROLEWISE"
-                  className="flex items-center min-w-0 w-[170px] h-10 shrink-0"
-                >
-                  <RolewiseLogo className="block w-[170px] h-10 object-contain" />
-                </Link>
+          <div className="relative h-[60px] shrink-0 border-b border-[#D9D8D2]/70">
+            <Link
+              href="/"
+              data-ui-sound="click"
+              title="ROLEWISE"
+              className={`absolute left-3 top-1/2 -translate-y-1/2 flex items-center overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-8 h-8 opacity-100 scale-100' : 'w-0 h-8 opacity-0 scale-95 pointer-events-none'}`}
+            >
+              <RolewiseLogo collapsed className="w-8 h-8" />
+            </Link>
 
-                <button
-                  type="button"
-                  onClick={toggleSidebar}
-                  aria-label="Close sidebar"
-                  title="Close sidebar"
-                  data-ui-sound="click"
-                  className="w-9 h-9 rounded-full border border-[#D9D8D2] bg-[#F3F2EE] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 shrink-0"
-                >
-                  <PanelLeftClose className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-3">
-                <Link
-                  href="/"
-                  data-ui-sound="click"
-                  title="ROLEWISE"
-                  className="flex items-center justify-center w-10 h-10 shrink-0"
-                >
-                  <RolewiseLogo collapsed className="block w-10 h-10 object-contain" />
-                </Link>
+            <Link
+              href="/"
+              data-ui-sound="click"
+              title="ROLEWISE"
+              className={`absolute left-4 top-1/2 -translate-y-1/2 flex items-center overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-0 h-9 opacity-0 scale-95 pointer-events-none' : 'w-[172px] h-9 opacity-100 scale-100'}`}
+            >
+              <RolewiseLogo className="w-[172px] h-auto" />
+            </Link>
 
-                <button
-                  type="button"
-                  onClick={toggleSidebar}
-                  aria-label="Open sidebar"
-                  title="Open sidebar"
-                  data-ui-sound="click"
-                  className="w-9 h-9 rounded-full border border-[#D9D8D2] bg-[#F3F2EE] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 shrink-0"
-                >
-                  <PanelLeftOpen className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
+              title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
+              data-ui-sound="click"
+              className={`absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border border-[#D9D8D2] bg-[#F3F2EE] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] shrink-0 ${isSidebarCollapsed ? 'right-3' : 'right-4'}`}
+            >
+              {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+            </button>
           </div>
 
-          <nav className="px-2 lg:px-3 space-y-1 flex-1 overflow-y-auto" aria-label="Primary navigation">
+          <nav className="px-2 lg:px-3 py-3 space-y-1 flex-1 overflow-y-auto overflow-x-hidden" aria-label="Primary navigation">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isNavActive(item.href);
@@ -193,24 +176,28 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   href={item.href}
                   title={isSidebarCollapsed ? item.label : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-200 ${isSidebarCollapsed ? 'justify-center' : ''} ${active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
+                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-300 ease-out ${isSidebarCollapsed ? 'justify-center' : ''} ${active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
                 >
                   <Icon className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105" />
-                  {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
+                  <span
+                    className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ease-out ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}
+                  >
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="p-2 lg:p-3 space-y-2 border-t border-[#D9D8D2]">
+          <div className="p-2 lg:p-3 space-y-2 border-t border-[#D9D8D2] shrink-0">
             <Link
               href="/settings"
               title={isSidebarCollapsed ? 'Settings' : undefined}
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all ${isSidebarCollapsed ? 'justify-center' : ''} ${isNavActive('/settings') ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3 lg:px-3.5 text-xs font-semibold transition-all duration-300 ${isSidebarCollapsed ? 'justify-center' : ''} ${isNavActive('/settings') ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
             >
               <Settings className="w-4 h-4 shrink-0" />
-              {!isSidebarCollapsed && <span>Settings</span>}
+              <span className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}>Settings</span>
             </Link>
 
             <div className="relative" ref={profileRef}>
@@ -219,20 +206,16 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 onClick={() => setIsProfileOpen((value) => !value)}
                 title="Profile"
                 aria-expanded={isProfileOpen}
-                className={`w-full flex items-center gap-3 min-h-12 rounded-[15px] px-2.5 lg:px-3 bg-[#F3F2EE] border border-[#D9D8D2] hover:border-[#C9C7BE] transition-all duration-200 ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                className={`w-full flex items-center gap-3 min-h-12 rounded-[15px] px-2.5 lg:px-3 bg-[#F3F2EE] border border-[#D9D8D2] hover:border-[#C9C7BE] transition-all duration-300 ${isSidebarCollapsed ? 'justify-center' : ''}`}
               >
                 <div className="w-9 h-9 rounded-full bg-[#252525] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
                   {userName ? userName[0].toUpperCase() : 'U'}
                 </div>
-                {!isSidebarCollapsed && (
-                  <div className="min-w-0 text-left flex-1">
-                    <p className="text-xs font-bold text-[#252525] truncate">{userName || 'Candidate'}</p>
-                    <p className="text-[10px] text-[#73757A] truncate">{session.user?.email || 'Profile'}</p>
-                  </div>
-                )}
-                {!isSidebarCollapsed && (
-                  <ChevronDown className={`w-3.5 h-3.5 text-[#73757A] transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
-                )}
+                <div className={`min-w-0 text-left flex-1 overflow-hidden transition-[max-width,opacity] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-[160px] opacity-100'}`}>
+                  <p className="text-xs font-bold text-[#252525] truncate">{userName || 'Candidate'}</p>
+                  <p className="text-[10px] text-[#73757A] truncate">{session.user?.email || 'Profile'}</p>
+                </div>
+                <ChevronDown className={`w-3.5 h-3.5 text-[#73757A] shrink-0 transition-all duration-200 ${isSidebarCollapsed ? 'w-0 opacity-0' : `opacity-100 ${isProfileOpen ? 'rotate-180' : ''}`}`} />
               </button>
 
               {isProfileOpen && (
@@ -260,10 +243,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               data-ui-sound="click"
               onClick={() => signOut()}
               title="Sign out"
-              className={`w-full flex items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-xs font-semibold text-[#73757A] hover:bg-[#FFF0ED] hover:text-[#D97968] transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}
+              className={`w-full flex items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-xs font-semibold text-[#73757A] hover:bg-[#FFF0ED] hover:text-[#D97968] transition-all duration-200 ${isSidebarCollapsed ? 'justify-center' : ''}`}
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              {!isSidebarCollapsed && <span>Sign out</span>}
+              <span className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}>Sign out</span>
             </button>
           </div>
         </aside>
