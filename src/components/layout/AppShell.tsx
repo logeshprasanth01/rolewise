@@ -159,10 +159,23 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
                 title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
                 data-ui-sound="click"
-                className={`w-9 h-9 rounded-full border border-[#D9D8D2] bg-[#F3F2EE] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 ${isSidebarCollapsed ? 'hidden' : ''}`}
+                className={`w-9 h-9 rounded-full border border-[#D9D8D2] bg-[#F3F2EE] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 shrink-0 ${isSidebarCollapsed ? 'hidden' : ''}`}
               >
                 <PanelLeftClose className="w-4 h-4" />
               </button>
+
+              {isSidebarCollapsed && (
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  aria-label="Open sidebar"
+                  title="Open sidebar"
+                  data-ui-sound="click"
+                  className="w-10 h-10 rounded-[14px] border border-[#D9D8D2] bg-[#252525] text-[#FFFFFF] flex items-center justify-center hover:opacity-90 transition-all duration-200 shrink-0"
+                >
+                  <PanelLeftOpen className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
 
