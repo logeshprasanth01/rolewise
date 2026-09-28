@@ -181,9 +181,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   href={item.href}
                   title={isSidebarCollapsed ? item.label : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] text-xs font-semibold transition-all duration-300 ease-out ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 gap-0 justify-center rounded-xl' : 'w-full px-3 lg:px-3.5'} ${active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
+                  className={`group flex items-center min-h-11 text-xs font-semibold transition-all duration-300 ease-out ${isSidebarCollapsed ? 'w-full h-10 min-h-10 p-0 justify-center' : 'w-full gap-3 rounded-[14px] px-3 lg:px-3.5'} ${!isSidebarCollapsed && (active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]')}`}
                 >
-                  <Icon className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105" />
+                  <span className={`flex items-center justify-center shrink-0 transition-all duration-200 ${isSidebarCollapsed ? `w-10 h-10 rounded-xl ${active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A]'}` : ''}`}>
+                    <Icon className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105" />
+                  </span>
                   <span
                     className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ease-out ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}
                   >
