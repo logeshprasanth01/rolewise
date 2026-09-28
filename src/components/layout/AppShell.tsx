@@ -171,7 +171,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             )}
           </div>
 
-          <nav className="px-0 py-3 space-y-1 flex-1 overflow-y-auto overflow-x-hidden" aria-label="Primary navigation">
+          <nav className="px-0 py-3 flex-1 overflow-y-auto overflow-x-hidden" aria-label="Primary navigation">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isNavActive(item.href);
@@ -181,7 +181,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   href={item.href}
                   title={isSidebarCollapsed ? item.label : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] text-xs font-semibold transition-all duration-300 ease-out ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 gap-0 justify-center' : 'w-full px-3 lg:px-3.5'} ${active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
+                  className={`group flex items-center gap-3 min-h-11 rounded-[14px] text-xs font-semibold transition-all duration-300 ease-out ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 gap-0 justify-center rounded-xl' : 'w-full px-3 lg:px-3.5'} ${active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
                 >
                   <Icon className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105" />
                   <span
@@ -194,12 +194,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             })}
           </nav>
 
-          <div className="p-2 lg:p-3 space-y-2 border-t border-[#D9D8D2] shrink-0">
+          <div className={`p-2 lg:p-3 space-y-2 border-t border-[#D9D8D2] shrink-0 ${isSidebarCollapsed ? 'px-0' : ''}`}>
             <Link
               href="/settings"
               title={isSidebarCollapsed ? 'Settings' : undefined}
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] text-xs font-semibold transition-all duration-300 ${isSidebarCollapsed ? 'w-11 h-11 min-h-11 mx-auto p-0 justify-center' : 'w-full px-3 lg:px-3.5'} ${isNavActive('/settings') ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] text-xs font-semibold transition-all duration-300 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 gap-0 justify-center rounded-xl' : 'w-full px-3 lg:px-3.5'} ${isNavActive('/settings') ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
             >
               <Settings className="w-4 h-4 shrink-0" />
               <span className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}>Settings</span>
@@ -211,16 +211,16 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 onClick={() => setIsProfileOpen((value) => !value)}
                 title="Profile"
                 aria-expanded={isProfileOpen}
-                className={`w-full flex items-center gap-3 min-h-12 rounded-[15px] px-2.5 lg:px-3 bg-[#F3F2EE] border border-[#D9D8D2] hover:border-[#C9C7BE] transition-all duration-300 ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                className={`flex items-center gap-3 min-h-12 rounded-[15px] bg-[#F3F2EE] border border-[#D9D8D2] hover:border-[#C9C7BE] transition-all duration-300 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 justify-center rounded-full' : 'w-full px-2.5 lg:px-3'}`}
               >
                 <div className="w-9 h-9 rounded-full bg-[#252525] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
                   {userName ? userName[0].toUpperCase() : 'U'}
                 </div>
-                <div className={`min-w-0 text-left flex-1 overflow-hidden transition-[max-width,opacity] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-[160px] opacity-100'}`}>
+                <div className={`min-w-0 text-left flex-1 overflow-hidden transition-[max-width,opacity] duration-200 ${isSidebarCollapsed ? 'hidden' : 'max-w-[160px] opacity-100'}`}>
                   <p className="text-xs font-bold text-[#252525] truncate">{userName || 'Candidate'}</p>
                   <p className="text-[10px] text-[#73757A] truncate">{session.user?.email || 'Profile'}</p>
                 </div>
-                <ChevronDown className={`w-3.5 h-3.5 text-[#73757A] shrink-0 transition-all duration-200 ${isSidebarCollapsed ? 'w-0 opacity-0' : `opacity-100 ${isProfileOpen ? 'rotate-180' : ''}`}`} />
+                <ChevronDown className={`w-3.5 h-3.5 text-[#73757A] shrink-0 transition-all duration-200 ${isSidebarCollapsed ? 'hidden' : `opacity-100 ${isProfileOpen ? 'rotate-180' : ''}`}`} />
               </button>
 
               {isProfileOpen && (
@@ -248,7 +248,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               data-ui-sound="click"
               onClick={() => signOut()}
               title="Sign out"
-              className={`w-full flex items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-xs font-semibold text-[#73757A] hover:bg-[#FFF0ED] hover:text-[#D97968] transition-all duration-200 ${isSidebarCollapsed ? 'justify-center' : ''}`}
+              className={`flex items-center gap-3 min-h-10 rounded-[13px] text-xs font-semibold text-[#73757A] hover:bg-[#FFF0ED] hover:text-[#D97968] transition-all duration-200 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 justify-center rounded-xl' : 'w-full px-3.5'}`}
             >
               <LogOut className="w-4 h-4 shrink-0" />
               <span className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}>Sign out</span>
