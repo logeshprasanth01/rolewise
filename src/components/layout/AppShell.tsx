@@ -1,5 +1,7 @@
 'use client';
 
+// Vercel build refresh: AppShell JSX validated
+
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
