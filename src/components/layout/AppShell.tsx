@@ -135,23 +135,14 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           className={`hidden lg:flex shrink-0 bg-[#FAF9F4] border-r border-[#D9D8D2] flex-col z-40 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-[68px]' : 'w-[280px]'}`}
           aria-label="Sidebar navigation"
         >
-          <div className="relative h-[60px] shrink-0 border-b border-[#D9D8D2]/70">
+          <div className="relative h-[60px] shrink-0 border-b border-[#D9D8D2]/70 flex items-center">
             <Link
               href="/"
               data-ui-sound="click"
               title="ROLEWISE"
-              className={`absolute left-3 top-1/2 -translate-y-1/2 flex items-center overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-8 h-8 opacity-100 scale-100' : 'w-0 h-8 opacity-0 scale-95 pointer-events-none'}`}
+              className={`flex items-center overflow-hidden shrink-0 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'ml-3 w-8 h-8' : 'ml-4 w-[172px] h-9'}`}
             >
-              <RolewiseLogo collapsed className="w-8 h-8" />
-            </Link>
-
-            <Link
-              href="/"
-              data-ui-sound="click"
-              title="ROLEWISE"
-              className={`absolute left-4 top-1/2 -translate-y-1/2 flex items-center overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-0 h-9 opacity-0 scale-95 pointer-events-none' : 'w-[172px] h-9 opacity-100 scale-100'}`}
-            >
-              <RolewiseLogo className="w-[172px] h-auto" />
+              <RolewiseLogo collapsed={isSidebarCollapsed} className={isSidebarCollapsed ? 'w-8 h-8' : 'w-[172px] h-auto'} />
             </Link>
 
             <button
@@ -160,9 +151,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
               title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
               data-ui-sound="click"
-              className={`absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border border-[#D9D8D2] bg-[#F3F2EE] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] shrink-0 ${isSidebarCollapsed ? 'right-3' : 'right-4'}`}
+              className={`flex items-center justify-center shrink-0 text-[#73757A] hover:text-[#252525] transition-colors duration-200 ${isSidebarCollapsed ? 'ml-auto mr-3 w-7 h-7' : 'ml-auto mr-4 w-7 h-7'}`}
             >
-              {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+              {isSidebarCollapsed ? <PanelLeftOpen className="w-[18px] h-[18px]" /> : <PanelLeftClose className="w-[18px] h-[18px]" />}
             </button>
           </div>
 
