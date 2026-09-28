@@ -21,6 +21,7 @@ import {
   UserRound,
   ChevronDown,
   PanelLeftClose,
+  PanelLeftOpen,
   Menu,
   X,
 } from 'lucide-react';
@@ -135,35 +136,51 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           aria-label="Sidebar navigation"
         >
           <div className={`p-3 ${isSidebarCollapsed ? 'lg:p-3' : 'lg:p-5'} border-b border-[#D9D8D2]/70`}>
-            <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} gap-2`}>
-              <Link
-                href={isSidebarCollapsed ? '#' : '/'}
-                onClick={isSidebarCollapsed ? (event) => { event.preventDefault(); toggleSidebar(); } : undefined}
-                data-ui-sound="click"
-                title={isSidebarCollapsed ? 'Open sidebar' : 'ROLEWISE'}
-                className={`flex items-center group min-w-0 shrink-0 transition-all duration-200 ${isSidebarCollapsed ? 'w-10 h-10 cursor-pointer' : 'w-[170px] h-10'}`}
-              >
-                <RolewiseLogo
-                  collapsed={isSidebarCollapsed}
-                  className={`block h-10 ${isSidebarCollapsed ? 'w-10' : 'w-[170px]'} object-contain`}
-                />
-              </Link>
+            {!isSidebarCollapsed ? (
+              <div className="flex items-center justify-between gap-2">
+                <Link
+                  href="/"
+                  data-ui-sound="click"
+                  title="ROLEWISE"
+                  className="flex items-center min-w-0 w-[170px] h-10 shrink-0"
+                >
+                  <RolewiseLogo className="block w-[170px] h-10 object-contain" />
+                </Link>
 
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
-                title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
-                data-ui-sound="click"
-                className={`w-9 h-9 rounded-full border border-[#D9D8D2] bg-[#F3F2EE] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 shrink-0 ${isSidebarCollapsed ? 'hidden' : ''}`}
-              >
-                <PanelLeftClose className="w-4 h-4" />
-              </button>
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  aria-label="Close sidebar"
+                  title="Close sidebar"
+                  data-ui-sound="click"
+                  className="w-9 h-9 rounded-full border border-[#D9D8D2] bg-[#F3F2EE] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 shrink-0"
+                >
+                  <PanelLeftClose className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3">
+                <Link
+                  href="/"
+                  data-ui-sound="click"
+                  title="ROLEWISE"
+                  className="flex items-center justify-center w-10 h-10 shrink-0"
+                >
+                  <RolewiseLogo collapsed className="block w-10 h-10 object-contain" />
+                </Link>
 
-              {isSidebarCollapsed && (
-                <span className="sr-only">Sidebar collapsed — click the ROLEWISE icon to open</span>
-              )}
-            </div>
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  aria-label="Open sidebar"
+                  title="Open sidebar"
+                  data-ui-sound="click"
+                  className="w-9 h-9 rounded-full border border-[#D9D8D2] bg-[#F3F2EE] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 shrink-0"
+                >
+                  <PanelLeftOpen className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
 
           <nav className="px-2 lg:px-3 space-y-1 flex-1 overflow-y-auto" aria-label="Primary navigation">
