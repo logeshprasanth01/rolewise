@@ -22,6 +22,8 @@ import {
   ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
+  Menu,
+  X,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { AuthView } from '@/components/auth/AuthView';
@@ -37,6 +39,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const { userName, session, isLoading, signOut } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
@@ -84,6 +87,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   useEffect(() => {
     setIsProfileOpen(false);
+    setIsMobileMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -122,7 +126,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       <div className="min-h-screen w-full bg-[#F3F2EE] flex min-w-0">
 
         <aside
-          className={`hidden md:flex shrink-0 bg-[#FAF9F4] border-r border-[#D9D8D2] flex-col z-40 transition-[width] duration-300 ease-out ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`}
+          className={`hidden lg:flex shrink-0 bg-[#FAF9F4] border-r border-[#D9D8D2] flex-col z-40 transition-[width] duration-300 ease-out ${isSidebarCollapsed ? 'w-[76px]' : 'w-[232px]'}`}
           aria-label="Sidebar navigation"
         >
           <div className={`p-3 ${isSidebarCollapsed ? 'lg:p-3' : 'lg:p-5'}`}>
@@ -231,6 +235,74 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           </div>
         </aside>
 
+        <div className={`lg:hidden fixed inset-0 z-50 transition-opacity duration-200 ${isMobileMenuOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`} aria-hidden={!isMobileMenuOpen}>
+          <button
+            type="button"
+            aria-label="Close navigation"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="absolute inset-0 bg-[#252525]/25 backdrop-blur-[2px]"
+          />
+          <aside
+            className={`absolute left-0 top-0 bottom-0 w-[min(86vw,320px)] bg-[#FAF9F4] border-r border-[#D9D8D2] shadow-[12px_0_35px_rgba(37,37,37,0.14)] flex flex-col transition-transform duration-200 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+            aria-label="Responsive navigation"
+          >
+            <div className="p-4 border-b border-[#D9D8D2] flex items-center justify-between">
+              <Link href="/" data-ui-sound="click" className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#FFFFFF] flex items-center justify-center font-bold shrink-0">R</div>
+                <div className="min-w-0">
+                  <span className="font-bold text-[15px] tracking-tight text-[#252525]">ROLEWISE</span>
+                  <span className="block text-[9px] uppercase tracking-[0.14em] text-[#73757A] leading-none mt-0.5">Interview workspace</span>
+                </div>
+              </Link>
+              <button type="button" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close navigation" className="w-10 h-10 rounded-full border border-[#D9D8D2] flex items-center justify-center text-[#73757A] hover:text-[#252525]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <nav className="flex-1 overflow-y-auto p-3 space-y-1" aria-label="Responsive primary navigation">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const active = isNavActive(item.href);
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    data-ui-sound="click"
+                    className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3.5 text-sm font-semibold transition-all ${active ? 'bg-[#252525] text-[#FFFFFF]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+              <Link
+                href="/settings"
+                data-ui-sound="click"
+                className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3.5 text-sm font-semibold transition-all ${isNavActive('/settings') ? 'bg-[#252525] text-[#FFFFFF]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
+              >
+                <Settings className="w-4 h-4 shrink-0" />
+                <span>Settings</span>
+              </Link>
+            </nav>
+
+            <div className="p-3 border-t border-[#D9D8D2]">
+              <div className="flex items-center gap-3 px-2 py-2 mb-2">
+                <div className="w-9 h-9 rounded-full bg-[#252525] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
+                  {userName ? userName[0].toUpperCase() : 'U'}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-[#252525] truncate">{userName || 'Candidate'}</p>
+                  <p className="text-[10px] text-[#73757A] truncate">{session.user?.email || 'Profile'}</p>
+                </div>
+              </div>
+              <button type="button" data-ui-sound="click" onClick={() => signOut()} className="w-full flex items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-sm font-semibold text-[#73757A] hover:bg-[#FFF0ED] hover:text-[#D97968]">
+                <LogOut className="w-4 h-4 shrink-0" />
+                <span>Sign out</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+
         <div className="flex-1 min-w-0 flex flex-col min-h-screen">
           <header className="sticky top-0 z-30 bg-[#F3F2EE]/95 backdrop-blur-xl border-b border-[#D9D8D2]/75">
             <div className="px-4 sm:px-6 lg:px-7 py-3 flex items-center gap-3">
@@ -240,9 +312,19 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
                 title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
                 data-ui-sound="click"
-                className="hidden md:inline-flex w-10 h-10 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200"
+                className="hidden lg:inline-flex w-10 h-10 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200"
               >
                 {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(true)}
+                aria-label="Open navigation"
+                title="Open navigation"
+                data-ui-sound="click"
+                className="lg:hidden inline-flex w-10 h-10 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] items-center justify-center text-[#73757A] hover:text-[#252525] transition-all duration-200 shrink-0"
+              >
+                <Menu className="w-4 h-4" />
               </button>
 
               <div className="flex items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FAF9F4] border border-[#D9D8D2] text-[#73757A] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all">
@@ -265,13 +347,13 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             </div>
           </header>
 
-          <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 pb-24 md:pb-12">
+          <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 pb-24 lg:pb-12">
             {children}
           </main>
         </div>
 
-        <nav className="md:hidden fixed bottom-0 inset-x-0 bg-[#FAF9F4]/95 backdrop-blur border-t border-[#D9D8D2] z-40 px-1 py-1 flex items-center justify-around shadow-[0_-4px_18px_rgba(37,37,37,0.06)]" aria-label="Mobile bottom navigation">
-          {navItems.slice(0, 5).map((item) => {
+        <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-[#FAF9F4]/95 backdrop-blur border-t border-[#D9D8D2] z-40 px-1 py-1 flex items-center justify-around shadow-[0_-4px_18px_rgba(37,37,37,0.06)]" aria-label="Mobile bottom navigation">
+          {[navItems[0], navItems[1], navItems[2], navItems[3], navItems[6]].map((item) => {
             const Icon = item.icon;
             const active = isNavActive(item.href);
             return (
