@@ -380,3 +380,30 @@ html[data-accessibility="enhanced"] .rw-search-input:focus-visible {
 }
 
 
+
+
+/* Responsive safety: prevent page-level horizontal overflow on narrow screens. */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 1023px) {
+  .rw-responsive-content,
+  main {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  input, textarea, select, button {
+    max-width: 100%;
+  }
+}
