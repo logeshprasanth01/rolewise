@@ -53,10 +53,15 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   ];
 
   const isNavActive = (href: string) => {
+    const isPreparationRoute =
+      pathname === '/preparation' ||
+      pathname?.startsWith('/preparation/') ||
+      pathname?.includes('/preparation');
+
     if (href === '/') return pathname === '/' || pathname === '/dashboard';
     if (href === '/jobs') return pathname === '/jobs' || pathname.startsWith('/jobs/new');
-    if (href === '/roles') return pathname.startsWith('/roles');
-    if (href === '/preparation') return pathname.startsWith('/preparation') || pathname.includes('/preparation');
+    if (href === '/preparation') return isPreparationRoute;
+    if (href === '/roles') return pathname.startsWith('/roles') && !isPreparationRoute;
     return pathname?.startsWith(href);
   };
 
