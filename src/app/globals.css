@@ -117,7 +117,7 @@ body {
 }
 @keyframes rw-sheen {
   0% { transform: translateX(-120%); }
-  100% { transform: translateX(220%); }
+  100% { transform: translateX(500%); }
 }
 
 .animate-rw-pop {
