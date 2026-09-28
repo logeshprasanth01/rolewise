@@ -21,7 +21,6 @@ import {
   UserRound,
   ChevronDown,
   PanelLeftClose,
-  PanelLeftOpen,
   Menu,
   X,
 } from 'lucide-react';
