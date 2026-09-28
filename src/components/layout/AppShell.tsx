@@ -28,6 +28,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { AuthView } from '@/components/auth/AuthView';
 import { playUiSound } from '@/lib/ui-sound';
+import { RolewiseLogo } from '@/components/brand/RolewiseLogo';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -137,20 +138,16 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           <div className={`p-3 ${isSidebarCollapsed ? 'lg:p-3' : 'lg:p-5'} border-b border-[#D9D8D2]/70`}>
             <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} gap-2`}>
               <Link
-                href="/"
+                href={isSidebarCollapsed ? '#' : '/'}
+                onClick={isSidebarCollapsed ? (event) => { event.preventDefault(); toggleSidebar(); } : undefined}
                 data-ui-sound="click"
-                title={isSidebarCollapsed ? 'ROLEWISE' : undefined}
-                className="flex items-center gap-3 group min-w-0"
+                title={isSidebarCollapsed ? 'Open sidebar' : 'ROLEWISE'}
+                className={`flex items-center group min-w-0 shrink-0 transition-all duration-200 ${isSidebarCollapsed ? 'w-10 h-10 cursor-pointer' : 'w-[170px] h-10'}`}
               >
-                <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#FFFFFF] flex items-center justify-center font-bold text-base transition-transform duration-200 group-hover:scale-[1.04] shrink-0">
-                  R
-                </div>
-                {!isSidebarCollapsed && (
-                  <div className="min-w-0">
-                    <span className="font-bold text-[15px] tracking-tight text-[#252525] whitespace-nowrap">ROLEWISE</span>
-                    <span className="block text-[9px] uppercase tracking-[0.14em] text-[#73757A] leading-none mt-0.5 whitespace-nowrap">Interview workspace</span>
-                  </div>
-                )}
+                <RolewiseLogo
+                  collapsed={isSidebarCollapsed}
+                  className={`block h-10 ${isSidebarCollapsed ? 'w-10' : 'w-[170px]'} object-contain`}
+                />
               </Link>
 
               <button
@@ -165,16 +162,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               </button>
 
               {isSidebarCollapsed && (
-                <button
-                  type="button"
-                  onClick={toggleSidebar}
-                  aria-label="Open sidebar"
-                  title="Open sidebar"
-                  data-ui-sound="click"
-                  className="w-10 h-10 rounded-[14px] border border-[#D9D8D2] bg-[#252525] text-[#FFFFFF] flex items-center justify-center hover:opacity-90 transition-all duration-200 shrink-0"
-                >
-                  <PanelLeftOpen className="w-4 h-4" />
-                </button>
+                <span className="sr-only">Sidebar collapsed — click the ROLEWISE icon to open</span>
               )}
             </div>
           </div>
@@ -276,12 +264,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             aria-label="Responsive navigation"
           >
             <div className="p-4 border-b border-[#D9D8D2] flex items-center justify-between">
-              <Link href="/" data-ui-sound="click" className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-[14px] bg-[#252525] text-[#FFFFFF] flex items-center justify-center font-bold shrink-0">R</div>
-                <div className="min-w-0">
-                  <span className="font-bold text-[15px] tracking-tight text-[#252525]">ROLEWISE</span>
-                  <span className="block text-[9px] uppercase tracking-[0.14em] text-[#73757A] leading-none mt-0.5">Interview workspace</span>
-                </div>
+              <Link href="/" data-ui-sound="click" title="ROLEWISE" className="flex items-center min-w-0 w-[180px] h-10">
+                <RolewiseLogo className="block w-[180px] h-10 object-contain" />
               </Link>
               <button type="button" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close navigation" className="w-10 h-10 rounded-full border border-[#D9D8D2] flex items-center justify-center text-[#73757A] hover:text-[#252525]">
                 <X className="w-4 h-4" />
