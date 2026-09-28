@@ -213,7 +213,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 aria-expanded={isProfileOpen}
                 className={`flex items-center gap-3 min-h-12 rounded-[15px] bg-[#F3F2EE] border border-[#D9D8D2] hover:border-[#C9C7BE] transition-all duration-300 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 justify-center rounded-full' : 'w-full px-2.5 lg:px-3'}`}
               >
-                <div className="w-9 h-9 rounded-full bg-[#252525] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[#252525] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
                   {userName ? userName[0].toUpperCase() : 'U'}
                 </div>
                 <div className={`min-w-0 text-left flex-1 overflow-hidden transition-[max-width,opacity] duration-200 ${isSidebarCollapsed ? 'hidden' : 'max-w-[160px] opacity-100'}`}>
