@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rolewise — AI Interview Preparation
 
-## Getting Started
+Rolewise is an interview-preparation product designed to help job seekers prepare for a specific role with more structure and confidence.
 
-First, run the development server:
+Instead of treating interview preparation as a generic checklist, Rolewise brings role-focused preparation and practice into one experience.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## The problem
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Job seekers often have to piece together job descriptions, interview questions, resume feedback, and practice tools across multiple services. This makes it difficult to know what to prepare and whether their answers are improving.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Product approach
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Rolewise brings the preparation workflow into one place, helping users connect their target role with focused preparation and practice.
 
-## Learn More
+## Key features
 
-To learn more about Next.js, take a look at the following resources:
+- **Role-focused preparation** — organize preparation around the role a user is targeting.
+- **AI-assisted interview practice** — support preparation with AI-powered guidance.
+- **Voice and video practice** — practice responses in a more interview-like format.
+- **Feedback-led improvement** — use practice feedback to identify areas to work on.
+- **Resume and role alignment** — support preparation around the user's resume and target job.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> Feature availability may depend on the current deployment and configuration. Describe only the features you can demonstrate in the live application.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech stack
 
-## Deploy on Vercel
+- Next.js
+- React
+- TypeScript
+- Supabase
+- AI-assisted product workflows
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## My contribution
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+I worked on Rolewise as an end-to-end product project, from identifying the user problem and shaping the experience to designing, building, and deploying the application.
+
+My focus included product thinking, user flows, interface design, and connecting the experience into a usable product.
+
+## Run locally
+
+1. Clone this repository.
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Configure the environment variables required by the project in a local `.env.local` file. Do not commit secrets or API keys.
+4. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000).
+
+Check the project's package scripts and Supabase configuration for any additional setup required by your current version.
+
+## Project status
+
+Rolewise is my primary product project. This repository is shared to demonstrate the product experience and implementation. For a review, start with the application and explore the interview-preparation workflow.
+
+---
+
+Built by [Logesh Prasanth](https://github.com/logeshprasanth01).
