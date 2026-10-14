@@ -44,6 +44,7 @@ export default function VideoPracticePage() {
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
   const recordedBlobRef = useRef<Blob | null>(null);
+  const transcriptRef = useRef<string | null>(null);
 
   // Format seconds to mm:ss format
   const formatTime = (totalSeconds: number): string => {
@@ -229,6 +230,7 @@ export default function VideoPracticePage() {
       setRecordedVideoUrl(null);
     }
     recordedBlobRef.current = null;
+    transcriptRef.current = null;
     setAnalysis(null);
     setErrorMessage(null);
     setDurationSeconds(0);
@@ -246,16 +248,19 @@ export default function VideoPracticePage() {
     setFlowState('PROCESSING');
     setErrorMessage(null);
 
-    // 1. Transcribe audio from recorded stream
-    let transcriptText = '';
-    try {
-      const transRes = await transcribeAudio(videoBlob, durationSeconds);
-      transcriptText = transRes.transcript;
-    } catch (err: unknown) {
-      console.warn('[VideoPractice] Transcription notice:', err);
-      setErrorMessage('Your recording was captured, but AI feedback is temporarily unavailable.');
-      setFlowState('RECORDED');
-      return;
+    // 1. Transcribe once. Keep the transcript so feedback retries don't re-upload the video.
+    let transcriptText = transcriptRef.current || '';
+    if (!transcriptText) {
+      try {
+        const transRes = await transcribeAudio(videoBlob, durationSeconds);
+        transcriptText = transRes.transcript.trim();
+        if (transcriptText) transcriptRef.current = transcriptText;
+      } catch (err: unknown) {
+        console.warn('[VideoPractice] Transcription notice:', err);
+        setErrorMessage("Your video is saved. We couldn't transcribe it just now. Please retry when the service is available.");
+        setFlowState('RECORDED');
+        return;
+      }
     }
 
     if (!transcriptText || !transcriptText.trim()) {
@@ -274,7 +279,7 @@ export default function VideoPracticePage() {
       setFlowState('REVIEWED');
     } catch (err: unknown) {
       console.error('[VideoPractice] Analysis error:', err);
-      setErrorMessage('Your recording was captured, but AI feedback is temporarily unavailable.');
+      setErrorMessage("Your video is saved, but AI feedback couldn't be generated just now. You can retry without recording again.");
       setFlowState('RECORDED');
     }
   };
@@ -305,9 +310,9 @@ export default function VideoPracticePage() {
 
       {/* Permission Denied Notice */}
       {isPermissionDenied && (
-        <div className="p-4 rounded-xl bg-[#FFF0ED] border border-[#F6D8D1] text-[#D97968] text-xs sm:text-sm space-y-2 animate-in fade-in">
+        <div role="status" aria-live="polite" className="p-4 rounded-xl bg-[#FFFBEF] border border-[#E8E3CE] text-[#252525] text-xs sm:text-sm space-y-2 animate-in fade-in">
           <div className="flex items-start gap-2.5">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#9A7B25]" />
             <div>
               <p className="font-semibold">Camera and microphone access is required for video practice.</p>
               <p className="text-xs mt-0.5 text-[#252525]">
@@ -349,7 +354,7 @@ export default function VideoPracticePage() {
               className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#D97968]/40 text-[#D97968] hover:bg-[#FFF0ED] text-xs font-medium transition-colors cursor-pointer"
             >
               <RefreshCw className="w-3 h-3" />
-              <span>Retry AI analysis</span>
+              <span>Retry AI feedback</span>
             </button>
             <button
               type="button"
