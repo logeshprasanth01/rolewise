@@ -343,7 +343,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               </div>
 
               <div className="ml-auto flex items-center gap-2">
-                {pathname !== '/jobs' && pathname !== '/jobs/' && (
+                {pathname !== '/' && pathname !== '/dashboard' && pathname !== '/jobs' && pathname !== '/jobs/' && (
                   <Link href="/jobs/new" data-ui-sound="click" className="touch-target inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0">
                     <Plus className="w-4 h-4" /><span className="hidden sm:inline">Add Job</span>
                   </Link>
