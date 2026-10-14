@@ -233,24 +233,21 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              {/* Dashed Dropzone Card */}
-              <div className="border-2 border-dashed border-[#D9D8D2] rounded-2xl p-6 sm:p-8 text-center space-y-3 bg-[#FAF9F4]/50">
-                <div className="w-12 h-12 rounded-full bg-[#FFF2B8] text-[#252525] flex items-center justify-center mx-auto">
-                  <Plus className="w-6 h-6" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-[#73757A] max-w-sm mx-auto">
-                    Paste a job description or upload role details to build your requirement fit.
-                  </p>
-                </div>
-                <div className="pt-2">
-                  <Link data-ui-sound="click"
-                    href="/jobs/new"
-                    className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
-                  >
-                    <span>Add Job →</span>
-                  </Link>
-                </div>
+              {/* Single primary action: the plus icon and label share one clickable button */}
+              <div className="border-2 border-dashed border-[#D9D8D2] rounded-2xl p-6 sm:p-8 text-center space-y-4 bg-[#FAF9F4]/50">
+                <p className="text-xs sm:text-sm text-[#73757A] max-w-sm mx-auto">
+                  Paste a job description or upload role details to build your requirement fit.
+                </p>
+                <Link
+                  data-ui-sound="click"
+                  href="/jobs/new"
+                  aria-label="Add a job"
+                  className="touch-target inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-semibold transition-all shadow-[0_3px_0_rgba(37,37,37,0.12)] hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
+                >
+                  <Plus className="w-5 h-5" strokeWidth={2.5} />
+                  <span>Add Job</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
               </div>
             </div>
           )}
