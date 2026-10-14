@@ -66,6 +66,49 @@ async function uploadToGemini(key: string, bytes: ArrayBuffer, mimeType: string)
   return uri;
 }
 
+async function transcribeWithGeminiFlash(key: string, bytes: ArrayBuffer, mimeType: string) {
+  // Use Gemini's standard audio-understanding endpoint as a fallback. This avoids
+  // relying exclusively on the currently overloaded gemini-3.5-transcribe model.
+  const view = new Uint8Array(bytes);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let offset = 0; offset < view.length; offset += chunkSize) {
+    binary += String.fromCharCode(...view.subarray(offset, Math.min(offset + chunkSize, view.length)));
+  }
+  const audioBase64 = btoa(binary);
+  const response = await fetch(
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+    {
+      method: 'POST',
+      headers: {
+        'x-goog-api-key': key,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          role: 'user',
+          parts: [
+            { text: 'Transcribe the spoken audio exactly in English. Return only the words spoken. Do not summarize, explain, or add labels.' },
+            { inline_data: { mime_type: mimeType, data: audioBase64 } },
+          ],
+        }],
+        generationConfig: { temperature: 0 },
+      }),
+    },
+  );
+  const raw = await response.text();
+  if (!response.ok) {
+    throw new Error(`Gemini Flash transcription failed (${response.status}): ${raw.slice(0, 500)}`);
+  }
+  const data = JSON.parse(raw);
+  const transcript = (data.candidates?.[0]?.content?.parts || [])
+    .map((part: { text?: string }) => part.text || '')
+    .join(' ')
+    .trim();
+  if (!transcript) throw new Error('Gemini Flash returned no transcript.');
+  return transcript;
+}
+
 async function transcribeWithFallbackProvider(
   provider: 'groq' | 'openrouter',
   key: string,
@@ -183,11 +226,22 @@ serve(async (req) => {
       durationSeconds,
     });
 
-    // Gemini transcription has recently returned repeated 503 high-demand errors.
-    // Try configured dedicated speech-to-text providers before falling back to Gemini.
+    // Try the existing Gemini key with the general audio-capable Flash model first.
+    // This avoids the overloaded dedicated transcription model and needs no extra secret.
+    const attempts: string[] = [];
+    try {
+      const transcript = await transcribeWithGeminiFlash(key, bytes, mimeType);
+      console.log('[transcribe-interview-answer] transcription succeeded', { provider: 'gemini-2.5-flash' });
+      return json({ success: true, transcript, duration_seconds: Math.round(durationSeconds), model: 'gemini-2.5-flash', provider: 'gemini' });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      attempts.push(message);
+      console.warn('[transcribe-interview-answer] Gemini Flash fallback failed', message);
+    }
+
+    // If Flash is unavailable, try configured dedicated speech-to-text providers.
     const groqKey = Deno.env.get('GROQ_API_KEY')?.trim();
     const openRouterKey = Deno.env.get('OPENROUTER_API_KEY')?.trim();
-    const attempts: string[] = [];
 
     if (groqKey) {
       try {
