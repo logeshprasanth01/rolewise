@@ -382,13 +382,6 @@ export default function DashboardPage() {
 
             <div className="space-y-2 text-xs">
               <Link data-ui-sound="click"
-                href="/jobs/new"
-                className="p-2.5 rounded-lg border border-[#D9D8D2] hover:border-[#C8B33E] bg-[#FAF9F4] flex items-center justify-between text-[#252525] transition-all"
-              >
-                <span>Add a job to get personalized questions</span>
-                <ChevronRight className="w-3.5 h-3.5 text-[#9A9B9E]" />
-              </Link>
-              <Link data-ui-sound="click"
                 href="/communication-practice"
                 className="p-2.5 rounded-lg border border-[#D9D8D2] hover:border-[#C8B33E] bg-[#FAF9F4] flex items-center justify-between text-[#252525] transition-all"
               >
