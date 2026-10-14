@@ -239,7 +239,6 @@ export default function DashboardPage() {
                   <Plus className="w-6 h-6" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-semibold text-[#252525]">Add your first job</h3>
                   <p className="text-xs text-[#73757A] max-w-sm mx-auto">
                     Paste a job description or upload role details to build your requirement fit.
                   </p>
@@ -249,8 +248,7 @@ export default function DashboardPage() {
                     href="/jobs/new"
                     className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
                   >
-                    <Sparkles className="w-4 h-4" />
-                    <span>+ Add Job →</span>
+                    <span>Add Job →</span>
                   </Link>
                 </div>
               </div>
