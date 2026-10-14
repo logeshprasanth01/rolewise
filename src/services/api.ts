@@ -466,13 +466,9 @@ export async function transcribeAudio(
         }
       }
 
-      if (status === 503 || errorBody?.code === 'AI_PROVIDER_ERROR' || errorBody?.code === 'AI_TRANSCRIPTION_ERROR') {
-        throw new RolewiseApiError(
-          'AI transcription is temporarily unavailable. Please try again.',
-          'AI_TRANSCRIPTION_ERROR',
-          errorBody || error
-        );
-      }
+      // Don't stop here on Edge Function/provider failure. The Next.js API route
+      // is an independent fallback and may have a working provider configuration.
+      // Only fail after both transcription paths have been attempted.
     }
   } catch (err: unknown) {
     if (err instanceof RolewiseApiError) throw err;
