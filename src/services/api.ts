@@ -13,6 +13,9 @@ import {
   CommunicationAnalysisPayload,
   CommunicationAnalysisResponse,
   FinalFeedbackOutput,
+  ApplicationStatus,
+  ApplicationEvent,
+  InterviewHistoryRecord,
 } from '@/types/database';
 
 export class RolewiseApiError extends Error {
@@ -1254,3 +1257,197 @@ export async function getUserProfile(userId: string): Promise<Profile | null> {
 }
 
 
+
+// ---------------------------------------------------------------------------
+// Job tracker
+// ---------------------------------------------------------------------------
+
+async function requireUserId(): Promise<string> {
+  const supabase = getSupabaseClient();
+  const { data } = await supabase.auth.getSession();
+  const userId = data?.session?.user?.id;
+  if (!userId) throw new RolewiseApiError('Please sign in again.', 'AUTH_ERROR');
+  return userId;
+}
+
+export interface QuickAddJobInput {
+  job_title: string;
+  company: string;
+  application_status: ApplicationStatus;
+  applied_at?: string | null;
+  source?: string | null;
+  job_url?: string | null;
+  contact_email?: string | null;
+  location?: string | null;
+  work_model?: string | null;
+  notes?: string | null;
+  job_description?: string | null;
+}
+
+/** Log an application quickly, without running the AI analysis. */
+export async function quickAddJob(input: QuickAddJobInput): Promise<Role> {
+  const supabase = getSupabaseClient();
+  const userId = await requireUserId();
+  const { data, error } = await supabase
+    .from('roles')
+    .insert({
+      user_id: userId,
+      job_title: input.job_title.trim(),
+      company: input.company.trim(),
+      location: input.location?.trim() || null,
+      work_model: input.work_model?.trim() || null,
+      job_description: input.job_description?.trim() || '',
+      status: 'draft',
+      application_status: input.application_status,
+      applied_at: input.applied_at || null,
+      source: input.source || null,
+      job_url: input.job_url?.trim() || null,
+      contact_email: input.contact_email?.trim() || null,
+      notes: input.notes?.trim() || null,
+    })
+    .select('*')
+    .single();
+
+  if (error || !data) {
+    console.error('[Rolewise] quickAddJob failed', error?.message);
+    throw new RolewiseApiError("This job couldn't be saved. Please try again.", 'DATABASE_ERROR', error);
+  }
+
+  await supabase.from('application_events').insert({
+    role_id: data.id,
+    user_id: userId,
+    event_type: 'created',
+    to_status: input.application_status,
+    note: input.source ? `Added from ${input.source}` : null,
+  });
+
+  return normalizeRole(data as Record<string, unknown>);
+}
+
+export type ApplicationPatch = Partial<
+  Pick<
+    Role,
+    | 'application_status'
+    | 'applied_at'
+    | 'source'
+    | 'job_url'
+    | 'contact_name'
+    | 'contact_email'
+    | 'next_follow_up'
+    | 'interview_at'
+    | 'notes'
+    | 'location'
+    | 'work_model'
+  > & { job_title: string; company: string }
+>;
+
+/** Update tracker fields. Status changes are also written to the timeline. */
+export async function updateApplication(role: Role, patch: ApplicationPatch, note?: string): Promise<Role> {
+  const supabase = getSupabaseClient();
+  const userId = await requireUserId();
+  const next: Record<string, unknown> = { ...patch, updated_at: new Date().toISOString() };
+
+  const prevStatus = role.application_status || 'saved';
+  const statusChanged = patch.application_status && patch.application_status !== prevStatus;
+  // Moving to "applied" stamps the applied date if it isn't set yet.
+  if (statusChanged && patch.application_status === 'applied' && !role.applied_at && !patch.applied_at) {
+    const d = new Date();
+    next.applied_at = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  }
+
+  const { data, error } = await supabase
+    .from('roles')
+    .update(next)
+    .eq('id', role.id)
+    .eq('user_id', userId)
+    .select('*')
+    .single();
+
+  if (error || !data) {
+    console.error('[Rolewise] updateApplication failed', error?.message);
+    throw new RolewiseApiError("Changes couldn't be saved. Please try again.", 'DATABASE_ERROR', error);
+  }
+
+  if (statusChanged || note) {
+    await supabase.from('application_events').insert({
+      role_id: role.id,
+      user_id: userId,
+      event_type: statusChanged ? 'status' : 'note',
+      from_status: statusChanged ? prevStatus : null,
+      to_status: statusChanged ? patch.application_status : null,
+      note: note?.trim() || null,
+    });
+  }
+
+  return normalizeRole(data as Record<string, unknown>);
+}
+
+export async function addApplicationNote(roleId: string, note: string, eventType = 'note'): Promise<void> {
+  const supabase = getSupabaseClient();
+  const userId = await requireUserId();
+  const { error } = await supabase
+    .from('application_events')
+    .insert({ role_id: roleId, user_id: userId, event_type: eventType, note: note.trim() });
+  if (error) throw new RolewiseApiError("The note couldn't be saved.", 'DATABASE_ERROR', error);
+}
+
+export async function getApplicationEvents(roleId: string): Promise<ApplicationEvent[]> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('application_events')
+    .select('*')
+    .eq('role_id', roleId)
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.warn('[Rolewise] getApplicationEvents notice:', error.message);
+    return [];
+  }
+  return (data || []) as ApplicationEvent[];
+}
+
+// ---------------------------------------------------------------------------
+// Interview history
+// ---------------------------------------------------------------------------
+
+export async function saveCompletedInterview(params: {
+  roleId: string;
+  rounds: { question: string; transcript: string; analysis?: unknown }[];
+  finalFeedback: FinalFeedbackOutput | null;
+}): Promise<void> {
+  try {
+    const supabase = getSupabaseClient();
+    const userId = await requireUserId();
+    const startedAt = new Date().toISOString();
+    await supabase.from('interviews').insert({
+      role_id: params.roleId,
+      user_id: userId,
+      status: 'completed',
+      started_at: startedAt,
+      completed_at: startedAt,
+      questions_answered: params.rounds.length,
+      rounds: params.rounds,
+      final_feedback: params.finalFeedback,
+    });
+  } catch (err) {
+    // Saving history must never break the interview experience.
+    console.warn('[Rolewise] saveCompletedInterview notice:', err);
+  }
+}
+
+export async function getInterviewHistory(): Promise<InterviewHistoryRecord[]> {
+  const supabase = getSupabaseClient();
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData?.session?.user?.id;
+  if (!userId) return [];
+  const { data, error } = await supabase
+    .from('interviews')
+    .select('id, role_id, status, started_at, completed_at, questions_answered, rounds, final_feedback')
+    .eq('user_id', userId)
+    .eq('status', 'completed')
+    .order('completed_at', { ascending: false });
+  if (error) {
+    console.warn('[Rolewise] getInterviewHistory notice:', error.message);
+    return [];
+  }
+  return (data || []) as InterviewHistoryRecord[];
+}

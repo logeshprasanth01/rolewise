@@ -40,11 +40,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [headerQuery, setHeaderQuery] = useState('');
   const profileRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { label: 'My Jobs', href: '/jobs', icon: Briefcase },
+    { label: 'Job Tracker', href: '/jobs', icon: Briefcase },
     { label: 'Preparation', href: '/preparation', icon: Layers },
     { label: 'AI Interview', href: '/roles', icon: Bot },
     { label: 'Communication', href: '/communication-practice', icon: MessageSquare },
@@ -59,7 +60,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       pathname?.includes('/preparation');
 
     if (href === '/') return pathname === '/' || pathname === '/dashboard';
-    if (href === '/jobs') return pathname === '/jobs' || pathname.startsWith('/jobs/new');
+    if (href === '/jobs') return pathname === '/jobs' || pathname.startsWith('/jobs/');
     if (href === '/preparation') return isPreparationRoute;
     if (href === '/roles') return pathname.startsWith('/roles') && !isPreparationRoute;
     return pathname?.startsWith(href);
@@ -336,22 +337,39 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 <Menu className="w-4 h-4" />
               </button>
 
-              <div className="flex items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FAF9F4] border border-[#D9D8D2] text-[#73757A] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all">
+              <div className={`${pathname === '/jobs' ? 'hidden' : 'flex'} items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FAF9F4] border border-[#D9D8D2] text-[#73757A] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all`}>
                 <Search className="w-3.5 h-3.5 shrink-0" />
-                <input type="text" placeholder="Search jobs, interviews, or topics..." className="bg-transparent border-none outline-none w-full text-xs text-[#252525] placeholder:text-[#9A9B9E]" />
-                <kbd className="hidden sm:inline text-[9px] font-semibold px-1.5 py-0.5 rounded-md bg-[#F3F2EE] border border-[#D9D8D2]">⌘K</kbd>
+                <form
+                  role="search"
+                  className="w-full"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const q = headerQuery.trim();
+                    router.push(q ? `/jobs?q=${encodeURIComponent(q)}` : '/jobs');
+                    setHeaderQuery('');
+                  }}
+                >
+                  <label htmlFor="global-search" className="sr-only">Search your jobs</label>
+                  <input
+                    id="global-search"
+                    type="search"
+                    value={headerQuery}
+                    onChange={(e) => setHeaderQuery(e.target.value)}
+                    placeholder="Search your jobs by company or role"
+                    className="bg-transparent border-none outline-none w-full text-sm text-[#252525] placeholder:text-[#9A9B9E]"
+                  />
+                </form>
               </div>
 
               <div className="ml-auto flex items-center gap-2">
-                {pathname !== '/' && pathname !== '/dashboard' && pathname !== '/jobs' && pathname !== '/jobs/' && (
-                  <Link href="/jobs/new" data-ui-sound="click" className="touch-target inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0">
-                    <Plus className="w-4 h-4" /><span className="hidden sm:inline">Add Job</span>
+                {pathname !== '/' && pathname !== '/dashboard' && !pathname?.startsWith('/jobs') && (
+                  <Link href="/jobs?add=1" data-ui-sound="click" aria-label="Log application" className="touch-target inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0">
+                    <Plus className="w-4 h-4" /><span className="hidden sm:inline">Log application</span>
                   </Link>
                 )}
-                <button type="button" title="Notifications" data-ui-sound="click" className="w-10 h-10 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 hover:-translate-y-0.5 relative">
+                <Link href="/jobs?filter=due" title="Follow-ups due" aria-label="Follow-ups due" data-ui-sound="click" className="w-10 h-10 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 hover:-translate-y-0.5 relative">
                   <Bell className="w-4 h-4" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#D97968] absolute top-2.5 right-2.5" />
-                </button>
+                </Link>
               </div>
             </div>
           </header>
@@ -361,8 +379,14 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           </main>
         </div>
 
-        <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-[#FAF9F4]/95 backdrop-blur border-t border-[#D9D8D2] z-40 px-1 py-1 flex items-center justify-around shadow-[0_-4px_18px_rgba(37,37,37,0.06)]" aria-label="Mobile bottom navigation">
-          {[navItems[0], navItems[1], navItems[2], navItems[3], navItems[6]].map((item) => {
+        <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-[#FAF9F4]/95 backdrop-blur border-t border-[#D9D8D2] z-40 px-1 pt-1 pb-[max(4px,env(safe-area-inset-bottom))] flex items-center justify-around shadow-[0_-4px_18px_rgba(37,37,37,0.06)]" aria-label="Mobile bottom navigation">
+          {[
+            { ...navItems[0], label: 'Home' },
+            { ...navItems[1], label: 'Jobs' },
+            { ...navItems[2], label: 'Prep' },
+            { ...navItems[3], label: 'Interview' },
+            { ...navItems[5], label: 'Feedback' },
+          ].map((item) => {
             const Icon = item.icon;
             const active = isNavActive(item.href);
             return (
@@ -370,7 +394,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 <div className={`w-8 h-6 rounded-full flex items-center justify-center transition-all ${active ? 'bg-[#FFD84D]' : ''}`}>
                   <Icon className="w-4 h-4" />
                 </div>
-                <span className={`text-[10px] mt-0.5 ${active ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
+                <span className={`text-[11px] mt-0.5 ${active ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
               </Link>
             );
           })}
