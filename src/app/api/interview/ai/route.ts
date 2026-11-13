@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
         companyName = roleData.company || companyName;
 
         const [reqRes, prepRes, fitRes, resumeRes] = await Promise.all([
-          supabase.from('role_requirements').select('requirement, title, category').eq('role_id', roleId),
+          supabase.from('role_requirements').select('requirement, category').eq('role_id', roleId),
           supabase.from('preparation_items').select('title, description, priority').eq('role_id', roleId),
           supabase.from('fit_analysis').select('status, explanation').eq('role_id', roleId),
           roleData.resume_id
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
         ]);
 
         if (reqRes.data && reqRes.data.length > 0) {
-          requirementsList = reqRes.data.map((r: { requirement?: string; title?: string }) => r.requirement || r.title || '').filter(Boolean);
+          requirementsList = reqRes.data.map((r: { requirement?: string }) => r.requirement || '').filter(Boolean);
         }
         if (prepRes.data && prepRes.data.length > 0) {
           preparationItemsList = prepRes.data.map((p: { title?: string; description?: string }) => `${p.title}: ${p.description}`).filter(Boolean);

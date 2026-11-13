@@ -34,7 +34,8 @@ export class RolewiseApiError extends Error {
 
 function normalizeRole(r: Record<string, unknown>): Role {
   const jobTitle = (r.job_title as string) || (r.title as string) || 'Target Role';
-  const workModel = (r.work_model as string) || (r.workplace_type as string) || 'Full-time';
+  // No invented default: an empty work model is shown as nothing, not 'Full-time'.
+  const workModel = (r.work_model as string) || (r.workplace_type as string) || '';
   return {
     ...r,
     id: String(r.id),
@@ -1215,7 +1216,7 @@ export async function syncUserProfile(user: User): Promise<Profile | null> {
   try {
     const { data: existing, error: selectErr } = await supabase
       .from('profiles')
-      .select('id, full_name, email, avatar_url')
+      .select('id, full_name, avatar_url')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -1229,7 +1230,6 @@ export async function syncUserProfile(user: User): Promise<Profile | null> {
         .insert({
           id: user.id,
           full_name: fullName,
-          email: user.email,
           avatar_url: avatarUrl,
         })
         .select()
@@ -1243,7 +1243,6 @@ export async function syncUserProfile(user: User): Promise<Profile | null> {
       const updates: Record<string, unknown> = {};
       if (!existing.full_name && fullName) updates.full_name = fullName;
       if (!existing.avatar_url && avatarUrl) updates.avatar_url = avatarUrl;
-      if (!existing.email && user.email) updates.email = user.email;
 
       if (Object.keys(updates).length > 0) {
         const { data: updated } = await supabase

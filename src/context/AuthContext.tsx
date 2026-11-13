@@ -111,10 +111,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password?: string, fullName?: string) => {
     const supabase = getSupabaseClient();
+    // Never fall back to a shared default password.
+    if (!password || password.length < 6) {
+      return { error: new Error('Password must be at least 6 characters.') };
+    }
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
-        password: password || 'Candidate123!',
+        password: password ?? '',
         options: {
           data: {
             full_name: fullName || 'User',
