@@ -26,6 +26,7 @@ import {
   generateInterviewQuestion,
   analyzeInterviewAnswer,
   getFinalInterviewFeedback,
+  saveCompletedInterview,
   RolewiseApiError,
 } from '@/services/api';
 import { Role, CommunicationAnalysisResponse, FinalFeedbackOutput } from '@/types/database';
@@ -669,19 +670,25 @@ export default function InterviewPage() {
     if (questionNumber >= totalQuestions || !pendingNext) {
       setFlowState('COMPLETED');
       saveStoredSession(roleId, { flowState: 'COMPLETED' });
+      const roundsForHistory = completedRounds.map((r) => ({
+        question: r.question,
+        transcript: r.transcript,
+        analysis: r.analysis,
+      }));
+      let finalForHistory: FinalFeedbackOutput | null = null;
       try {
         const finalRes = await getFinalInterviewFeedback({
           roleId,
-          answers: completedRounds.map((r) => ({
-            question: r.question,
-            transcript: r.transcript,
-            analysis: r.analysis,
-          })),
+          answers: roundsForHistory,
         });
+        finalForHistory = finalRes;
         setAiFinalFeedback(finalRes);
         saveStoredSession(roleId, { aiFinalFeedback: finalRes });
       } catch (err) {
         console.warn('[InterviewPage] Final feedback synthesis notice:', err);
+      }
+      if (roundsForHistory.length > 0) {
+        void saveCompletedInterview({ roleId, rounds: roundsForHistory, finalFeedback: finalForHistory });
       }
       return;
     }

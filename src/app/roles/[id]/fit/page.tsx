@@ -19,6 +19,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { getRoleFit, invokeAnalyzeRole, getSupabaseClient } from '@/services/api';
+import { ProcessingDialog } from '@/components/ui/ProcessingDialog';
 import { FitAnalysis, Role, RoleRequirement } from '@/types/database';
 
 export default function RoleFitPage() {
@@ -32,6 +33,8 @@ export default function RoleFitPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRetrying, setIsRetrying] = useState(false);
   const [retryError, setRetryError] = useState<string | null>(null);
+  // Re-analysis progress: 0 load resume, 1 read role, 2 connect requirements, 3 refresh fit, 4 done
+  const [retryStep, setRetryStep] = useState(0);
 
   // Expanded card tracking
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
@@ -75,6 +78,8 @@ export default function RoleFitPage() {
     if (!role || isRetrying) return;
     setIsRetrying(true);
     setRetryError(null);
+    setRetryStep(0);
+    let connectTimer: ReturnType<typeof setTimeout> | undefined;
 
     try {
       let resumeText = '';
@@ -98,6 +103,9 @@ export default function RoleFitPage() {
         throw new Error('No candidate resume text found for this role. Please re-upload your resume or submit experience details.');
       }
 
+      setRetryStep(1);
+      // The analysis is one server call; step 3 is shown once it has been running a moment.
+      connectTimer = setTimeout(() => setRetryStep((v) => (v === 1 ? 2 : v)), 1500);
       await invokeAnalyzeRole({
         roleId: role.id,
         jobDescription: role.job_description || `${role.title} at ${role.company}`,
@@ -110,12 +118,19 @@ export default function RoleFitPage() {
         workModel: role.workplace_type || undefined,
       });
 
+      clearTimeout(connectTimer);
+      setRetryStep(3);
+
       // Reload fresh role fit
       const data = await getRoleFit(roleId);
+      setRetryStep(4);
+      // Let the bar land on 100% before revealing the results.
+      await new Promise((r) => setTimeout(r, 650));
       setRole(data.role);
       setRequirements(data.requirements || []);
       setFitAnalysis(data.fitAnalysis || []);
     } catch (err: unknown) {
+      clearTimeout(connectTimer);
       console.error('[RoleFit] Re-analysis failed:', err);
       setRetryError(err instanceof Error ? err.message : 'Role analysis could not be completed.');
     } finally {
@@ -132,9 +147,24 @@ export default function RoleFitPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#73757A]">
-        <Loader2 className="w-6 h-6 animate-spin text-[#252525]" />
-        <p className="text-xs sm:text-sm">Connecting your experience to role requirements...</p>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-5" role="status" aria-live="polite">
+        <div className="rw-processing-tile h-16 w-16 rounded-[18px] flex items-center justify-center" aria-hidden="true">
+          <div className="flex flex-col gap-[5px]">
+            {[30, 30, 22].map((w, i) => (
+              <div key={i} className="flex items-center gap-[5px]">
+                <span className="h-[5px] w-[5px] rounded-full bg-white" />
+                <span className="h-[5px] rounded-full bg-white" style={{ width: w }} />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-semibold text-[#252525]">Loading your role fit</p>
+          <p className="mt-1 text-xs text-[#73757A]">Fetching requirements and evidence from your resume</p>
+        </div>
+        <div className="rw-boot-track h-[3px] w-40 rounded-full bg-[#252525]/10" aria-hidden="true">
+          <span />
+        </div>
       </div>
     );
   }
@@ -173,6 +203,20 @@ export default function RoleFitPage() {
             Your job and experience are saved. Try analyzing again.{retryError ? ` (${retryError})` : ''}
           </p>
         </div>
+
+        <ProcessingDialog
+          open={isRetrying}
+          title="Analyzing your role fit"
+          subtitle={`${role.title} · ${role.company}`}
+          steps={[
+            { label: 'Loading your saved resume' },
+            { label: 'Understanding the role' },
+            { label: 'Connecting requirements to your experience' },
+            { label: 'Updating your role fit' },
+          ]}
+          activeStep={Math.min(retryStep, 3)}
+          complete={retryStep >= 4}
+        />
         <div className="flex items-center justify-center gap-3 pt-2">
           <button
             type="button"

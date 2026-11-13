@@ -20,13 +20,17 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { getPreparationItems, getUserRoles } from '@/services/api';
+import { getInterviewHistory, getPreparationItems, getUserRoles } from '@/services/api';
+import { greeting, isAnalyzed, isActive, isFollowUpDue, followUpDate, formatDate, relativeDay, statusOf, todayISO, addDaysISO } from '@/lib/tracker';
+import { StatusPill } from '@/components/tracker/StatusPill';
 import { Role } from '@/types/database';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 
 export default function DashboardPage() {
   const { userName } = useAuth();
   const [roles, setRoles] = useState<Role[]>([]);
+  const [mockInterviews, setMockInterviews] = useState(0);
+  const [hello, setHello] = useState('Hello');
   const [preparationStats, setPreparationStats] = useState({
     completed: 0,
     inProgress: 0,
@@ -36,16 +40,20 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadDashboardData() {
       try {
-        const userRoles = await getUserRoles();
+        setHello(greeting());
+        const [userRoles, history] = await Promise.all([getUserRoles(), getInterviewHistory()]);
         setRoles(userRoles);
+        setMockInterviews(history.length);
 
-        if (userRoles.length === 0) {
+        // Only roles with an AI prep plan have preparation items.
+        const analyzedRoles = userRoles.filter(isAnalyzed);
+        if (analyzedRoles.length === 0) {
           setPreparationStats({ completed: 0, inProgress: 0, notStarted: 0 });
           return;
         }
 
         const preparationByRole = await Promise.all(
-          userRoles.map((role) => getPreparationItems(role.id))
+          analyzedRoles.map((role) => getPreparationItems(role.id))
         );
 
         const nextStats = preparationByRole
@@ -68,20 +76,33 @@ export default function DashboardPage() {
     loadDashboardData();
   }, []);
 
-  const activeJobCount = roles.length;
+  const today = todayISO();
+  const activeJobCount = roles.filter(isActive).length;
+  const interviewStage = roles.filter((r) => statusOf(r) === 'interview').length;
+  const dueRoles = roles.filter((r) => isFollowUpDue(r, today));
+  const soon = addDaysISO(today, 7);
+  const upcomingInterviews = roles
+    .filter((r) => r.interview_at && r.interview_at.slice(0, 10) >= today && r.interview_at.slice(0, 10) <= soon)
+    .sort((a, b) => (a.interview_at || '').localeCompare(b.interview_at || ''));
+  const todayItems = [
+    ...upcomingInterviews.map((r) => ({ role: r, kind: 'interview' as const })),
+    ...dueRoles.map((r) => ({ role: r, kind: 'follow' as const })),
+  ].slice(0, 5);
+  const prepRoles = roles.filter((r) => isAnalyzed(r) && isActive(r)).slice(0, 3);
 
   return (
     <div className="space-y-7 animate-in fade-in duration-300">
       {/* 1. HERO GREETING BANNER (Image 3) */}
       <section className="rw-gradient-hero relative overflow-hidden rounded-[26px] border border-[#D9D8D2] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-[0_8px_28px_rgba(37,37,37,0.06)]">
         <div className="space-y-1.5 z-10">
-          <p className="text-xs sm:text-sm font-medium text-[#73757A]">Good morning,</p>
+          <p className="text-sm font-medium text-[#73757A]">{hello},</p>
           <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight flex items-center gap-2">
-            <span>{userName ? userName.split(' ')[0] : 'Logesh'}</span>
-            <span>👋</span>
+            <span>{userName ? userName.split(' ')[0] : 'there'}</span>
           </h1>
-          <p className="text-xs sm:text-sm text-[#73757A] pt-0.5">
-            Prepare for the role. Not just the interview.
+          <p className="text-sm text-[#73757A] pt-0.5">
+            {dueRoles.length > 0
+              ? `${dueRoles.length} follow-up${dueRoles.length > 1 ? 's' : ''} due today. Small nudges get replies.`
+              : 'Prepare for the role. Not just the interview.'}
           </p>
         </div>
 
@@ -110,14 +131,14 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-xl sm:text-2xl font-bold text-[#252525]">{activeJobCount}</p>
-              <p className="text-xs text-[#73757A]">Active Jobs</p>
+              <p className="text-xs text-[#73757A]">Active applications</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
         </Link>
 
         <Link data-ui-sound="click"
-          href={roles.length > 0 ? `/roles/${roles[0].id}/interview` : '/jobs/new'}
+          href="/jobs?filter=interview"
           className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#C9C7BE] transition-all group"
         >
           <div className="flex items-center gap-3">
@@ -125,15 +146,15 @@ export default function DashboardPage() {
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-bold text-[#252525]">0</p>
-              <p className="text-xs text-[#73757A]">Interviews</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#252525]">{interviewStage}</p>
+              <p className="text-xs text-[#73757A]">In interviews</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
         </Link>
 
         <Link data-ui-sound="click"
-          href="/communication-practice"
+          href="/jobs?filter=due"
           className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#C9C7BE] transition-all group"
         >
           <div className="flex items-center gap-3">
@@ -141,8 +162,8 @@ export default function DashboardPage() {
               <Activity className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-bold text-[#252525]">0</p>
-              <p className="text-xs text-[#73757A]">Practice Sessions</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#252525]">{dueRoles.length}</p>
+              <p className="text-xs text-[#73757A]">Follow-ups due</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
@@ -157,8 +178,8 @@ export default function DashboardPage() {
               <Star className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-bold text-[#252525]">0</p>
-              <p className="text-xs text-[#73757A]">Feedback Reports</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#252525]">{mockInterviews}</p>
+              <p className="text-xs text-[#73757A]">Mock interviews</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
@@ -169,60 +190,65 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Columns: Jobs & Practice */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Active Job (if exists) or Get Started Empty State */}
+          {/* Today: follow-ups and upcoming interviews from the tracker */}
           {roles.length > 0 ? (
-            <div className="rolewise-card p-6 space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="rolewise-card p-5 sm:p-6 space-y-4">
+              <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-base font-semibold text-[#252525]">Your Active Role</h2>
-                  <p className="text-xs text-[#73757A]">Currently connected job and preparation roadmap</p>
+                  <h2 className="text-base font-semibold text-[#252525]">Today</h2>
+                  <p className="text-[13px] text-[#73757A]">Follow-ups and interviews that need you</p>
                 </div>
-                <Link data-ui-sound="click"
-                  href="/jobs/new"
-                  className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs font-semibold text-[#252525] transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Another Role</span>
+                <Link data-ui-sound="click" href="/jobs?add=1" className="touch-target inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-[#252525] text-white text-[13px] font-semibold">
+                  <Plus className="w-4 h-4" /> Log application
                 </Link>
               </div>
+              {todayItems.length === 0 ? (
+                <p className="text-sm text-[#73757A] rounded-xl bg-[#F3F2EE] p-4">Nothing due today. Use the time to prep for your strongest lead.</p>
+              ) : (
+                <ul className="divide-y divide-[#E6E5DF]">
+                  {todayItems.map(({ role, kind }) => (
+                    <li key={`${kind}-${role.id}`}>
+                      <Link href={`/jobs/${role.id}`} className="flex items-center gap-3 py-3">
+                        <span className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${kind === 'interview' ? 'bg-[#E3EEF9] text-[#1F4E79]' : 'bg-[#FFF5DF] text-[#8A5A00]'}`}>
+                          {kind === 'interview' ? <Mic className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-[#252525] truncate">
+                            {kind === 'interview' ? `Interview · ${role.company}` : `Follow up with ${role.company}`}
+                          </span>
+                          <span className="block text-[12px] text-[#73757A] truncate">
+                            {kind === 'interview'
+                              ? new Date(role.interview_at as string).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+                              : `${role.title} · applied ${relativeDay(role.applied_at, today)}${followUpDate(role) ? ` · due ${formatDate(followUpDate(role))}` : ''}`}
+                          </span>
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-[#9A9B9E] shrink-0" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {dueRoles.length > todayItems.filter((t) => t.kind === 'follow').length && (
+                <Link href="/jobs?filter=due" className="text-[13px] font-semibold text-[#252525] underline underline-offset-2">See all {dueRoles.length} follow-ups</Link>
+              )}
 
-              {roles.map((role) => (
-                <div
-                  key={role.id}
-                  className="p-4 rounded-xl border border-[#D9D8D2] bg-[#F3F2EE] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                >
-                  <div className="space-y-1">
-                    <span className="inline-block px-2 py-0.5 rounded-md bg-[#FFF2B8] text-[#252525] text-[11px] font-semibold">
-                      Target Role
-                    </span>
-                    <h3 className="text-sm sm:text-base font-semibold text-[#252525]">{role.title}</h3>
-                    <p className="text-xs text-[#73757A]">
-                      {role.company} · {role.location || 'Remote'} · {role.workplace_type || 'Full-time'}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link data-ui-sound="click"
-                      href={`/roles/${role.id}/fit`}
-                      className="touch-target px-3.5 py-1.5 rounded-lg bg-white border border-[#D9D8D2] hover:border-[#C8B33E] text-xs font-semibold text-[#252525] transition-all"
-                    >
-                      Role Fit
-                    </Link>
-                    <Link data-ui-sound="click"
-                      href={`/roles/${role.id}/preparation`}
-                      className="touch-target px-3.5 py-1.5 rounded-lg bg-white border border-[#D9D8D2] hover:border-[#C8B33E] text-xs font-semibold text-[#252525] transition-all"
-                    >
-                      Preparation
-                    </Link>
-                    <Link data-ui-sound="click"
-                      href={`/roles/${role.id}/interview`}
-                      className="touch-target px-3.5 py-1.5 rounded-lg bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-semibold transition-all shadow-xs rw-primary-action"
-                    >
-                      AI Interview →
-                    </Link>
-                  </div>
+              {prepRoles.length > 0 && (
+                <div className="pt-2 space-y-2">
+                  <h3 className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#73757A]">Prep in progress</h3>
+                  {prepRoles.map((role) => (
+                    <div key={role.id} className="p-3.5 rounded-xl border border-[#D9D8D2] bg-[#F3F2EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <Link href={`/jobs/${role.id}`} className="min-w-0 space-y-1">
+                        <p className="text-sm font-semibold text-[#252525] truncate">{role.title}</p>
+                        <p className="text-[12px] text-[#73757A] truncate flex items-center gap-2">{role.company} <StatusPill status={statusOf(role)} size="sm" /></p>
+                      </Link>
+                      <div className="flex gap-2">
+                        <Link data-ui-sound="click" href={`/roles/${role.id}/preparation`} className="touch-target flex-1 sm:flex-none text-center px-3.5 py-2 rounded-lg bg-white border border-[#D9D8D2] text-[13px] font-semibold text-[#252525]">Prep plan</Link>
+                        <Link data-ui-sound="click" href={`/roles/${role.id}/interview`} className="touch-target flex-1 sm:flex-none text-center px-3.5 py-2 rounded-lg bg-[#FFD84D] text-[#252525] text-[13px] font-semibold">AI interview</Link>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           ) : (
             <div className="rolewise-card p-6 space-y-4">

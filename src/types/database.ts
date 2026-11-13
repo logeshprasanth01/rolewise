@@ -28,6 +28,47 @@ export interface Role {
   job_description?: string | null;
   created_at?: string;
   updated_at?: string;
+  // Job tracker fields
+  application_status?: ApplicationStatus;
+  applied_at?: string | null;
+  source?: string | null;
+  job_url?: string | null;
+  contact_name?: string | null;
+  contact_email?: string | null;
+  next_follow_up?: string | null;
+  interview_at?: string | null;
+  notes?: string | null;
+}
+
+export type ApplicationStatus =
+  | 'saved'
+  | 'applied'
+  | 'screening'
+  | 'interview'
+  | 'offer'
+  | 'rejected'
+  | 'withdrawn';
+
+export interface ApplicationEvent {
+  id: string;
+  role_id: string;
+  user_id?: string;
+  event_type: 'status' | 'note' | 'follow_up' | 'created' | string;
+  from_status?: string | null;
+  to_status?: string | null;
+  note?: string | null;
+  created_at: string;
+}
+
+export interface InterviewHistoryRecord {
+  id: string;
+  role_id: string | null;
+  status: string;
+  started_at: string;
+  completed_at?: string | null;
+  questions_answered?: number | null;
+  rounds?: { question: string; transcript: string; analysis?: unknown }[] | null;
+  final_feedback?: FinalFeedbackOutput | null;
 }
 
 export interface ResumeRecord {

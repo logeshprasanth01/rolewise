@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { extractResumeText } from '@/lib/extractor';
 import { ProcessingDialog } from '@/components/ui/ProcessingDialog';
-import { invokeAnalyzeRole, getSupabaseClient } from '@/services/api';
+import { invokeAnalyzeRole, getSupabaseClient, getRole } from '@/services/api';
 
 // Common job roles (Requirement 1)
 const JOB_TITLE_OPTIONS = [
@@ -345,6 +345,20 @@ export default function AddJobPage() {
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [createdRoleId, setCreatedRoleId] = useState<string | null>(null);
   const [createdResumeId, setCreatedResumeId] = useState<string | null>(null);
+
+  // Job Tracker: "Build my prep plan" opens this page with ?roleId= to analyze a job already in the tracker.
+  useEffect(() => {
+    const existingId = new URLSearchParams(window.location.search).get('roleId');
+    if (!existingId) return;
+    getRole(existingId).then((existing) => {
+      if (!existing) return;
+      setCreatedRoleId(existing.id);
+      setJobTitle((v) => v || existing.title || '');
+      setCompany((v) => v || existing.company || '');
+      setLocation((v) => v || existing.location || '');
+      if (existing.job_description) setJobDescription((v) => v || existing.job_description || '');
+    });
+  }, []);
 
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const jdInputRef = useRef<HTMLInputElement>(null);
