@@ -38,7 +38,7 @@ export const HELP: HelpEntry[] = [
   },
   {
     id: 'prep',
-    keywords: ['prep', 'preparation', 'plan', 'gap', 'gaps', 'mark as prepared', 'prepared'],
+    keywords: ['prep', 'preparation', 'plan', 'gap', 'gaps', 'mark as prepared', 'prepared', 'prepare first', 'what should i prepare'],
     answer:
       'Your preparation plan turns each weak requirement into a prep item, ordered with gaps first. Work through them in order, use "Mark as prepared" as you go, and your progress is saved.',
     link: { label: 'Open preparation', href: '/preparation' },

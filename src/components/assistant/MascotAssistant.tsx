@@ -7,6 +7,7 @@ import { ArrowUp, Volume2, VolumeX, X } from 'lucide-react';
 import { Mascot } from '@/components/brand/Mascot';
 import { matchHelp, SUGGESTIONS, type HelpLink } from '@/lib/assistant-kb';
 import { isMascotSoundOn, playMascotSound, setMascotSoundOn } from '@/lib/mascot-sound';
+import { ROWI_OPEN_EVENT } from '@/lib/rowi-events';
 
 type ChatMsg = { role: 'user' | 'assistant'; content: string; link?: HelpLink };
 
@@ -47,6 +48,20 @@ export function MascotAssistant() {
       cancelAnimationFrame(id);
       if (t) window.clearTimeout(t);
     };
+  }, []);
+
+  // Other parts of the page can open the chat (and ask a question) via openRowi().
+  const askRef = useRef<(q: string) => void>(() => {});
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const q = (e as CustomEvent<{ question?: string }>).detail?.question;
+      setHint(false);
+      playMascotSound('open');
+      setOpen(true);
+      if (q) window.setTimeout(() => askRef.current(q), 250);
+    };
+    window.addEventListener(ROWI_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(ROWI_OPEN_EVENT, onOpen);
   }, []);
 
   useEffect(() => {
@@ -123,6 +138,10 @@ export function MascotAssistant() {
     setBusy(false);
     playMascotSound('reply');
   }
+
+  useEffect(() => {
+    askRef.current = (q: string) => void ask(q);
+  });
 
   const showSuggestions = msgs.length === 1 && !busy;
 

@@ -30,6 +30,7 @@ import { RolewiseLogo } from '@/components/brand/RolewiseLogo';
 import { Mascot } from '@/components/brand/Mascot';
 import { GlossyIcon, type GlossyShape, type GlossyTone } from '@/components/brand/GlossyIcon';
 import { CtaIllustration } from '@/components/landing/CtaIllustration';
+import { openRowi } from '@/lib/rowi-events';
 
 /* Photos: Unsplash. */
 const photo = (id: string, w: number) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
@@ -787,8 +788,42 @@ function Faq() {
   const [open, setOpen] = useState<number | null>(0);
   return (
     <section id="faq" className="mx-auto grid max-w-[1240px] scroll-mt-20 gap-12 px-5 py-24 md:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:py-28">
-      <div>
+      <div className="lg:sticky lg:top-28 lg:self-start">
         <h2 className="text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] sm:text-[46px]">Questions, answered</h2>
+        <p className="mt-4 max-w-[380px] text-[16px] leading-relaxed text-[#5E6065]">
+          The things people ask most before they start. Anything else, Rowi is around.
+        </p>
+
+        <div className="relative mt-10 max-w-[400px] overflow-hidden rounded-[28px] bg-[#252525] p-6 pr-36 text-white">
+          <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-[#FFD84D]/25 blur-3xl" aria-hidden />
+          <p className="relative text-[19px] font-semibold leading-snug">Still have a question?</p>
+          <p className="relative mt-1.5 text-[14px] leading-relaxed text-white/70">Ask Rowi, your prep buddy. Answers in seconds.</p>
+          <button
+            type="button"
+            onClick={() => openRowi()}
+            className="relative mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#FFD84D] px-5 text-[14px] font-semibold text-[#252525] transition hover:bg-[#FFE27A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#252525]"
+          >
+            Ask Rowi
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </button>
+          <div className="absolute -bottom-3 right-3">
+            <Mascot size={118} title="Rowi, the Rolewise prep buddy" />
+          </div>
+        </div>
+
+        <ul className="mt-6 flex flex-wrap gap-2" aria-label="Quick questions for Rowi">
+          {['How does voice practice work?', 'What should I prepare first?'].map((q) => (
+            <li key={q}>
+              <button
+                type="button"
+                onClick={() => openRowi(q)}
+                className="min-h-[40px] rounded-full border border-[#D9D8D2] bg-[#FAF9F4] px-4 text-[14px] font-medium text-[#3A3C40] transition hover:border-[#252525]/40 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+              >
+                {q}
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
       <div className="divide-y divide-[#D9D8D2] border-y border-[#D9D8D2]">
         {FAQS.map((item, i) => {
