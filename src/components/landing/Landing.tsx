@@ -4,7 +4,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
+  type LucideIcon,
   ArrowRight,
+  Briefcase,
+  Gauge,
+  ListChecks,
+  ShieldCheck,
+  Target,
   ArrowUpRight,
   CheckCircle2,
   ChevronDown,
@@ -21,9 +27,11 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { RolewiseLogo } from '@/components/brand/RolewiseLogo';
+import { Mascot } from '@/components/brand/Mascot';
+import { GlossyIcon, type GlossyShape, type GlossyTone } from '@/components/brand/GlossyIcon';
+import { CtaIllustration } from '@/components/landing/CtaIllustration';
 
-/* 3D icons: Microsoft Fluent Emoji 3D (MIT). Photos: Unsplash. */
-const icon3d = (name: string) => `/landing/3d/${name}.webp`;
+/* Photos: Unsplash. */
 const photo = (id: string, w: number) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
 
 const PHOTOS = {
@@ -200,18 +208,27 @@ function CtaButton({ variant = 'yellow', className = '' }: { variant?: 'yellow' 
   );
 }
 
-function Icon3D({ name, size = 56, className = '' }: { name: string; size?: number; className?: string }) {
+const LINE_ICONS: Record<string, LucideIcon> = {
+  bullseye: Target,
+  clipboard: ListChecks,
+  'speech-balloon': MessageSquare,
+  microphone: Mic,
+  'video-camera': Video,
+  briefcase: Briefcase,
+  'page-facing-up': FileText,
+  'chart-increasing': Gauge,
+  shield: ShieldCheck,
+};
+
+/** Flat line icon, optionally in a rounded tile. 3D tiles are reserved for the hero. */
+function LineIcon({ name, size = 48, tone = 'ink' }: { name: string; size?: number; tone?: 'ink' | 'yellow' | 'bare' }) {
+  const Icon = LINE_ICONS[name] ?? CheckCircle2;
+  if (tone === 'bare') return <Icon className="h-[18px] w-[18px]" aria-hidden />;
+  const cls = tone === 'yellow' ? 'bg-[#FFD84D] text-[#252525]' : 'bg-[#252525] text-[#FFD84D]';
   return (
-    <img
-      src={icon3d(name)}
-      alt=""
-      aria-hidden
-      width={size}
-      height={size}
-      draggable={false}
-      className={`select-none ${className}`}
-      style={{ width: size, height: size }}
-    />
+    <span className={`inline-flex shrink-0 items-center justify-center rounded-[30%] ${cls}`} style={{ width: size, height: size }} aria-hidden>
+      <Icon style={{ width: size * 0.46, height: size * 0.46 }} strokeWidth={2} />
+    </span>
   );
 }
 
@@ -233,12 +250,13 @@ function BrowserFrame({ src, alt, eager = false }: { src: string; alt: string; e
 /* Hero                                                                */
 /* ------------------------------------------------------------------ */
 
-const FLOATERS = [
-  { name: 'bullseye', cls: 'left-[-7%] top-[38%]', depth: '-18px', size: 84, float: '' },
-  { name: 'page-facing-up', cls: 'right-[-3%] top-[-8%]', depth: '22px', size: 72, float: 'rwl-float-b' },
-  { name: 'microphone', cls: 'right-[-6%] bottom-[16%]', depth: '-26px', size: 80, float: 'rwl-float-c' },
-  { name: 'sparkles', cls: 'left-[46%] top-[-12%]', depth: '30px', size: 52, float: 'rwl-float-c' },
-];
+const FLOATERS: { icon: LucideIcon; tone: GlossyTone; shape: GlossyShape; cls: string; depth: string; size: number; float: string; tilt: string }[] = [
+  { icon: FileText, tone: 'yellow', shape: 'hex', cls: 'left-[-7%] top-[30%]', depth: '-18px', size: 78, float: '', tilt: 'rw-tilt-l' },
+  { icon: Target, tone: 'coral', shape: 'squircle', cls: 'right-[-4%] top-[-10%]', depth: '22px', size: 66, float: 'rwl-float-b', tilt: 'rw-tilt-r' },
+  { icon: Mic, tone: 'ink', shape: 'hex', cls: 'right-[-7%] top-[40%]', depth: '-26px', size: 72, float: 'rwl-float-c', tilt: '' },
+  { icon: ListChecks, tone: 'green', shape: 'squircle', cls: 'left-[38%] top-[-13%]', depth: '30px', size: 58, float: 'rwl-float-c', tilt: 'rw-tilt-r' },
+  { icon: MessageSquare, tone: 'cream', shape: 'hex', cls: 'left-[2%] top-[-11%]', depth: '14px', size: 52, float: 'rwl-float-b', tilt: 'rw-tilt-l' },
+]
 
 function Hero() {
   const ref = useRef<HTMLElement>(null);
@@ -315,18 +333,22 @@ function Hero() {
             </div>
           </div>
 
-          {FLOATERS.map((f) => (
+          {FLOATERS.map((f, i) => (
             <div
-              key={f.name}
+              key={i}
               className={`rwl-parallax pointer-events-none absolute hidden sm:block ${f.cls}`}
               style={{ ['--depth' as string]: f.depth }}
               aria-hidden
             >
-              <div className={`rwl-float ${f.float} drop-shadow-[0_18px_24px_rgba(0,0,0,0.45)]`}>
-                <Icon3D name={f.name} size={f.size} />
+              <div className={`rwl-float ${f.float}`}>
+                <GlossyIcon icon={f.icon} tone={f.tone} shape={f.shape} size={f.size} className={f.tilt} />
               </div>
             </div>
           ))}
+
+          <div className="rwl-parallax absolute -bottom-14 right-[2%] sm:-bottom-16 sm:right-[6%]" style={{ ['--depth' as string]: '-10px' }}>
+            <Mascot size={118} title="Rolewise prep buddy waving hello" />
+          </div>
         </div>
       </div>
     </section>
@@ -375,7 +397,7 @@ function ProductTabs({ active, setActive }: { active: TabId; setActive: (t: TabI
                 on ? 'border-[#252525] bg-[#252525] text-white' : 'border-[#D9D8D2] bg-[#FAF9F4] text-[#3A3C40] hover:border-[#252525]/40'
               }`}
             >
-              <Icon3D name={t.icon} size={26} />
+              <LineIcon name={t.icon} tone="bare" />
               {t.label}
             </button>
           );
@@ -390,7 +412,7 @@ function ProductTabs({ active, setActive }: { active: TabId; setActive: (t: TabI
         className={`rwl-fade mt-6 grid items-center gap-10 overflow-hidden rounded-[32px] bg-gradient-to-br ${tab.tint} p-6 sm:p-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14 lg:p-14`}
       >
         <div>
-          <Icon3D name={tab.icon} size={64} className="drop-shadow-[0_12px_16px_rgba(37,37,37,0.25)]" />
+          <LineIcon name={tab.icon} size={52} />
           <h3 className="mt-6 text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#252525] [text-wrap:balance] sm:text-[34px]">
             {tab.title}
           </h3>
@@ -464,7 +486,7 @@ function FitSimulator() {
     <section id="fit" className="scroll-mt-20 bg-[#252525] py-24 text-white lg:py-28">
       <div className="mx-auto grid max-w-[1240px] gap-12 px-5 md:px-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
         <div className="lg:sticky lg:top-28 lg:self-start">
-          <Icon3D name="chart-increasing" size={72} className="drop-shadow-[0_14px_20px_rgba(0,0,0,0.5)]" />
+          <LineIcon name="chart-increasing" size={52} tone="yellow" />
           <h2 className="mt-6 text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
             A score you can check yourself
           </h2>
@@ -550,10 +572,10 @@ function FitSimulator() {
 /* ------------------------------------------------------------------ */
 
 type Mode = 'text' | 'voice' | 'video';
-const MODES: { id: Mode; label: string; icon: typeof Mic; icon3d: string; body: string }[] = [
-  { id: 'text', label: 'Text', icon: MessageSquare, icon3d: 'speech-balloon', body: 'Type your answer and shape it before you say it out loud. Best for a first draft of a story.' },
-  { id: 'voice', label: 'Voice', icon: Mic, icon3d: 'microphone', body: 'Say your answer out loud. Rolewise writes down what you say and reviews it against the role.' },
-  { id: 'video', label: 'Video', icon: Video, icon3d: 'video-camera', body: 'Record yourself on camera to see how you come across, then get the same answer feedback.' },
+const MODES: { id: Mode; label: string; icon: typeof Mic; body: string }[] = [
+  { id: 'text', label: 'Text', icon: MessageSquare, body: 'Type your answer and shape it before you say it out loud. Best for a first draft of a story.' },
+  { id: 'voice', label: 'Voice', icon: Mic, body: 'Say your answer out loud. Rolewise writes down what you say and reviews it against the role.' },
+  { id: 'video', label: 'Video', icon: Video, body: 'Record yourself on camera to see how you come across, then get the same answer feedback.' },
 ];
 
 function useSpeechSupport() {
@@ -581,9 +603,6 @@ function Practice() {
             loading="lazy"
             className="aspect-[4/3] w-full rounded-[28px] bg-[#E9E7DF] object-cover"
           />
-          <div className="rwl-float absolute -right-3 -top-8 drop-shadow-[0_18px_24px_rgba(37,37,37,0.35)] sm:-right-6" aria-hidden>
-            <Icon3D name={m.icon3d} size={88} />
-          </div>
           <div className="absolute bottom-5 left-5 right-5 flex items-center gap-3 rounded-2xl border border-white/20 bg-[#252525]/85 px-4 py-3 text-white backdrop-blur sm:right-auto">
             <span className="relative flex h-3 w-3" aria-hidden>
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#D97968] opacity-60 motion-reduce:hidden" />
@@ -664,7 +683,7 @@ function FirstTen() {
           {FIRST_TEN.map((s, i) => (
             <li key={s.title} className="flex flex-col rounded-[24px] border border-[#E4E2DA] bg-white p-6">
               <div className="flex items-start justify-between">
-                <Icon3D name={s.icon} size={56} className="drop-shadow-[0_10px_14px_rgba(37,37,37,0.18)]" />
+                <LineIcon name={s.icon} size={48} />
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#252525] text-[13px] font-semibold text-[#FFD84D]">
                   <span className="sr-only">Step </span>
                   {i + 1}
@@ -699,8 +718,7 @@ function Moments() {
         {items.map((c) => (
           <figure key={c.title} className={`overflow-hidden rounded-[28px] ${c.tint}`}>
             <img src={photo(c.id, 800)} alt={c.alt} loading="lazy" className="aspect-[4/3] w-full bg-black/5 object-cover" />
-            <figcaption className="relative p-6 pt-10">
-              <Icon3D name={c.icon} size={56} className="absolute -top-7 left-6 drop-shadow-[0_10px_14px_rgba(37,37,37,0.25)]" />
+            <figcaption className="p-6">
               <h3 className="text-[20px] font-semibold">{c.title}</h3>
               <p className="mt-1.5 text-[15px] leading-relaxed text-[#4A4C51]">{c.body}</p>
             </figcaption>
@@ -722,7 +740,7 @@ function Trust() {
       <div className="rwl-grid-lines pointer-events-none absolute inset-0" aria-hidden />
       <div className="relative mx-auto grid max-w-[1240px] items-center gap-12 px-5 md:px-8 lg:grid-cols-[0.8fr_1.2fr]">
         <div>
-          <Icon3D name="shield" size={80} className="rwl-float drop-shadow-[0_18px_24px_rgba(0,0,0,0.5)]" />
+          <LineIcon name="shield" size={52} tone="yellow" />
           <h2 className="mt-6 text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
             AI you can trust with your next job
           </h2>
@@ -753,8 +771,7 @@ function Faq() {
   return (
     <section id="faq" className="mx-auto grid max-w-[1240px] scroll-mt-20 gap-12 px-5 py-24 md:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:py-28">
       <div>
-        <Icon3D name="light-bulb" size={72} className="drop-shadow-[0_14px_18px_rgba(37,37,37,0.2)]" />
-        <h2 className="mt-6 text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] sm:text-[46px]">Questions, answered</h2>
+        <h2 className="text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] sm:text-[46px]">Questions, answered</h2>
       </div>
       <div className="divide-y divide-[#D9D8D2] border-y border-[#D9D8D2]">
         {FAQS.map((item, i) => {
@@ -892,11 +909,7 @@ export function Landing() {
                     onClick={() => goTo(q.tab)}
                     className="group flex min-h-[64px] w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-[15px] font-semibold transition hover:bg-white hover:shadow-[0_10px_24px_-14px_rgba(37,37,37,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
                   >
-                    <Icon3D
-                      name={q.icon}
-                      size={40}
-                      className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-110 motion-reduce:transform-none"
-                    />
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F3F2EE] text-[#252525] transition-colors group-hover:bg-[#FFD84D]"><LineIcon name={q.icon} tone="bare" /></span>
                     {q.label}
                   </button>
                 </li>
@@ -934,10 +947,8 @@ export function Landing() {
                   </a>
                 </div>
               </div>
-              <div className="relative mx-auto hidden h-[260px] w-[260px] lg:block" aria-hidden>
-                <div className="rwl-float absolute inset-0 flex items-center justify-center drop-shadow-[0_30px_40px_rgba(90,70,18,0.45)]">
-                  <Icon3D name="rocket" size={220} />
-                </div>
+              <div className="relative mx-auto hidden w-full max-w-[380px] lg:block">
+                <CtaIllustration />
               </div>
             </div>
           </div>
@@ -983,10 +994,6 @@ export function Landing() {
             Photos from{' '}
             <a href="https://unsplash.com" className="inline-flex items-center gap-0.5 underline-offset-2 hover:underline" rel="noreferrer" target="_blank">
               Unsplash <ArrowUpRight className="h-3 w-3" aria-hidden />
-            </a>
-            , 3D icons from{' '}
-            <a href="https://github.com/microsoft/fluentui-emoji" className="inline-flex items-center gap-0.5 underline-offset-2 hover:underline" rel="noreferrer" target="_blank">
-              Fluent Emoji <ArrowUpRight className="h-3 w-3" aria-hidden />
             </a>
           </p>
         </div>

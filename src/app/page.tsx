@@ -16,7 +16,6 @@ import {
   Layers,
   Clock,
   Compass,
-  TrendingUp,
   MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -25,6 +24,7 @@ import { greeting, isAnalyzed, isActive, isFollowUpDue, followUpDate, formatDate
 import { StatusPill } from '@/components/tracker/StatusPill';
 import { Role } from '@/types/database';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
+import { Mascot } from '@/components/brand/Mascot';
 
 export default function DashboardPage() {
   const { userName } = useAuth();
@@ -89,6 +89,12 @@ export default function DashboardPage() {
     ...dueRoles.map((r) => ({ role: r, kind: 'follow' as const })),
   ].slice(0, 5);
   const prepRoles = roles.filter((r) => isAnalyzed(r) && isActive(r)).slice(0, 3);
+  const nudge =
+    dueRoles.length > 0
+      ? { text: `${dueRoles.length} follow-up${dueRoles.length > 1 ? 's are' : ' is'} due today. A short note keeps you top of mind.`, cta: 'Open job tracker', href: '/jobs' }
+      : prepRoles.length > 0
+        ? { text: `One practice answer for ${prepRoles[0].title || 'your next role'} today?`, cta: 'Practise now', href: `/roles/${prepRoles[0].id}/interview` }
+        : { text: 'Add a job and your resume, and I will map how well you fit.', cta: 'Add a job', href: '/jobs/new' };
 
   return (
     <div className="space-y-7 animate-in fade-in duration-300">
@@ -99,23 +105,30 @@ export default function DashboardPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight flex items-center gap-2">
             <span>{userName ? userName.split(' ')[0] : 'there'}</span>
           </h1>
-          <p className="text-sm text-[#73757A] pt-0.5">
-            {dueRoles.length > 0
-              ? `${dueRoles.length} follow-up${dueRoles.length > 1 ? 's' : ''} due today. Small nudges get replies.`
-              : 'Prepare for the role. Not just the interview.'}
-          </p>
+          <p className="hidden pt-0.5 text-sm text-[#73757A] sm:block">Prepare for the role. Not just the interview.</p>
+          <div className="pr-24 pt-1 sm:hidden">
+            <p className="text-sm text-[#5E6065]">{nudge.text}</p>
+            <Link data-ui-sound="click" href={nudge.href} className="mt-2 inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-[#8A6A12]">
+              {nudge.cta}
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </Link>
+          </div>
         </div>
 
-        {/* Hero Card Visual */}
-        <div className="hidden sm:flex items-center gap-3 bg-white/90 backdrop-blur border border-[#D9D8D2] px-5 py-3.5 rounded-2xl shadow-xs z-10">
-          <div className="space-y-0.5 text-xs font-semibold text-[#252525]">
-            <p className="text-[#252525]">Practice</p>
-            <p className="text-[#6FA77F]">Improve</p>
-            <p className="text-[#252525]">Get Hired</p>
-          </div>
-          <div className="w-8 h-8 rounded-xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center">
-            <TrendingUp className="w-4 h-4" />
-          </div>
+        {/* Mascot + next-step nudge */}
+        <div className="absolute right-3 top-3 z-10 flex items-end gap-3 sm:static">
+          <Link
+            data-ui-sound="click"
+            href={nudge.href}
+            className="group relative mb-10 hidden max-w-[230px] rounded-2xl rounded-br-md border border-[#D9D8D2] bg-white/95 px-4 py-3 text-left shadow-[0_10px_30px_-12px_rgba(37,37,37,0.25)] backdrop-blur transition hover:border-[#252525]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] sm:block"
+          >
+            <p className="text-[13px] font-medium leading-snug text-[#252525]">{nudge.text}</p>
+            <p className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-semibold text-[#8A6A12] group-hover:underline">
+              {nudge.cta}
+              <ArrowRight className="h-3 w-3" aria-hidden />
+            </p>
+          </Link>
+          <Mascot size={104} className="shrink-0 max-sm:h-auto max-sm:w-[76px]" />
         </div>
       </section>
 
