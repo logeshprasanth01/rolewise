@@ -1,33 +1,37 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import {
-  ArrowLeft,
-  ArrowRight,
-  Briefcase,
-  CheckCircle2,
-  AlertCircle,
-  HelpCircle,
-  Sparkles,
-  Bot,
-  Lightbulb,
-  CheckSquare,
-  Loader2,
-  FileCheck,
-} from 'lucide-react';
-import { getPreparationItems } from '@/services/api';
+import { ArrowLeft, ArrowRight, AlertCircle, Check, Mic, Target } from 'lucide-react';
+import { getPreparationItems, updatePreparationItemStatus } from '@/services/api';
 import { PreparationItem, Role } from '@/types/database';
+import { computeFitScore, fitBand, fitStatusKey, FIT_STATUS_META } from '@/lib/fit-score';
+
+const PRIORITY_RANK: Record<string, number> = { high: 0, medium: 1, low: 2 };
+const PRIORITY_META: Record<string, { label: string; dot: string }> = {
+  high: { label: 'High priority', dot: '#D97968' },
+  medium: { label: 'Medium priority', dot: '#D9A35B' },
+  low: { label: 'Low priority', dot: '#9A9B9E' },
+};
+// Gaps first inside the same priority.
+const FIT_RANK: Record<string, number> = { not_demonstrated: 0, investigation: 1, transferable: 2, strong: 3 };
+
+const INTERVIEW_TIPS = [
+  'Pick 2–3 projects you can explain end to end',
+  'Have one number per project: time saved, conversion, adoption',
+  'Know what you would do differently, and why',
+];
 
 export default function PreparationPage() {
   const params = useParams();
-  const router = useRouter();
   const roleId = params?.id as string;
 
   const [role, setRole] = useState<Role | null>(null);
   const [items, setItems] = useState<PreparationItem[]>([]);
+  const [fitStatuses, setFitStatuses] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -35,325 +39,298 @@ export default function PreparationPage() {
         setIsLoading(false);
         return;
       }
-
       setIsLoading(true);
       try {
         const data = await getPreparationItems(roleId);
         setRole(data.role);
         setItems(data.items || []);
+        setFitStatuses(data.fitStatuses || []);
       } catch (err) {
         console.error('Error loading preparation items:', err);
       } finally {
         setIsLoading(false);
       }
     }
-
     loadData();
   }, [roleId]);
 
+  const ordered = useMemo(
+    () =>
+      [...items].sort((a, b) => {
+        const p = (PRIORITY_RANK[(a.priority || '').toLowerCase()] ?? 1) - (PRIORITY_RANK[(b.priority || '').toLowerCase()] ?? 1);
+        if (p !== 0) return p;
+        return (
+          (a.alignment_status ? FIT_RANK[fitStatusKey(a.alignment_status)] : 2) -
+          (b.alignment_status ? FIT_RANK[fitStatusKey(b.alignment_status)] : 2)
+        );
+      }),
+    [items]
+  );
+
+  const doneCount = items.filter((i) => i.status === 'completed').length;
+  const nextUp = ordered.find((i) => i.status !== 'completed');
+  const score = computeFitScore(fitStatuses);
+  const band = fitBand(score);
+
+  const toggleDone = async (item: PreparationItem) => {
+    const next = item.status === 'completed' ? 'not_started' : 'completed';
+    setSaveError(null);
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, status: next } : i)));
+    try {
+      await updatePreparationItemStatus(item.id, next);
+    } catch (err) {
+      console.error('[Prep] status update failed', err);
+      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, status: item.status } : i)));
+      setSaveError("Couldn't save that change. Check your connection and try again.");
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-[#73757A]">
-        <Loader2 className="w-6 h-6 animate-spin text-[#252525]" />
-        <p className="text-xs sm:text-sm">Building your role preparation roadmap...</p>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-5" role="status" aria-live="polite">
+        <div className="rw-processing-tile h-16 w-16 rounded-[18px] flex items-center justify-center" aria-hidden="true">
+          <Target className="w-7 h-7 text-white" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-semibold text-[#252525]">Loading your prep plan</p>
+          <p className="mt-1 text-xs text-[#73757A]">Ordering focus areas by what matters most</p>
+        </div>
+        <div className="rw-boot-track h-[3px] w-40 rounded-full bg-[#252525]/10" aria-hidden="true">
+          <span />
+        </div>
       </div>
     );
   }
 
   if (!role) {
     return (
-      <div className="rolewise-card p-8 max-w-lg mx-auto text-center space-y-4 my-12">
-        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#D97968] flex items-center justify-center mx-auto">
-          <AlertCircle className="w-6 h-6" />
-        </div>
+      <div className="rounded-[24px] bg-white border border-[#E4E2DA] p-8 max-w-lg mx-auto text-center space-y-4 my-12">
+        <AlertCircle className="w-6 h-6 mx-auto text-[#D97968]" />
         <div className="space-y-1">
           <h2 className="text-lg font-semibold text-[#252525]">Role not found</h2>
-          <p className="text-xs text-[#73757A]">Return to your jobs list to begin preparing.</p>
+          <p className="text-xs text-[#73757A]">It may have been removed. Pick a job from your list.</p>
         </div>
-        <Link
-          href="/jobs"
-          className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FFD84D] text-[#252525] text-xs font-semibold"
-        >
-          <span>Return to My Jobs</span>
-          <ArrowRight className="w-3.5 h-3.5 pointer-events-none shrink-0" />
+        <Link href="/jobs" className="touch-target inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#252525] text-white text-xs font-semibold">
+          Go to My Jobs <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
     );
   }
 
-  const getStatusBadge = (status?: string, alignment?: string) => {
-    const combined = `${status || ''} ${alignment || ''}`.toLowerCase();
-    if (combined.includes('attention') || combined.includes('not demonstrated')) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FFF0ED] text-[#D97968] text-[11px] font-semibold">
-          <AlertCircle className="w-3 h-3" />
-          <span>Needs attention</span>
-        </span>
-      );
-    }
-    if (combined.includes('investigation')) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FFF2D2] text-[#C58A2B] text-[11px] font-semibold">
-          <HelpCircle className="w-3 h-3" />
-          <span>Needs investigation</span>
-        </span>
-      );
-    }
-    if (combined.includes('transferable')) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FFF2B8] text-[#252525] text-[11px] font-semibold">
-          <Sparkles className="w-3 h-3" />
-          <span>Transferable</span>
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#EEF7F0] text-[#6FA77F] text-[11px] font-semibold">
-        <CheckCircle2 className="w-3 h-3" />
-        <span>Strong alignment</span>
-      </span>
-    );
-  };
-
-  const getActionBadge = (status?: string) => {
-    const s = (status || '').toLowerCase();
-    if (s.includes('attention') || s.includes('investigate')) {
-      return (
-        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#C58A2B]">
-          <span>Investigate</span>
-          <ArrowRight className="w-3.5 h-3.5 pointer-events-none shrink-0" />
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#252525]">
-        <span>Practice</span>
-        <ArrowRight className="w-3.5 h-3.5 pointer-events-none shrink-0" />
-      </span>
-    );
-  };
-
-  // Derive dynamic focus areas from the actual preparation items
-  const highPriorityItem = items.find(
-    (i) =>
-      i.priority?.toLowerCase() === 'high' ||
-      i.alignment_status?.toLowerCase().includes('investigation') ||
-      i.alignment_status?.toLowerCase().includes('attention')
-  ) || items[0];
-
-  const practiceItem = items.find(
-    (i) =>
-      i !== highPriorityItem &&
-      (i.alignment_status?.toLowerCase().includes('transferable') ||
-        i.priority?.toLowerCase() === 'medium')
-  ) || items[1] || items[0];
-
-  const strengthItem = items.find(
-    (i) =>
-      i !== highPriorityItem &&
-      i !== practiceItem &&
-      (i.alignment_status?.toLowerCase().includes('strong') ||
-        i.priority?.toLowerCase() === 'low')
-  ) || items[2] || items[1];
-
-  const focusAreas = [
-    highPriorityItem ? { label: 'Needs Attention', item: highPriorityItem, color: 'text-[#D97968]', bg: 'bg-[#FFF0ED]', border: 'border-[#F6D8D1]' } : null,
-    practiceItem && practiceItem.id !== highPriorityItem?.id ? { label: 'Practice & Frame', item: practiceItem, color: 'text-[#252525]', bg: 'bg-[#FFF2B8]', border: 'border-[#FFF2B8]' } : null,
-    strengthItem && strengthItem.id !== highPriorityItem?.id && strengthItem.id !== practiceItem?.id ? { label: 'Key Strength', item: strengthItem, color: 'text-[#6FA77F]', bg: 'bg-[#EEF7F0]', border: 'border-[#DDEEDF]' } : null,
-  ].filter(Boolean) as { label: string; item: PreparationItem; color: string; bg: string; border: string }[];
-
   if (items.length === 0) {
     return (
-      <div className="rolewise-card p-8 max-w-lg mx-auto text-center space-y-4 my-12 animate-in fade-in">
-        <div className="w-12 h-12 rounded-full bg-[#FFF0ED] text-[#D97968] flex items-center justify-center mx-auto">
-          <AlertCircle className="w-6 h-6" />
-        </div>
+      <div className="rounded-[24px] bg-white border border-[#E4E2DA] p-8 max-w-lg mx-auto text-center space-y-4 my-12">
+        <AlertCircle className="w-6 h-6 mx-auto text-[#D9A35B]" />
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-[#252525]">Role preparation couldn&apos;t be loaded.</h2>
-          <p className="text-xs text-[#73757A]">
-            Role analysis may still be processing or requires re-analysis.
-          </p>
+          <h2 className="text-lg font-semibold text-[#252525]">No prep plan yet</h2>
+          <p className="text-xs text-[#73757A]">The plan is built from your role fit. Run the analysis again to create it.</p>
         </div>
-        <div className="flex items-center justify-center gap-3 pt-2">
-          <Link
-            href={`/roles/${role.id}/fit`}
-            className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#252525] hover:bg-[#E7C43E] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs"
-          >
-            <span>Go to Role Fit</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+        <Link href={`/roles/${role.id}/fit`} className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#252525] text-white text-xs sm:text-sm font-semibold">
+          Go to role fit <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
     );
   }
 
+  const pct = Math.round((doneCount / items.length) * 100);
+
   return (
-    <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in duration-300 pb-16">
-      {/* Breadcrumb Back */}
+    <div className="max-w-5xl mx-auto animate-in fade-in duration-300 pb-16">
       <Link
         href={`/roles/${role.id}/fit`}
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#73757A] hover:text-[#252525] transition-colors"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
-        <span>Back to Role Fit</span>
+        <span>Role fit</span>
       </Link>
 
-      {/* HEADER SECTION (PRD Requirement 5) */}
-      <section className="space-y-1">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">
-          Prepare for your interview
-        </h1>
-        <p className="text-xs sm:text-sm text-[#73757A]">
-          Focus on the areas that matter most for{' '}
-          <strong className="text-[#252525]">{role.title}</strong> at {role.company}.
+      {/* HEADER */}
+      <header className="mt-5 space-y-1.5">
+        <p className="text-xs text-[#73757A]">
+          {role.title} · {role.company}
         </p>
-      </section>
+        <h1 className="text-2xl sm:text-[32px] font-bold text-[#252525] tracking-[-0.02em] leading-tight">
+          Your interview prep plan
+        </h1>
+        <p className="text-sm text-[#55565A] max-w-xl">
+          {items.length} focus areas from your role fit, in the order to tackle them. Mark each one as you prepare it.
+        </p>
+      </header>
 
-      {/* TWO COLUMN PREPARATION LAYOUT (Image 5) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* LEFT COLUMN: Preparation Area Cards */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between pb-1">
-            <span className="text-xs font-semibold text-[#73757A] uppercase tracking-wider">
-              {items.length} Preparation Areas Identified
-            </span>
-          </div>
-
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="rolewise-card p-5 space-y-3.5 hover:border-[#D0D5DD] transition-all"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  {getStatusBadge(item.status, item.alignment_status)}
-                </div>
-                <div className="flex items-center gap-1 text-xs font-semibold text-[#6FA77F]">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Ready to practice</span>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <h3 className="text-sm sm:text-base font-semibold text-[#252525]">
-                  {item.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-[#55565A] leading-relaxed">
-                  {item.description}
+      <div className="mt-7 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
+        {/* PLAN */}
+        <div className="space-y-4 min-w-0">
+          {/* Progress */}
+          <div className="rounded-[20px] bg-[#252525] text-white p-5 sm:p-6">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs text-white/60">Progress</p>
+                <p className="mt-1 text-2xl font-bold tabular-nums">
+                  {doneCount} <span className="text-white/50 font-semibold">of {items.length} prepared</span>
                 </p>
               </div>
-
-              <div className="pt-2 border-t border-[#D9D8D2] flex items-center justify-between">
-                <span className="text-[11px] text-[#9A9B9E]">Derived from role fit findings</span>
-                <Link
-                  href={`/roles/${role.id}/interview`}
-                  className="touch-target inline-flex items-center gap-1 text-xs font-semibold text-[#252525] hover:text-[#303234] transition-colors select-none cursor-pointer"
-                >
-                  {getActionBadge(item.status)}
-                </Link>
-              </div>
+              <p className="text-sm font-semibold tabular-nums text-[#FFD84D]">{pct}%</p>
             </div>
-          ))}
-
-          {/* Practical Tip Callout */}
-          <div className="p-4 rounded-xl bg-[#FFF2B8]/60 border border-[#FFF2B8] flex items-start gap-3 text-xs text-[#252525]">
-            <Lightbulb className="w-4 h-4 text-[#252525] shrink-0 mt-0.5" />
-            <div className="space-y-0.5">
-              <span className="font-semibold">Preparation Strategy: </span>
-              <span className="text-[#55565A]">
-                Focus on the areas marked for practice or investigation to feel more confident during your AI interview session.
-              </span>
+            <div className="mt-4 h-1.5 w-full rounded-full bg-white/15 overflow-hidden">
+              <div className="h-full rounded-full bg-[#FFD84D] transition-[width] duration-500 ease-out" style={{ width: `${pct}%` }} />
             </div>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: Target Role, Primary Actions, Checklist */}
-        <div className="space-y-5">
-          {/* Target Role Pill */}
-          <div className="rolewise-card p-5 space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center">
-                <Briefcase className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-xs sm:text-sm font-semibold text-[#252525] truncate">{role.title}</h3>
-                <p className="text-xs text-[#73757A] truncate">{role.company}</p>
-              </div>
-            </div>
-
-            {/* Primary Action Button */}
-            <div className="pt-2 space-y-2">
-              <Link
-                href={`/roles/${role.id}/interview`}
-                className="w-full touch-target inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#252525] hover:bg-[#E7C43E] text-white text-xs sm:text-sm font-semibold transition-all shadow-sm"
-              >
-                <span>Start AI interview</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-
-              <Link
-                href={`/roles/${role.id}/fit`}
-                className="w-full touch-target inline-flex items-center justify-center py-2.5 px-4 rounded-xl border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs font-semibold text-[#73757A] transition-colors"
-              >
-                Back to role fit
-              </Link>
-            </div>
+            <p className="mt-4 text-xs text-white/70">
+              {nextUp ? (
+                <>
+                  Next up: <span className="text-white font-medium">{nextUp.title}</span>
+                </>
+              ) : (
+                <>All areas prepared. Time for a mock interview.</>
+              )}
+            </p>
+            <Link
+              href={`/roles/${role.id}/interview`}
+              className="lg:hidden mt-4 flex w-full min-h-[44px] items-center justify-center gap-2 py-3 rounded-xl bg-[#FFD84D] text-[#252525] text-sm font-semibold"
+            >
+              <Mic className="w-4 h-4" />
+              Start mock interview
+            </Link>
           </div>
 
-          {/* Dynamic Interview Focus Summary */}
-          {focusAreas.length > 0 && (
-            <div className="rolewise-card p-5 space-y-3">
-              <h4 className="text-xs font-semibold text-[#252525] uppercase tracking-wider">
-                Interview Focus
-              </h4>
-              <div className="space-y-2 text-xs">
-                {focusAreas.map((f, idx) => (
-                  <div
-                    key={f.item.id || idx}
-                    className={`p-2.5 rounded-lg ${f.bg} border ${f.border} flex items-center justify-between`}
-                  >
-                    <div>
-                      <p className={`text-[10px] uppercase font-semibold ${f.color}`}>{f.label}</p>
-                      <p className="font-semibold text-[#252525] truncate max-w-[200px]">{f.item.title}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          {saveError && (
+            <p role="alert" className="text-xs text-[#A4493A] bg-[#FFF0ED] border border-[#F6D8D1] rounded-xl px-3.5 py-2.5">
+              {saveError}
+            </p>
           )}
 
-          {/* Before Your Interview Checklist (Image 5) */}
-          <div className="rolewise-card p-5 space-y-3">
-            <h4 className="text-xs font-semibold text-[#252525] flex items-center gap-1.5">
-              <CheckSquare className="w-3.5 h-3.5 text-[#252525]" />
-              <span>Before your interview</span>
-            </h4>
+          {/* Items */}
+          <ol className="space-y-3">
+            {ordered.map((item, idx) => {
+              const done = item.status === 'completed';
+              const pr = PRIORITY_META[(item.priority || '').toLowerCase()] ?? PRIORITY_META.medium;
+              const fit = item.alignment_status ? FIT_STATUS_META[fitStatusKey(item.alignment_status)] : null;
+              const isNext = nextUp?.id === item.id;
+              return (
+                <li
+                  key={item.id}
+                  className={`group relative rounded-[20px] border bg-white p-5 sm:p-6 transition-all ${
+                    isNext ? 'border-[#252525] shadow-[0_8px_24px_-14px_rgba(37,37,37,0.45)]' : 'border-[#E4E2DA]'
+                  } ${done ? 'bg-[#FAF9F6]' : ''}`}
+                >
+                  <div className="flex gap-4">
+                    <span
+                      className={`shrink-0 mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold tabular-nums ${
+                        done ? 'bg-[#5E9A6E] text-white' : isNext ? 'bg-[#FFD84D] text-[#252525]' : 'bg-[#F1EFE8] text-[#55565A]'
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {done ? <Check className="w-4 h-4" strokeWidth={3} /> : String(idx + 1).padStart(2, '0')}
+                    </span>
 
-            <ul className="space-y-2.5 text-xs text-[#55565A]">
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#252525] shrink-0 mt-0.5" />
-                <span>Review your strongest project examples</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#252525] shrink-0 mt-0.5" />
-                <span>Prepare specific outcomes and quantifiable impact</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#252525] shrink-0 mt-0.5" />
-                <span>Clarify identified experience gaps</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#252525] shrink-0 mt-0.5" />
-                <span>Practice explaining your design decisions</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#252525] shrink-0 mt-0.5" />
-                <span>Take a mock interview with voice or typed answers</span>
-              </li>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] font-medium">
+                        <span className="inline-flex items-center gap-1.5 text-[#55565A]">
+                          <span className="h-1.5 w-1.5 rounded-full" style={{ background: pr.dot }} />
+                          {pr.label}
+                        </span>
+                        {fit && (
+                          <span className="rounded-full px-2 py-0.5" style={{ background: fit.bg, color: fit.fg }}>
+                            Fit: {fit.label}
+                          </span>
+                        )}
+                        {isNext && !done && <span className="text-[#252525] font-semibold">Start here</span>}
+                      </div>
+
+                      <h3 className={`mt-2 text-[15px] sm:text-base font-semibold leading-snug ${done ? 'text-[#73757A]' : 'text-[#252525]'}`}>
+                        {item.title}
+                      </h3>
+                      <p className={`mt-1 text-sm leading-relaxed ${done ? 'text-[#9A9B9E]' : 'text-[#55565A]'}`}>
+                        {item.description}
+                      </p>
+
+                      {item.requirement_text && (
+                        <p className="mt-3 text-xs text-[#73757A] border-l-2 border-[#E4E2DA] pl-3 line-clamp-2">
+                          <span className="text-[#9A9B9E]">From the job: </span>
+                          {item.requirement_text}
+                        </p>
+                      )}
+
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleDone(item)}
+                          aria-pressed={done}
+                          className={`touch-target inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer ${
+                            done
+                              ? 'bg-[#EEF7F0] text-[#3F7A52] hover:bg-[#E2F0E5]'
+                              : 'bg-[#F3F2EE] text-[#252525] hover:bg-[#EAE8E1]'
+                          }`}
+                        >
+                          <span
+                            className={`flex h-4 w-4 items-center justify-center rounded-[5px] border ${
+                              done ? 'bg-[#5E9A6E] border-[#5E9A6E]' : 'border-[#9A9B9E] bg-white'
+                            }`}
+                          >
+                            {done && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                          </span>
+                          {done ? 'Prepared' : 'Mark as prepared'}
+                        </button>
+                        <Link
+                          href={`/roles/${role.id}/interview`}
+                          className="touch-target inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold text-[#55565A] hover:text-[#252525] hover:bg-[#F7F6F2] transition-colors"
+                        >
+                          Practice out loud <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+
+        {/* SIDEBAR */}
+        <aside className="space-y-4 lg:sticky lg:top-6">
+          <div className="rounded-[20px] bg-white border border-[#E4E2DA] p-5">
+            <p className="text-xs text-[#73757A]">Role fit</p>
+            {fitStatuses.length > 0 ? (
+              <div className="mt-1 flex items-center gap-3">
+                <span className="text-3xl font-bold tracking-[-0.03em] text-[#252525] tabular-nums">{score}%</span>
+                <span className="rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ background: band.bg, color: band.fg }}>
+                  {band.label}
+                </span>
+              </div>
+            ) : (
+              <p className="mt-1 text-sm text-[#55565A]">Not analysed yet</p>
+            )}
+            <Link href={`/roles/${role.id}/fit`} className="mt-2 inline-block text-xs font-medium text-[#55565A] underline underline-offset-2 hover:text-[#252525]">
+              See requirement breakdown
+            </Link>
+
+            <div className="mt-5 pt-5 border-t border-[#EEECE6]">
+              <Link
+                href={`/roles/${role.id}/interview`}
+                className="hidden lg:flex w-full min-h-[44px] items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#252525] hover:bg-[#3A3A3A] text-white text-sm font-semibold transition-colors"
+              >
+                <Mic className="w-4 h-4" />
+                Start mock interview
+              </Link>
+              <p className="mt-2.5 hidden lg:block text-[11px] text-[#9A9B9E] text-center">
+                Questions are based on this role and your resume
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-[20px] bg-white border border-[#E4E2DA] p-5">
+            <p className="text-sm font-semibold text-[#252525]">Before the mock interview</p>
+            <ul className="mt-3 space-y-2.5">
+              {INTERVIEW_TIPS.map((tip, i) => (
+                <li key={tip} className="flex gap-2.5 text-xs text-[#55565A] leading-relaxed">
+                  <span className="shrink-0 text-[#9A9B9E] tabular-nums">{i + 1}.</span>
+                  <span>{tip}</span>
+                </li>
+              ))}
             </ul>
           </div>
-        </div>
+        </aside>
       </div>
+
     </div>
   );
 }

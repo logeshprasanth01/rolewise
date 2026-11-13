@@ -382,6 +382,7 @@ export async function getRoleFit(roleId: string): Promise<{
 export async function getPreparationItems(roleId: string): Promise<{
   role: Role | null;
   items: PreparationItem[];
+  fitStatuses?: string[];
 }> {
   const role = await getRole(roleId);
   if (!role) {
@@ -394,15 +395,30 @@ export async function getPreparationItems(roleId: string): Promise<{
   const supabase = getSupabaseClient();
 
   try {
-    const itemsRes = await supabase
-      .from('preparation_items')
-      .select('*')
-      .eq('role_id', roleId)
-      .order('created_at', { ascending: true });
+    const [itemsRes, fitRes, reqRes] = await Promise.all([
+      supabase.from('preparation_items').select('*').eq('role_id', roleId).order('created_at', { ascending: true }),
+      supabase.from('fit_analysis').select('requirement_id, status').eq('role_id', roleId),
+      supabase.from('role_requirements').select('id, requirement').eq('role_id', roleId),
+    ]);
+
+    const fitRows = (fitRes.data || []) as { requirement_id: string | null; status: string }[];
+    const reqRows = (reqRes.data || []) as { id: string; requirement: string }[];
+
+    // Attach the real fit status + requirement text the item was generated from.
+    const items = ((itemsRes.data || []) as PreparationItem[]).map((item) => ({
+      ...item,
+      alignment_status: item.requirement_id
+        ? fitRows.find((f) => f.requirement_id === item.requirement_id)?.status ?? null
+        : null,
+      requirement_text: item.requirement_id
+        ? reqRows.find((r) => r.id === item.requirement_id)?.requirement ?? null
+        : null,
+    }));
 
     return {
       role,
-      items: (itemsRes.data || []) as PreparationItem[],
+      items,
+      fitStatuses: fitRows.map((f) => f.status),
     };
   } catch (err) {
     console.error('[Rolewise] Database getPreparationItems error:', err);
@@ -414,6 +430,19 @@ export async function getPreparationItems(roleId: string): Promise<{
 }
 
 
+
+/** Persist a preparation item's progress ('not_started' | 'in_progress' | 'completed'). */
+export async function updatePreparationItemStatus(
+  id: string,
+  status: 'not_started' | 'in_progress' | 'completed'
+): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase
+    .from('preparation_items')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
 
 /**
  * Transcribe recorded audio blob using transcribe-interview-answer Edge Function or /api/interview/transcribe.

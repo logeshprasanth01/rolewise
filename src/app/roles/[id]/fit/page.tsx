@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { getRoleFit, invokeAnalyzeRole, getSupabaseClient } from '@/services/api';
 import { ProcessingDialog } from '@/components/ui/ProcessingDialog';
+import { computeFitScore, fitBand } from '@/lib/fit-score';
 import { FitAnalysis, Role, RoleRequirement } from '@/types/database';
 
 type StatusKey = 'strong' | 'transferable' | 'investigation' | 'not_demonstrated';
@@ -268,19 +269,8 @@ export default function RoleFitPage() {
   };
 
   // Fit score: equal weight per requirement, partial credit for related experience.
-  const rawScore =
-    counts.total === 0
-      ? 0
-      : (counts.strong * 1 + counts.transferable * 0.6 + counts.investigation * 0.3) / counts.total;
-  const fitScore = Math.round(rawScore * 100);
-  const fitBand =
-    fitScore >= 80
-      ? { label: 'Strong fit', bg: '#EEF7F0', fg: '#3F7A52' }
-      : fitScore >= 60
-      ? { label: 'Good fit', bg: '#FFF4CC', fg: '#7A5B00' }
-      : fitScore >= 40
-      ? { label: 'Partial fit', bg: '#FFF2D2', fg: '#8A5A12' }
-      : { label: 'Stretch role', bg: '#FFF0ED', fg: '#A4493A' };
+  const fitScore = computeFitScore(fitAnalysis.map((f) => f.status));
+  const fitBandInfo = fitBand(fitScore);
   const STATUS_ORDER: StatusKey[] = ['strong', 'transferable', 'investigation', 'not_demonstrated'];
   const sortedForBar = [...fitAnalysis].sort(
     (x, y) => STATUS_ORDER.indexOf(statusKey(x.status)) - STATUS_ORDER.indexOf(statusKey(y.status))
@@ -381,9 +371,9 @@ export default function RoleFitPage() {
             </div>
             <span
               className="mt-3 inline-block rounded-full px-2.5 py-1 text-xs font-semibold"
-              style={{ background: fitBand.bg, color: fitBand.fg }}
+              style={{ background: fitBandInfo.bg, color: fitBandInfo.fg }}
             >
-              {fitBand.label}
+              {fitBandInfo.label}
             </span>
           </div>
 

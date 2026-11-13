@@ -111,7 +111,9 @@ export interface PreparationItem {
   description: string;
   priority: PreparationPriority | string;
   status?: string;
-  alignment_status?: FitStatus | string;
+  alignment_status?: FitStatus | string | null;
+  /** Requirement text this item was generated from (joined client-side). */
+  requirement_text?: string | null;
   order_index?: number;
   created_at?: string;
 }
