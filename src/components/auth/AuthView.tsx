@@ -1,7 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+/* eslint-disable @next/next/no-img-element */
 import {
+  FileText,
+  ListChecks,
+  Mic,
+  Target,
   Mail,
   Lock,
   User,
@@ -9,25 +14,27 @@ import {
   EyeOff,
   CheckCircle2,
   AlertCircle,
-  Briefcase,
-  Layers,
-  Code2,
-  Palette,
-  Laptop,
   Loader2,
 } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import type { Provider } from '@supabase/supabase-js';
 import { useAuth } from '@/context/AuthContext';
 import { playUiSound } from '@/lib/ui-sound';
+import Link from 'next/link';
+import { RolewiseLogo } from '@/components/brand/RolewiseLogo';
+import { GlossyIcon } from '@/components/brand/GlossyIcon';
 
 export const AuthView: React.FC = () => {
   const { signIn, signUp } = useAuth();
 
-  const [mode, setMode] = useState<'signin' | 'signup'>(() => {
-    if (typeof window === 'undefined') return 'signin';
-    return new URLSearchParams(window.location.search).get('mode') === 'signup' ? 'signup' : 'signin';
-  });
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  // Read ?mode=signup after hydration so server and client render the same first frame.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      if (new URLSearchParams(window.location.search).get('mode') === 'signup') setMode('signup');
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -194,92 +201,61 @@ export const AuthView: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#F3F2EE]">
-      {/* LEFT SHOWCASE PANEL (Desktop 1440px / Tablet 1024px) */}
-      <div className="w-full lg:w-[48%] bg-white border-b lg:border-b-0 lg:border-r border-[#D9D8D2] p-8 sm:p-12 lg:p-16 flex flex-col justify-between relative overflow-hidden">
-        {/* Subtle background decoration */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#FFF2B8] rounded-full blur-3xl opacity-50 -mr-20 -mt-20 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#EEF7F0] rounded-full blur-3xl opacity-40 -ml-20 -mb-20 pointer-events-none" />
+      {/* LEFT VISUAL PANEL: photo + glossy icons, same language as the landing hero */}
+      <div className="relative hidden w-full p-4 lg:flex lg:w-[50%] lg:p-5">
+        <div className="relative flex w-full flex-col overflow-hidden rounded-[32px] bg-[#252525]">
+          <img
+            src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?auto=format&fit=crop&w=1400&q=80"
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1B1A17] via-[#1B1A17]/35 to-[#1B1A17]/10" aria-hidden />
+          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[#FFD84D]/30 blur-3xl" aria-hidden />
 
-        {/* Brand Header */}
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="w-10 h-10 rounded-2xl bg-[#252525] flex items-center justify-center text-[#FFD84D] font-bold text-lg shadow-sm">
-            R
+          <Link href="/welcome" aria-label="Rolewise home" className="relative z-10 m-8 inline-flex w-fit rounded-2xl bg-white px-4 py-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)]">
+            <span className="block w-[132px]">
+              <RolewiseLogo />
+            </span>
+          </Link>
+
+          <div className="pointer-events-none absolute right-10 top-28 rwl-float" aria-hidden>
+            <GlossyIcon icon={Target} tone="coral" shape="squircle" size={70} className="rw-tilt-r" />
           </div>
-          <span className="font-bold text-xl tracking-tight text-[#252525]">ROLEWISE</span>
-        </div>
+          <div className="pointer-events-none absolute left-10 top-[42%] rwl-float rwl-float-b" aria-hidden>
+            <GlossyIcon icon={FileText} tone="yellow" shape="hex" size={80} className="rw-tilt-l" />
+          </div>
+          <div className="pointer-events-none absolute right-14 top-[52%] rwl-float rwl-float-c" aria-hidden>
+            <GlossyIcon icon={Mic} tone="ink" shape="hex" size={74} />
+          </div>
+          <div className="pointer-events-none absolute left-[46%] top-40 rwl-float rwl-float-c" aria-hidden>
+            <GlossyIcon icon={ListChecks} tone="green" shape="squircle" size={58} className="rw-tilt-r" />
+          </div>
 
-        {/* Center Hero Content */}
-        <div className="my-10 sm:my-14 relative z-10 space-y-6">
-          <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-[#252525] leading-[1.2] tracking-tight">
-              Get Interview Ready <br />
-              <span className="text-[#252525]">for your next role</span>
-            </h1>
-            <p className="text-base sm:text-lg font-medium text-[#73757A]">
-              Practice · Improve · Get Hired
+          <div className="relative z-10 mt-auto p-10 text-white">
+            <p className="max-w-[440px] text-[34px] font-semibold leading-[1.1] tracking-[-0.03em] [text-wrap:balance]">
+              Prepare for the role, not just the interview.
             </p>
+            <p className="mt-3 text-[15px] text-white/75">Free during early access.</p>
           </div>
-
-          {/* Interactive Role Badges Graphic */}
-          <div className="pt-4 pb-2">
-            <div className="bg-[#F3F2EE] border border-[#D9D8D2] rounded-2xl p-6 sm:p-8 space-y-5 relative">
-              <div className="flex items-center justify-between text-xs font-semibold text-[#73757A] uppercase tracking-wider">
-                <span>Targeted Role Preparation</span>
-                <span className="text-[#252525]">With Rowi</span>
-              </div>
-
-              {/* Floating Role Badges */}
-              <div className="flex flex-wrap gap-2.5">
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-[#D9D8D2] text-xs font-semibold text-[#252525] shadow-xs">
-                  <Palette className="w-3.5 h-3.5 text-[#252525]" />
-                  UI/UX Designer
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-[#D9D8D2] text-xs font-semibold text-[#252525] shadow-xs">
-                  <Layers className="w-3.5 h-3.5 text-[#6FA77F]" />
-                  Product Designer
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-[#D9D8D2] text-xs font-semibold text-[#252525] shadow-xs">
-                  <Code2 className="w-3.5 h-3.5 text-[#252525]" />
-                  Software Engineer
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-[#D9D8D2] text-xs font-semibold text-[#252525] shadow-xs">
-                  <Briefcase className="w-3.5 h-3.5 text-[#C58A2B]" />
-                  Product Manager
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-[#D9D8D2] text-xs font-semibold text-[#252525] shadow-xs">
-                  <Laptop className="w-3.5 h-3.5 text-[#73757A]" />
-                  Marketing Designer
-                </span>
-              </div>
-
-              {/* Tagline Box */}
-              <div className="pt-2 border-t border-[#D9D8D2] flex items-center justify-between text-xs text-[#73757A]">
-                <span>“Prepare for the role. Not just the interview.”</span>
-                <span className="text-[#6FA77F] font-semibold">2026 SaaS</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Guarantee */}
-        <div className="relative z-10 flex items-center gap-2 text-xs text-[#73757A]">
-          <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
-          <span>Qualitative assessment without arbitrary readiness scores</span>
         </div>
       </div>
 
       {/* RIGHT AUTH FORM SURFACE */}
       <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-10 lg:p-16">
-        <div className="w-full max-w-[440px] space-y-7">
+        <div className="w-full max-w-[420px] space-y-7">
+          <Link href="/welcome" aria-label="Rolewise home" className="block w-[140px] lg:hidden">
+            <RolewiseLogo />
+          </Link>
           {/* Header */}
           <div className="space-y-1.5">
             <h2 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">
-              {mode === 'signin' ? 'Welcome Back' : 'Create Account'}
+              {mode === 'signin' ? 'Welcome back' : 'Create your account'}
             </h2>
             <p className="text-sm text-[#73757A]">
               {mode === 'signin'
-                ? 'Sign in to access your role-specific preparation.'
-                : 'Join ROLEWISE to connect your experience to role requirements.'}
+                ? 'Sign in to continue preparing.'
+                : 'Free during early access.'}
             </p>
           </div>
 
@@ -497,8 +473,8 @@ export const AuthView: React.FC = () => {
           {/* Terms Notice */}
           <p className="text-[11px] text-[#9A9B9E] text-center leading-relaxed">
             By continuing, you agree to our{' '}
-            <span className="underline cursor-pointer">Terms of Service</span> and{' '}
-            <span className="underline cursor-pointer">Privacy Policy</span>.
+            <Link href="/terms" className="underline underline-offset-2 hover:text-[#252525]">Terms</Link> and{' '}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-[#252525]">Privacy</Link>.
           </p>
         </div>
       </div>
