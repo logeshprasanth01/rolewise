@@ -734,7 +734,8 @@ function FirstTen() {
                   {i + 1}
                 </span>
                 <div className="flex flex-1 flex-col rounded-[24px] border border-[#E4E2DA] bg-white p-6 lg:mt-5">
-                  <h3 className="text-[19px] font-semibold leading-snug">{s.title}</h3>
+                  <LineIcon name={s.icon} size={48} />
+                  <h3 className="mt-5 text-[19px] font-semibold leading-snug">{s.title}</h3>
                   <p className="mt-2 text-[15px] leading-relaxed text-[#5E6065]">{s.body}</p>
                   <div className="mt-auto pt-5">
                     <p className="flex items-start gap-2 rounded-xl bg-[#FFF6D1] px-3 py-2.5 text-[13px] leading-snug text-[#4A3F12]">
