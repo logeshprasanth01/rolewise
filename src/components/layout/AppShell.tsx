@@ -37,6 +37,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
   const { userName, session, isLoading, signOut } = useAuth();
+  const isPublicPage = ['/welcome', '/privacy', '/terms'].some((p) => pathname?.startsWith(p));
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [headerQuery, setHeaderQuery] = useState('');
@@ -65,12 +66,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    if (pathname?.startsWith('/welcome')) return;
+    if (isPublicPage) return;
     if (!isLoading && !session && pathname !== '/auth' && !pathname?.startsWith('/auth/')) {
       // Signed-out visitors to the home page see the public landing page first.
       router.replace(pathname === '/' ? '/welcome' : '/auth');
     }
-  }, [isLoading, session, pathname, router]);
+  }, [isLoading, session, pathname, router, isPublicPage]);
 
   useEffect(() => {
     const saved = window.localStorage.getItem('rolewise-sidebar-collapsed');
@@ -102,8 +103,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     playUiSound('click');
   };
 
-  // Public landing page: no app chrome, no boot screen.
-  if (pathname?.startsWith('/welcome')) return <>{children}</>;
+  // Public pages: no app chrome, no boot screen.
+  if (isPublicPage) return <>{children}</>;
 
   if (isLoading) {
     return <BootScreen />;

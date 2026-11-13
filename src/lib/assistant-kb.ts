@@ -17,8 +17,51 @@ export interface HelpEntry {
 
 export const HELP: HelpEntry[] = [
   {
+    id: 'pricing',
+    keywords: ['free', 'price', 'pricing', 'cost', 'pay', 'paid', 'plan price', 'subscription', 'money', 'charge'],
+    answer: 'Rolewise is free while it is in early access. Sign up with Google, LinkedIn or email to start.',
+    link: { label: 'Create a free account', href: '/auth?mode=signup' },
+  },
+  {
+    id: 'rowi',
+    keywords: ['who are you', 'what are you', 'rowi', 'your name', 'are you a bot', 'are you human'],
+    answer:
+      "I'm Rowi, Rolewise's prep buddy. I answer questions about using Rolewise and share interview tips. I'm a helper, not a person, so double-check anything important.",
+  },
+  {
+    id: 'star',
+    keywords: ['star', 'structure', 'how to answer', 'behavioural', 'behavioral', 'tell me about a time', 'example answer', 'tips'],
+    answer:
+      'For "tell me about a time" questions, use STAR: the Situation, your Task, the Action you took, and the Result, ideally with a number. Keep it to about two minutes and spend most of it on the Action.',
+  },
+  {
+    id: 'yourself',
+    keywords: ['tell me about yourself', 'introduce myself', 'introduction', 'about yourself'],
+    answer:
+      'A simple shape: who you are now (role and focus), one or two achievements that match this job, and why this role is your next step. Aim for 60 to 90 seconds and link it to the job description.',
+  },
+  {
+    id: 'device',
+    keywords: ['phone', 'mobile', 'tablet', 'laptop', 'app store', 'download', 'install'],
+    answer:
+      'Rolewise runs in your browser on a laptop or phone, so there is nothing to install. Voice and video practice need microphone (and camera) access.',
+  },
+  {
+    id: 'roles',
+    keywords: ['which roles', 'what roles', 'any role', 'my field', 'industry', 'fresher', 'developer', 'designer', 'manager'],
+    answer:
+      'Any role that has a job description: design, engineering, product, data, marketing and more. Rolewise reads the requirements from the job you paste, so it adapts to your field.',
+    link: { label: 'Add a job', href: '/jobs/new' },
+  },
+  {
+    id: 'time',
+    keywords: ['how long', 'how much time', 'minutes', 'quick'],
+    answer:
+      'About ten minutes to your first fit score: a couple of minutes to add the job and resume, then the analysis. One mock answer takes a few more minutes.',
+  },
+  {
     id: 'start',
-    keywords: ['start', 'begin', 'first', 'how does', 'how do i use', 'what is rolewise', 'get started', 'new here'],
+    keywords: ['start', 'begin', 'first', 'how do i use', 'what is rolewise', 'get started', 'new here'],
     answer:
       'Rolewise helps you prepare for one specific role. Add the job description and your resume, then Rolewise maps each requirement to your experience, builds a prep plan for the gaps, and lets you practise with mock interviews written for that job.',
     link: { label: 'Add a job', href: '/jobs/new' },
@@ -52,7 +95,7 @@ export const HELP: HelpEntry[] = [
   },
   {
     id: 'voice',
-    keywords: ['voice', 'video', 'record', 'microphone', 'mic', 'camera', 'transcri', 'speech', 'browser', 'chrome', 'safari', 'firefox', 'edge'],
+    keywords: ['voice', 'video', 'record', 'microphone', 'mic', 'camera', 'transcribe', 'transcription', 'voice practice', 'video practice', 'speech', 'browser', 'chrome', 'safari', 'firefox', 'edge'],
     answer:
       'Voice and video practice work in modern browsers. In Chrome and Edge your answer is written down live and free while you speak. In other browsers the recording is transcribed after you stop. Allow microphone (and camera for video) when your browser asks.',
     link: { label: 'Try voice practice', href: '/communication-practice/voice' },
@@ -89,6 +132,8 @@ export const SUGGESTIONS = [
   'How is the fit score calculated?',
   "My resume won't upload",
   'How does voice practice work?',
+  'Is Rolewise free?',
+  'How do I answer "tell me about yourself"?',
 ];
 
 /** Returns the best built-in answer, or null when nothing matches well. */
@@ -97,7 +142,11 @@ export function matchHelp(text: string): HelpEntry | null {
   let best: { e: HelpEntry; score: number } | null = null;
   for (const e of HELP) {
     let score = 0;
-    for (const k of e.keywords) if (q.includes(k)) score += k.length > 6 ? 2 : 1;
+    for (const k of e.keywords) {
+      // whole-word match so "star" doesn't fire on "start"
+      const re = new RegExp(`(^|[^a-z])${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^a-z])`);
+      if (re.test(q)) score += k.length > 6 ? 2 : 1;
+    }
     if (score > 0 && (!best || score > best.score)) best = { e, score };
   }
   return best?.e ?? null;

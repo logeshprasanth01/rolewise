@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { AppShell } from '@/components/layout/AppShell';
 import { MascotAssistant } from '@/components/assistant/MascotAssistant';
+import { SITE_URL } from '@/lib/site';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -12,9 +13,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'ROLEWISE — Prepare for the role. Not just the interview.',
   description:
     'Production-style AI interview preparation. Connect your real candidate experience with role requirements to build focused preparation plans.',
+  openGraph: {
+    type: 'website',
+    siteName: 'Rolewise',
+    url: '/welcome',
+    title: 'Rolewise — Prepare for the role, not just the interview',
+    description: 'See how well you fit each requirement, then prep and practise for that exact role. Free during early access.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Rolewise — Prepare for the role, not just the interview',
+    description: 'See how well you fit each requirement, then prep and practise for that exact role. Free during early access.',
+  },
 };
 
 export default function RootLayout({

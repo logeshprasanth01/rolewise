@@ -9,7 +9,7 @@ import { matchHelp, SUGGESTIONS, type HelpLink } from '@/lib/assistant-kb';
 import { isMascotSoundOn, playMascotSound, setMascotSoundOn } from '@/lib/mascot-sound';
 import { ROWI_OPEN_EVENT } from '@/lib/rowi-events';
 
-type ChatMsg = { role: 'user' | 'assistant'; content: string; link?: HelpLink };
+type ChatMsg = { role: 'user' | 'assistant'; content: string; link?: HelpLink; offerTopics?: boolean };
 
 const GREETING: ChatMsg = {
   role: 'assistant',
@@ -17,7 +17,7 @@ const GREETING: ChatMsg = {
 };
 
 const FALLBACK =
-  "I'm not sure about that one yet. I can help with adding a job, your resume, the fit score, your prep plan, mock interviews and voice or video practice.";
+  "I don't have a good answer for that yet, and I'd rather not guess. Here are things I can help with:";
 
 export function MascotAssistant() {
   const pathname = usePathname() || '/';
@@ -32,7 +32,7 @@ export function MascotAssistant() {
   const launcherRef = useRef<HTMLButtonElement>(null);
 
   // Public pages have no bottom nav; inside the app on small screens, sit above it.
-  const isPublic = pathname.startsWith('/welcome') || pathname.startsWith('/auth');
+  const isPublic = ['/welcome', '/auth', '/privacy', '/terms'].some((p) => pathname.startsWith(p));
   const offset = isPublic ? 'bottom-5' : 'bottom-[88px] lg:bottom-6';
 
   useEffect(() => {
@@ -132,7 +132,9 @@ export function MascotAssistant() {
     }
     if (!reply) {
       await new Promise((r) => setTimeout(r, 450)); // a beat so the reply doesn't feel abrupt
-      reply = local ? { role: 'assistant', content: local.answer, link: local.link } : { role: 'assistant', content: FALLBACK };
+      reply = local
+        ? { role: 'assistant', content: local.answer, link: local.link }
+        : { role: 'assistant', content: FALLBACK, offerTopics: true };
     }
     setMsgs((m) => [...m, reply!]);
     setBusy(false);
@@ -143,7 +145,7 @@ export function MascotAssistant() {
     askRef.current = (q: string) => void ask(q);
   });
 
-  const showSuggestions = msgs.length === 1 && !busy;
+  const showSuggestions = !busy && (msgs.length === 1 || Boolean(msgs[msgs.length - 1]?.offerTopics));
 
   return (
     <div className={`fixed right-4 z-[70] sm:right-6 ${offset}`}>

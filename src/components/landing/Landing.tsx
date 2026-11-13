@@ -53,14 +53,7 @@ const NAV = [
 
 type TabId = 'fit' | 'prep' | 'interview' | 'tracker';
 
-const QUICK_NAV: { icon: string; label: string; tab: TabId | 'practice' }[] = [
-  { icon: 'bullseye', label: 'Role fit', tab: 'fit' },
-  { icon: 'clipboard', label: 'Prep plan', tab: 'prep' },
-  { icon: 'speech-balloon', label: 'Mock interview', tab: 'interview' },
-  { icon: 'microphone', label: 'Voice practice', tab: 'practice' },
-  { icon: 'video-camera', label: 'Video practice', tab: 'practice' },
-  { icon: 'briefcase', label: 'Job tracker', tab: 'tracker' },
-];
+
 
 const TABS: {
   id: TabId;
@@ -160,6 +153,10 @@ const FIRST_TEN = [
 ];
 
 const FAQS = [
+  {
+    q: 'Is Rolewise free?',
+    a: 'Yes. Rolewise is free while it is in early access. Sign up with Google, LinkedIn or email.',
+  },
   {
     q: 'What do I need to get started?',
     a: 'A job description for the role you want and your resume as a PDF or DOCX. If your resume is a scanned image, you can add your experience manually.',
@@ -322,7 +319,7 @@ function Hero() {
     <section ref={ref} className="rwl-hero-bg relative overflow-hidden pt-[72px] text-white">
       <CursorGlow x={80} y={28} size={620} />
       <div className="rwl-grid-lines pointer-events-none absolute inset-0" aria-hidden />
-      <div className="relative mx-auto grid max-w-[1240px] items-center gap-16 px-5 pb-28 pt-14 md:px-8 lg:grid-cols-[1fr_1.08fr] lg:gap-10 lg:pb-36 lg:pt-20">
+      <div className="relative mx-auto grid max-w-[1240px] items-center gap-16 px-5 pb-24 pt-14 md:px-8 lg:grid-cols-[1fr_1.08fr] lg:gap-10 lg:pb-28 lg:pt-20">
         <div>
           <h1 className="rwl-enter text-[44px] font-semibold leading-[1.02] tracking-[-0.035em] [text-wrap:balance] sm:text-[58px] lg:text-[68px]">
             Prepare for the role, not just the interview.
@@ -344,7 +341,7 @@ function Hero() {
             <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#FFD84D]" aria-hidden />
             {session
               ? 'You are signed in. Pick up where you left off.'
-              : 'About 10 minutes to your first fit score. Sign up with Google, LinkedIn or email.'}
+              : 'Free during early access. About 10 minutes to your first fit score.'}
           </p>
         </div>
 
@@ -372,9 +369,6 @@ function Hero() {
             </div>
           ))}
 
-          <div className="rwl-parallax absolute -bottom-14 right-[2%] sm:-bottom-16 sm:right-[6%]" style={{ ['--depth' as string]: '-10px' }}>
-            <Mascot size={118} title="Rowi, the Rolewise prep buddy, waving hello" />
-          </div>
         </div>
       </div>
     </section>
@@ -870,10 +864,7 @@ export function Landing() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const goTo = (target: TabId | 'practice') => {
-    if (target !== 'practice') setTab(target);
-    document.getElementById(target === 'practice' ? 'practice' : 'product')?.scrollIntoView({ behavior: 'smooth' });
-  };
+
 
   return (
     <div className="rwl min-h-screen w-full bg-[#F3F2EE] text-[#252525] [scroll-behavior:smooth]">
@@ -898,7 +889,7 @@ export function Landing() {
               <a
                 key={n.href}
                 href={n.href}
-                className="rounded-md text-[15px] font-medium text-[#4A4C51] transition-colors hover:text-[#252525] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-4"
+                className="inline-flex min-h-[44px] items-center rounded-md px-1 text-[15px] font-medium text-[#4A4C51] transition-colors hover:text-[#252525] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
               >
                 {n.label}
               </a>
@@ -947,25 +938,7 @@ export function Landing() {
       <main id="main">
         <Hero />
 
-        <section aria-label="Jump to a feature" className="relative z-10 mx-auto -mt-12 max-w-[1240px] px-5 md:px-8">
-          <div className="rounded-[28px] border border-[#E4E2DA] bg-[#FAF9F4] p-3 shadow-[0_30px_60px_-30px_rgba(37,37,37,0.35)]">
-            <p className="px-3 pb-2 pt-1 text-[15px] font-medium text-[#5E6065]">What do you want to work on?</p>
-            <ul className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:grid-cols-6">
-              {QUICK_NAV.map((q) => (
-                <li key={q.label}>
-                  <button
-                    type="button"
-                    onClick={() => goTo(q.tab)}
-                    className="group flex min-h-[64px] w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-[15px] font-semibold transition hover:bg-white hover:shadow-[0_10px_24px_-14px_rgba(37,37,37,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
-                  >
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F3F2EE] text-[#252525] transition-colors group-hover:bg-[#FFD84D]"><LineIcon name={q.icon} tone="bare" /></span>
-                    {q.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+
 
         <ProductTabs active={tab} setActive={setTab} />
         <FitSimulator />
@@ -1010,34 +983,36 @@ export function Landing() {
             <div className="w-[140px]">
               <RolewiseLogo />
             </div>
-            <p className="mt-4 text-[14px] leading-relaxed text-[#73757A]">Prepare for the role, not just the interview.</p>
+            <p className="mt-4 text-[14px] leading-relaxed text-[#5E6065]">Prepare for the role, not just the interview.</p>
           </div>
           <div className="grid grid-cols-2 gap-10 text-[14px] sm:grid-cols-3">
             <div>
               <p className="font-semibold">Product</p>
-              <ul className="mt-3 space-y-2 text-[#5E6065]">
-                <li><a href="#product" className="hover:text-[#252525]">Features</a></li>
-                <li><a href="#fit" className="hover:text-[#252525]">Fit score</a></li>
-                <li><a href="#practice" className="hover:text-[#252525]">Practice</a></li>
+              <ul className="mt-2 space-y-0.5 text-[#5E6065]">
+                <li><a href="#product" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Features</a></li>
+                <li><a href="#fit" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Fit score</a></li>
+                <li><a href="#practice" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Practice</a></li>
               </ul>
             </div>
             <div>
               <p className="font-semibold">Account</p>
-              <ul className="mt-3 space-y-2 text-[#5E6065]">
-                <li><Link href="/auth" className="hover:text-[#252525]">Sign in</Link></li>
-                <li><Link href="/auth?mode=signup" className="hover:text-[#252525]">Create account</Link></li>
+              <ul className="mt-2 space-y-0.5 text-[#5E6065]">
+                <li><Link href="/auth" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Sign in</Link></li>
+                <li><Link href="/auth?mode=signup" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Create account</Link></li>
               </ul>
             </div>
             <div>
               <p className="font-semibold">Help</p>
-              <ul className="mt-3 space-y-2 text-[#5E6065]">
-                <li><a href="#start" className="hover:text-[#252525]">Getting started</a></li>
-                <li><a href="#faq" className="hover:text-[#252525]">FAQ</a></li>
+              <ul className="mt-2 space-y-0.5 text-[#5E6065]">
+                <li><a href="#start" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Getting started</a></li>
+                <li><a href="#faq" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">FAQ</a></li>
+                <li><Link href="/privacy" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Privacy</Link></li>
+                <li><Link href="/terms" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Terms</Link></li>
               </ul>
             </div>
           </div>
         </div>
-        <div className="mt-10 flex flex-col justify-between gap-2 text-[13px] text-[#73757A] sm:flex-row">
+        <div className="mt-10 flex flex-col justify-between gap-2 text-[13px] text-[#5E6065] sm:flex-row">
           <p>© {new Date().getFullYear()} Rolewise</p>
           <p>
             Photos from{' '}
