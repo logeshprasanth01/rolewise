@@ -348,7 +348,7 @@ export default function JobDetailPage() {
             {[
               { href: `/roles/${role.id}/fit`, label: 'Role fit', icon: Target },
               { href: `/roles/${role.id}/preparation`, label: 'Prep plan', icon: ListChecks },
-              { href: `/roles/${role.id}/interview`, label: 'AI interview', icon: Bot },
+              { href: `/roles/${role.id}/interview`, label: 'Rowi interview', icon: Bot },
             ].map(({ href, label: l, icon: Icon }) => (
               <Link key={href} href={href} className="rounded-2xl bg-white border border-[#D9D8D2] hover:border-[#252525] p-3 flex flex-col items-center gap-1.5 text-center transition-colors">
                 <Icon className="w-5 h-5 text-[#252525]" />

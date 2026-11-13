@@ -256,7 +256,7 @@ export default function DashboardPage() {
                       </Link>
                       <div className="flex gap-2">
                         <Link data-ui-sound="click" href={`/roles/${role.id}/preparation`} className="touch-target flex-1 sm:flex-none text-center px-3.5 py-2 rounded-lg bg-white border border-[#D9D8D2] text-[13px] font-semibold text-[#252525]">Prep plan</Link>
-                        <Link data-ui-sound="click" href={`/roles/${role.id}/interview`} className="touch-target flex-1 sm:flex-none text-center px-3.5 py-2 rounded-lg bg-[#FFD84D] text-[#252525] text-[13px] font-semibold">AI interview</Link>
+                        <Link data-ui-sound="click" href={`/roles/${role.id}/interview`} className="touch-target flex-1 sm:flex-none text-center px-3.5 py-2 rounded-lg bg-[#FFD84D] text-[#252525] text-[13px] font-semibold">Practise with Rowi</Link>
                       </div>
                     </div>
                   ))}
@@ -359,7 +359,7 @@ export default function DashboardPage() {
           <div className="rolewise-card p-6 space-y-4">
             <div>
               <h2 className="text-base font-semibold text-[#252525]">Communication Practice</h2>
-              <p className="text-xs text-[#73757A]">Build confidence with AI-powered practice.</p>
+              <p className="text-xs text-[#73757A]">Build confidence practising with Rowi.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">

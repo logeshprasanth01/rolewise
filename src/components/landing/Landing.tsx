@@ -100,7 +100,7 @@ const TABS: {
     icon: 'speech-balloon',
     title: 'Questions written for this job',
     body: 'Practise with interview questions built from the job description, and get feedback on relevance and structure for each answer.',
-    points: ['Feedback on every answer', 'Clear progress while it reviews', 'Your answer is kept if the AI is busy'],
+    points: ['Feedback on every answer', 'Clear progress while it reviews', 'Your answer is kept if Rowi is busy'],
     image: '/landing/dlg-review.webp',
     alt: 'Rolewise reviewing an answer with a stepped progress window',
     tint: 'from-[#FBE6E1] to-[#F2C4B9]',
@@ -169,7 +169,7 @@ const FAQS = [
   },
   {
     q: 'What happens to my resume?',
-    a: 'It is saved to your account and sent to our AI only to match it against the jobs you add.',
+    a: 'It is saved to your account and shared with Rowi only to match it against the jobs you add.',
   },
   {
     q: 'Which browsers support voice practice?',
@@ -372,7 +372,7 @@ function Hero() {
           ))}
 
           <div className="rwl-parallax absolute -bottom-14 right-[2%] sm:-bottom-16 sm:right-[6%]" style={{ ['--depth' as string]: '-10px' }}>
-            <Mascot size={118} title="Rolewise prep buddy waving hello" />
+            <Mascot size={118} title="Rowi, the Rolewise prep buddy, waving hello" />
           </div>
         </div>
       </div>
@@ -749,7 +749,7 @@ function Trust() {
   const items = [
     { icon: Lock, title: 'Your resume stays yours', body: 'Saved to your account and used only to match the jobs you add.' },
     { icon: FileText, title: 'No guessed resume text', body: 'If a file cannot be read, Rolewise says so and offers a manual option.' },
-    { icon: CheckCircle2, title: 'Answers are never lost', body: 'If AI feedback fails, your recording is kept. Retry, or type the answer instead.' },
+    { icon: CheckCircle2, title: 'Answers are never lost', body: "If Rowi can't give feedback right away, your recording is kept. Retry, or type the answer instead." },
   ];
   return (
     <section className="rwl-hero-bg relative overflow-hidden py-24 text-white lg:py-28">
@@ -759,7 +759,7 @@ function Trust() {
         <div>
           <LineIcon name="shield" size={52} tone="yellow" />
           <h2 className="mt-6 text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
-            AI you can trust with your next job
+            Rowi, a prep buddy you can trust
           </h2>
           <p className="mt-4 max-w-[400px] text-[17px] leading-relaxed text-white/70">
             Preparation only helps if what it tells you is true. These rules are built into the product.

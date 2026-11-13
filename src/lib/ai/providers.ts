@@ -7,7 +7,7 @@ import {
 } from './types';
 
 export class AIProviderUnavailableError extends Error {
-  constructor(message = 'AI feedback is temporarily unavailable.') {
+  constructor(message = "Rowi can't give feedback right now.") {
     super(message);
     this.name = 'AIProviderUnavailableError';
   }
@@ -134,7 +134,7 @@ export async function transcribeAudioWithProvider(
   if (!stt.apiKey) {
     console.warn(`[STT Provider] No API key configured for STT provider: ${stt.provider}`);
     throw new STTProviderUnavailableError(
-      'AI transcription is temporarily unavailable. Please try again.'
+      "Rowi couldn't transcribe this just now. Please try again."
     );
   }
 
@@ -211,7 +211,7 @@ export async function transcribeAudioWithProvider(
     if (!res.ok) {
       const errorText = await res.text();
       console.error(`[STT Provider ${stt.provider}] Error ${res.status}:`, errorText);
-      throw new STTProviderUnavailableError('AI transcription is temporarily unavailable. Please try again.');
+      throw new STTProviderUnavailableError("Rowi couldn't transcribe this just now. Please try again.");
     }
 
     const data = await res.json();
@@ -228,7 +228,7 @@ export async function transcribeAudioWithProvider(
   } catch (err: unknown) {
     if (err instanceof STTProviderUnavailableError) throw err;
     console.error(`[STT Provider ${stt.provider}] Transcription failed:`, err);
-    throw new STTProviderUnavailableError('AI transcription is temporarily unavailable. Please try again.');
+    throw new STTProviderUnavailableError("Rowi couldn't transcribe this just now. Please try again.");
   }
 }
 
@@ -243,7 +243,7 @@ export async function analyzeCommunicationWithProvider(
 
   if (!ai.apiKey) {
     console.warn(`[AI Provider] No API key configured for AI provider: ${ai.provider}`);
-    throw new AIProviderUnavailableError('AI feedback is temporarily unavailable.');
+    throw new AIProviderUnavailableError("Rowi can't give feedback right now.");
   }
 
   const {
@@ -330,13 +330,13 @@ CRITICAL CONSTRAINTS:
     if (!res.ok) {
       const errText = await res.text();
       console.error(`[AI Provider ${ai.provider}] Error ${res.status}:`, errText);
-      throw new AIProviderUnavailableError('AI feedback is temporarily unavailable.');
+      throw new AIProviderUnavailableError("Rowi can't give feedback right now.");
     }
 
     const data = await res.json();
     const content = data.choices?.[0]?.message?.content;
     if (!content) {
-      throw new AIProviderUnavailableError('AI feedback is temporarily unavailable.');
+      throw new AIProviderUnavailableError("Rowi can't give feedback right now.");
     }
 
     const parsed = JSON.parse(content);
@@ -359,6 +359,6 @@ CRITICAL CONSTRAINTS:
   } catch (err: unknown) {
     if (err instanceof AIProviderUnavailableError) throw err;
     console.error(`[AI Provider ${ai.provider}] Call failed:`, err);
-    throw new AIProviderUnavailableError('AI feedback is temporarily unavailable.');
+    throw new AIProviderUnavailableError("Rowi can't give feedback right now.");
   }
 }

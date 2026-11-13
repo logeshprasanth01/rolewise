@@ -533,10 +533,11 @@ export async function transcribeAudio(
         res.status === 503 ||
         responseJson.code === 'AI_TRANSCRIPTION_ERROR' ||
         responseJson.code === 'AI_PROVIDER_ERROR' ||
-        responseJson.error?.includes('AI transcription is temporarily unavailable')
+        responseJson.error?.includes('AI transcription is temporarily unavailable') ||
+        responseJson.error?.includes("Rowi couldn't transcribe")
       ) {
         throw new RolewiseApiError(
-          'AI transcription is temporarily unavailable. Please try again.',
+          "Rowi couldn't transcribe this just now. Please try again.",
           'AI_TRANSCRIPTION_ERROR',
           responseJson
         );
@@ -590,7 +591,7 @@ export async function analyzeCommunication(
     if (error) {
       console.error('[Rolewise] analyze-interview-answer Edge Function error:', error);
       throw new RolewiseApiError(
-        'Your recording was captured, but AI feedback is temporarily unavailable.',
+        "Your recording was captured, but Rowi can't give feedback right now.",
         'AI_FEEDBACK_ERROR',
         error
       );
@@ -615,7 +616,7 @@ export async function analyzeCommunication(
 
     if (!res.ok) {
       throw new RolewiseApiError(
-        'Your recording was captured, but AI feedback is temporarily unavailable.',
+        "Your recording was captured, but Rowi can't give feedback right now.",
         'AI_FEEDBACK_ERROR',
         responseJson
       );
@@ -624,7 +625,7 @@ export async function analyzeCommunication(
     return responseJson as CommunicationAnalysisResponse;
   } catch (err: unknown) {
     if (err instanceof RolewiseApiError) throw err;
-    const msg = err instanceof Error ? err.message : "Your recording was captured, but AI feedback is temporarily unavailable.";
+    const msg = err instanceof Error ? err.message : "Your recording was captured, but Rowi can't give feedback right now.";
     throw new RolewiseApiError(msg, 'AI_FEEDBACK_ERROR', err);
   }
 }
@@ -969,7 +970,7 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
   // 4. Verify session access token exists before making request (TASK 4)
   if (!session?.access_token) {
     throw new RolewiseApiError(
-      'Please sign in to practice your AI interview and save your progress.',
+      'Please sign in to practise your mock interview with Rowi and save your progress.',
       'AUTH_ERROR',
       {
         status: 401,
@@ -1076,7 +1077,7 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
   // 8. Preserved user-facing error handling (TASK 16)
   if (status === 401) {
     throw new RolewiseApiError(
-      'Please sign in to practice your AI interview and save your progress.',
+      'Please sign in to practise your mock interview with Rowi and save your progress.',
       'AUTH_ERROR',
       {
         status: 401,
@@ -1088,7 +1089,7 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
 
   if (status === 429) {
     throw new RolewiseApiError(
-      'AI feedback is temporarily unavailable. Please try again shortly.',
+      "Rowi can't give feedback right now. Please try again shortly.",
       'RATE_LIMIT',
       {
         status: 429,
@@ -1100,7 +1101,7 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
 
   if (status >= 500) {
     throw new RolewiseApiError(
-      'The AI service is temporarily unavailable. Please try again.',
+      "Rowi isn't available right now. Please try again.",
       'AI_SERVICE_ERROR',
       {
         status,

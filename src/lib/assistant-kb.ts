@@ -47,7 +47,7 @@ export const HELP: HelpEntry[] = [
     id: 'interview',
     keywords: ['mock', 'interview', 'question', 'questions', 'answer', 'feedback', 'review'],
     answer:
-      'Mock interviews use questions written from the job description. After each answer you get feedback on relevance and structure. If the AI is busy, your answer is kept so you can retry the feedback.',
+      'Mock interviews use questions written from the job description. After each answer you get feedback on relevance and structure. If Rowi is busy, your answer is kept so you can ask again.',
     link: { label: 'See your feedback', href: '/feedback' },
   },
   {
@@ -68,7 +68,7 @@ export const HELP: HelpEntry[] = [
     id: 'privacy',
     keywords: ['privacy', 'private', 'data', 'safe', 'secure', 'who can see', 'delete'],
     answer:
-      'Your resume is saved to your account and sent to our AI only to match it against the jobs you add.',
+      'Your resume is saved to your account and shared with Rowi only to match it against the jobs you add.',
   },
   {
     id: 'account',

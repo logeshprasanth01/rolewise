@@ -115,7 +115,7 @@ export default function VoicePracticePage() {
       } catch (err: unknown) {
         console.error('Transcription notice:', err);
         setErrorMessage(
-          "Your recording is saved. We couldn't transcribe it just now. Retry AI feedback or type your answer instead."
+          "Your recording is saved. We couldn't transcribe it just now. Ask Rowi again or type your answer instead."
         );
         setFlowState('RECORDED');
         return;
@@ -144,7 +144,7 @@ export default function VoicePracticePage() {
       clearTimeout(writeTimer);
       console.error('Analysis error:', err);
       setErrorMessage(
-        "Your recording is saved, but AI feedback couldn't be generated just now. You can retry without recording again."
+        "Your recording is saved, but Rowi couldn't give feedback just now. You can retry without recording again."
       );
       setFlowState('RECORDED');
     }
@@ -224,7 +224,7 @@ export default function VoicePracticePage() {
               className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#D97968]/40 text-[#D97968] hover:bg-[#FFF0ED] text-xs font-medium transition-colors cursor-pointer"
             >
               <RefreshCw className="w-3 h-3" />
-              <span>Retry AI feedback</span>
+              <span>Ask Rowi again</span>
             </button>
             <button
               type="button"

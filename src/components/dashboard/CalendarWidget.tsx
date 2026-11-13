@@ -193,7 +193,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
           list.push({
             id: `interview-${intv.id}`,
             type: 'interview',
-            title: matchedRole ? `${matchedRole.title} Practice` : 'AI Interview Practice',
+            title: matchedRole ? `${matchedRole.title} Practice` : 'Mock interview with Rowi',
             company: matchedRole?.company,
             date: d,
             roleId: intv.role_id,

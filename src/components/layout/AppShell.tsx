@@ -45,7 +45,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
     { label: 'Job Tracker', href: '/jobs', icon: Briefcase },
     { label: 'Preparation', href: '/preparation', icon: Layers },
-    { label: 'AI Interview', href: '/roles', icon: Bot },
+    { label: 'Rowi Interview', href: '/roles', icon: Bot },
     { label: 'Communication', href: '/communication-practice', icon: MessageSquare },
     { label: 'Feedback', href: '/feedback', icon: Clock },
     { label: 'Resume', href: '/resume', icon: FileText },

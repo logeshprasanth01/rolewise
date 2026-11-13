@@ -56,7 +56,7 @@ export default function FeedbackPage() {
     <div className="max-w-4xl mx-auto space-y-5 pb-16 animate-in fade-in duration-300">
       <header className="space-y-1">
         <h1 className="text-[26px] sm:text-3xl font-bold text-[#252525] tracking-tight">Interview Feedback</h1>
-        <p className="text-sm text-[#73757A]">Feedback from your AI mock interviews, saved after each session.</p>
+        <p className="text-sm text-[#73757A]">Feedback from your mock interviews with Rowi, saved after each session.</p>
       </header>
 
       {history.length === 0 ? (
@@ -67,7 +67,7 @@ export default function FeedbackPage() {
           <div className="space-y-1">
             <h2 className="text-base font-bold text-[#252525]">No mock interviews yet</h2>
             <p className="text-sm text-[#73757A] max-w-sm mx-auto">
-              Finish an AI interview for one of your jobs and your answers, strengths and what to work on will appear here.
+              Finish a mock interview with Rowi for one of your jobs and your answers, strengths and what to work on will appear here.
             </p>
           </div>
           <Link

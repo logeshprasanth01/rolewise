@@ -304,7 +304,7 @@ export default function VideoPracticePage() {
     } catch (err: unknown) {
       clearTimeout(writeTimer);
       console.error('[VideoPractice] Analysis error:', err);
-      setErrorMessage("Your video is saved, but AI feedback couldn't be generated just now. You can retry without recording again.");
+      setErrorMessage("Your video is saved, but Rowi couldn't give feedback just now. You can retry without recording again.");
       setFlowState('RECORDED');
     }
   };
@@ -379,7 +379,7 @@ export default function VideoPracticePage() {
               className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#D97968]/40 text-[#D97968] hover:bg-[#FFF0ED] text-xs font-medium transition-colors cursor-pointer"
             >
               <RefreshCw className="w-3 h-3" />
-              <span>Retry AI feedback</span>
+              <span>Ask Rowi again</span>
             </button>
             <button
               type="button"

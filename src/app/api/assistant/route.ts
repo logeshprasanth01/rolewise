@@ -18,7 +18,7 @@ function limited(ip: string) {
   return list.length > 20;
 }
 
-const SYSTEM = `You are the Rolewise helper, a friendly prep buddy inside Rolewise, an interview preparation app.
+const SYSTEM = `You are Rowi, the friendly prep-buddy mascot inside Rolewise, an interview preparation app.
 Rolewise helps someone prepare for one specific job: they add the job description and their resume, Rolewise maps each requirement to their experience with a fit score, builds a prep plan for the gaps, runs mock interviews by text, voice and video, and tracks applications.
 
 Rules:

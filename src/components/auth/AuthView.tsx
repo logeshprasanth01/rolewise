@@ -225,7 +225,7 @@ export const AuthView: React.FC = () => {
             <div className="bg-[#F3F2EE] border border-[#D9D8D2] rounded-2xl p-6 sm:p-8 space-y-5 relative">
               <div className="flex items-center justify-between text-xs font-semibold text-[#73757A] uppercase tracking-wider">
                 <span>Targeted Role Preparation</span>
-                <span className="text-[#252525]">AI Powered</span>
+                <span className="text-[#252525]">With Rowi</span>
               </div>
 
               {/* Floating Role Badges */}

@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     if (!activeAI.apiKey) {
       return NextResponse.json(
         {
-          error: 'AI feedback is temporarily unavailable.',
+          error: "Rowi can't give feedback right now.",
           details: `Provider ${activeAI.provider} requires ${
             activeAI.provider === 'groq' ? 'GROQ_API_KEY' : 'API key'
           } to be set in environment.`,
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
     if (error instanceof AIProviderUnavailableError) {
       return NextResponse.json(
         {
-          error: 'AI feedback is temporarily unavailable.',
+          error: "Rowi can't give feedback right now.",
           details: error.message,
         },
         { status: 503 }
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     const message = error instanceof Error ? error.message : 'Unknown analysis error';
     return NextResponse.json(
       {
-        error: 'AI feedback is temporarily unavailable.',
+        error: "Rowi can't give feedback right now.",
         details: message,
       },
       { status: 500 }

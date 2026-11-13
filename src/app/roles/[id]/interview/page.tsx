@@ -267,7 +267,7 @@ export default function InterviewPage() {
         isGeneratingRef.current = false;
         setQuestionTimeoutOccurred(true);
         setQuestionError({
-          title: "AI question generation couldn't be completed.",
+          title: "Rowi couldn't write your questions just now.",
           description: 'The request took longer than expected. Please try again.',
           type: 'AI_GENERATION_ERROR',
         });
@@ -381,7 +381,7 @@ export default function InterviewPage() {
           });
         } else {
           setQuestionError({
-            title: "AI question generation couldn't be completed.",
+            title: "Rowi couldn't write your questions just now.",
             description: errorMessage || 'Please try again.',
             type: 'AI_GENERATION_ERROR',
           });
@@ -682,7 +682,7 @@ export default function InterviewPage() {
       const msg =
         err instanceof Error
           ? err.message
-          : 'AI feedback is temporarily unavailable. Please try again.';
+          : "Rowi can't give feedback right now. Please try again.";
       setGeneralError(msg);
       setFlowState('READY');
       saveStoredSession(roleId, { flowState: 'READY' });
@@ -1078,7 +1078,7 @@ export default function InterviewPage() {
           )}
         </div>
         <h1 className="text-2xl sm:text-3xl font-semibold text-[#252525] tracking-tight">
-          AI Interview
+          Mock interview with Rowi
         </h1>
       </section>
 

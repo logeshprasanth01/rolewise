@@ -91,7 +91,7 @@ export function QuickAddSheet({ open, onClose, onAdded }: QuickAddSheetProps) {
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
             <h2 id="quick-add-title" className="text-lg font-bold text-[#252525] tracking-tight">Log an application</h2>
-            <p className="text-[13px] text-[#73757A]">Takes 10 seconds. Run the AI fit analysis later from the job page.</p>
+            <p className="text-[13px] text-[#73757A]">Takes 10 seconds. Ask Rowi for the fit analysis later from the job page.</p>
           </div>
           <button type="button" onClick={() => { setError(null); onClose(); }} aria-label="Close" className="touch-target w-10 h-10 rounded-full border border-[#D9D8D2] flex items-center justify-center text-[#73757A] hover:text-[#252525] shrink-0">
             <X className="w-4 h-4" />

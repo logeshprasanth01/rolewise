@@ -94,7 +94,7 @@ export default function CommunicationPracticePage() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
-                <span>Usable playback even when AI analysis is offline</span>
+                <span>Usable playback even when Rowi is offline</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />

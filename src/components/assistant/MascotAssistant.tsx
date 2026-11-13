@@ -12,7 +12,7 @@ type ChatMsg = { role: 'user' | 'assistant'; content: string; link?: HelpLink };
 
 const GREETING: ChatMsg = {
   role: 'assistant',
-  content: "Hi! I'm your Rolewise prep buddy. Ask me anything about using Rolewise or getting ready for an interview.",
+  content: "Hi, I'm Rowi, your Rolewise prep buddy! Ask me anything about using Rolewise or getting ready for an interview.",
 };
 
 const FALLBACK =
@@ -131,7 +131,7 @@ export function MascotAssistant() {
       {open && (
         <section
           role="dialog"
-          aria-label="Rolewise helper"
+          aria-label="Chat with Rowi"
           className="rw-assistant-panel absolute bottom-[84px] right-0 flex h-[min(560px,calc(100dvh-140px))] w-[min(380px,calc(100vw-32px))] flex-col overflow-hidden rounded-[24px] border border-[#E4E2DA] bg-[#FAF9F4] text-[#252525] shadow-[0_30px_80px_-20px_rgba(37,37,37,0.45)]"
         >
           <header className="flex items-center gap-3 bg-[#252525] px-4 py-3 text-white">
@@ -139,8 +139,8 @@ export function MascotAssistant() {
               <Mascot size={34} track={false} animated={false} interactive={false} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold">Prep buddy</p>
-              <p className="text-[12px] text-white/60">Help with Rolewise and interview prep</p>
+              <p className="text-[15px] font-semibold">Rowi</p>
+              <p className="text-[12px] text-white/60">Your Rolewise prep buddy</p>
             </div>
             <button
               type="button"
@@ -154,7 +154,7 @@ export function MascotAssistant() {
             <button
               type="button"
               onClick={close}
-              aria-label="Close helper"
+              aria-label="Close chat with Rowi"
               className="flex h-10 w-10 items-center justify-center rounded-full text-white/80 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD84D]"
             >
               <X className="h-5 w-5" />
@@ -190,7 +190,7 @@ export function MascotAssistant() {
               )
             )}
             {busy && (
-              <div className="flex items-end gap-2" aria-label="Prep buddy is typing">
+              <div className="flex items-end gap-2" aria-label="Rowi is typing">
                 <Mascot size={26} track={false} animated={false} interactive={false} />
                 <div className="flex gap-1 rounded-2xl rounded-bl-md border border-[#E4E2DA] bg-white px-3.5 py-3">
                   {[0, 1, 2].map((d) => (
@@ -223,7 +223,7 @@ export function MascotAssistant() {
             className="flex items-center gap-2 border-t border-[#E4E2DA] bg-white p-3"
           >
             <label htmlFor="rw-assistant-input" className="sr-only">
-              Ask the prep buddy
+              Ask Rowi
             </label>
             <input
               id="rw-assistant-input"
@@ -231,7 +231,7 @@ export function MascotAssistant() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               maxLength={600}
-              placeholder="Ask about Rolewise…"
+              placeholder="Ask Rowi anything…"
               autoComplete="off"
               className="h-11 min-w-0 flex-1 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] px-4 text-[14px] outline-none placeholder:text-[#8A8C91] focus:border-[#252525]/50 focus:ring-2 focus:ring-[#FFD84D]/40"
             />
@@ -254,7 +254,7 @@ export function MascotAssistant() {
             onClick={toggle}
             className="rounded-xl px-2.5 py-1.5 text-left text-[13px] font-medium text-[#252525] hover:bg-[#F3F2EE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
           >
-            Need a hand? Ask me anything.
+            Hi, I&apos;m Rowi! Need a hand?
           </button>
           <button
             type="button"
@@ -276,7 +276,7 @@ export function MascotAssistant() {
           if (!open) playMascotSound('hello');
         }}
         aria-expanded={open}
-        aria-label={open ? 'Close helper' : 'Open helper'}
+        aria-label={open ? 'Close chat with Rowi' : 'Chat with Rowi'}
         className="relative flex h-[68px] w-[68px] items-center justify-center rounded-full border border-[#E4E2DA] bg-white shadow-[0_14px_34px_-12px_rgba(37,37,37,0.45)] transition-shadow hover:shadow-[0_18px_40px_-12px_rgba(37,37,37,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
       >
         <Mascot size={52} animated={false} sound={false} />
