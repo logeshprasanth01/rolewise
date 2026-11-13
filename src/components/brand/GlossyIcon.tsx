@@ -1,7 +1,7 @@
 import React, { useId } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
-export type GlossyTone = 'yellow' | 'ink' | 'green' | 'coral' | 'cream';
+export type GlossyTone = 'yellow' | 'ink' | 'green' | 'coral' | 'cream' | 'orange';
 export type GlossyShape = 'hex' | 'squircle';
 
 const TONES: Record<GlossyTone, { top: string; bottom: string; rim: string; glyph: string }> = {
@@ -10,6 +10,7 @@ const TONES: Record<GlossyTone, { top: string; bottom: string; rim: string; glyp
   green: { top: '#B4DCBE', bottom: '#6FA77F', rim: '#4C8059', glyph: '#FFFFFF' },
   coral: { top: '#F7BCAF', bottom: '#D97968', rim: '#A9503F', glyph: '#FFFFFF' },
   cream: { top: '#FFFFFF', bottom: '#ECE9DE', rim: '#C8C3B3', glyph: '#252525' },
+  orange: { top: '#FFC48A', bottom: '#F2873A', rim: '#BF5F1C', glyph: '#FFFFFF' },
 };
 
 // Flat-topped hexagon inside a 100x100 box, corners rounded via a thick round-joined stroke.

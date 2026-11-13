@@ -660,7 +660,7 @@ html, body {
 /* ---------- Yellow hero (landing) ---------- */
 @property --hx { syntax: '<percentage>'; inherits: true; initial-value: 70%; }
 @property --hy { syntax: '<percentage>'; inherits: true; initial-value: 35%; }
-.rwl-hero-yellow { background: linear-gradient(135deg, #FFF1B0 0%, #FFE27A 30%, #FFD84D 60%, #F6C443 100%); }
+.rwl-hero-yellow { background: linear-gradient(135deg, #FFE36E 0%, #FFD84D 45%, #F7C744 75%, #F2B941 100%); }
 .rwl-hy { position: absolute; inset: 0; pointer-events: none; overflow: hidden; transition: --hx .9s cubic-bezier(.16,1,.3,1), --hy .9s cubic-bezier(.16,1,.3,1); }
 .rwl-hy-blob { position: absolute; border-radius: 9999px; filter: blur(60px); opacity: .55; animation: rwl-hy-drift 18s ease-in-out infinite; }
 .rwl-hy-blob-a { width: 520px; height: 520px; left: -120px; top: -160px; background: #FFF6D1; }
@@ -676,8 +676,8 @@ html, body {
 }
 .rwl-hy-light {
   position: absolute; inset: 0;
-  background: radial-gradient(480px circle at var(--hx) var(--hy), rgba(255,255,255,.55) 0%, rgba(255,250,225,.22) 35%, rgba(255,255,255,0) 65%);
-  opacity: .35; transition: opacity .4s ease;
+  background: radial-gradient(480px circle at var(--hx) var(--hy), rgba(255,233,120,.7) 0%, rgba(255,224,90,.25) 38%, rgba(255,216,77,0) 65%);
+  opacity: 0; transition: opacity .4s ease;
 }
 .rwl-hy[data-active='true'] .rwl-hy-grid { opacity: 1; }
 .rwl-hy[data-active='true'] .rwl-hy-light { opacity: 1; }

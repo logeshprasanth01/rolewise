@@ -313,7 +313,6 @@ function HeroBackdrop() {
   }, []);
   return (
     <div ref={ref} className="rwl-hy" aria-hidden>
-      <div className="rwl-hy-blob rwl-hy-blob-a" />
       <div className="rwl-hy-blob rwl-hy-blob-b" />
       <div className="rwl-hy-grid" />
       <div className="rwl-hy-light" />
@@ -328,6 +327,7 @@ const FLOATERS: { icon: LucideIcon; tone: GlossyTone; shape: GlossyShape; cls: s
   { icon: ListChecks, tone: 'green', shape: 'squircle', cls: 'left-[38%] top-[-13%]', depth: '30px', size: 58, float: 'rwl-float-c', tilt: 'rw-tilt-r' },
   { icon: MessageSquare, tone: 'ink', shape: 'hex', cls: 'left-[2%] top-[-11%]', depth: '14px', size: 52, float: 'rwl-float-b', tilt: 'rw-tilt-l' },
   { icon: Briefcase, tone: 'green', shape: 'squircle', cls: 'left-[10%] bottom-[-10%]', depth: '-20px', size: 74, float: 'rwl-float-c', tilt: 'rw-tilt-r' },
+  { icon: Video, tone: 'orange', shape: 'squircle', cls: 'right-[-5%] bottom-[2%]', depth: '24px', size: 70, float: 'rwl-float-b', tilt: 'rw-tilt-l' },
 ]
 
 function Hero() {
@@ -371,7 +371,7 @@ function Hero() {
             <CtaButton variant="ink" />
             <a
               href="#fit"
-              className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-full border border-[#252525]/35 bg-white/35 px-7 text-[15px] font-medium backdrop-blur transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+              className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-full border border-[#252525]/40 bg-transparent px-7 text-[15px] font-medium transition hover:bg-[#252525]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
             >
               Try the fit score
             </a>
@@ -386,7 +386,7 @@ function Hero() {
 
         <div className="rwl-enter relative mx-auto w-full max-w-[640px] [animation-delay:180ms]">
           <div className="rwl-parallax relative" style={{ ['--depth' as string]: '8px' }}>
-            <div className="overflow-hidden rounded-[28px] border-4 border-white/70 bg-white/40 shadow-[0_40px_80px_-30px_rgba(120,80,0,0.55)]">
+            <div className="overflow-hidden rounded-[28px] bg-[#F2B941] shadow-[0_40px_80px_-30px_rgba(120,80,0,0.55)]">
               <img
                 src={photo(PHOTOS.hero, 1200)}
                 alt="A candidate talking through her experience in an interview"
