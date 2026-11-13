@@ -28,6 +28,7 @@ import { useAuth } from '@/context/AuthContext';
 import { AuthView } from '@/components/auth/AuthView';
 import { playUiSound } from '@/lib/ui-sound';
 import { RolewiseLogo } from '@/components/brand/RolewiseLogo';
+import { BootScreen } from '@/components/layout/BootScreen';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -113,12 +114,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#AEB4C0] flex flex-col items-center justify-center gap-3 text-[#73757A]">
-        <div className="w-11 h-11 rounded-2xl bg-[#FFD84D] text-[#252525] flex items-center justify-center font-bold text-lg shadow-sm animate-pulse">R</div>
-        <p className="text-xs font-medium tracking-wide">Loading ROLEWISE workspace...</p>
-      </div>
-    );
+    return <BootScreen />;
   }
 
   if (!session) {

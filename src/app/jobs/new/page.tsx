@@ -20,6 +20,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { extractResumeText } from '@/lib/extractor';
+import { ProcessingDialog } from '@/components/ui/ProcessingDialog';
 import { invokeAnalyzeRole, getSupabaseClient } from '@/services/api';
 
 // Common job roles (Requirement 1)
@@ -323,6 +324,11 @@ export default function AddJobPage() {
   const [resumeFileName, setResumeFileName] = useState('');
   const [resumeText, setResumeText] = useState('');
   const [resumeError, setResumeError] = useState<string | null>(null);
+  // Processing dialog: real extraction stages, not a timer-only animation
+  const [resumeStep, setResumeStep] = useState(0);
+  const [resumeStepsDone, setResumeStepsDone] = useState(false);
+  const [resumeWordCount, setResumeWordCount] = useState(0);
+  const resumeJobRef = useRef(0);
 
   // JD Upload State: Idle | Uploading | Uploaded | Error
   const [jdUploadState, setJdUploadState] = useState<'idle' | 'uploading' | 'uploaded' | 'error'>('idle');
@@ -368,16 +374,50 @@ export default function AddJobPage() {
       return;
     }
 
+    const jobId = ++resumeJobRef.current;
+    const isCurrent = () => resumeJobRef.current === jobId;
+    const startedAt = performance.now();
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
     setResumeUploadState('uploading');
     setResumeError(null);
     setResumeFileName(file.name);
+    setResumeStepsDone(false);
+    setResumeStep(0); // Opening your file
 
     try {
+      await wait(350);
+      if (!isCurrent()) return;
+      setResumeStep(1); // Reading the text
+
       const text = await extractResumeText(file);
+      if (!isCurrent()) return;
       if (!text || text.trim().length === 0) {
         throw new Error('Could not extract text from the uploaded file.');
       }
+
+      setResumeStep(2); // Checking it's readable
+      const words = text.trim().split(/\s+/).length;
+      if (words < 40) {
+        throw new Error(
+          "We could only read a few words from this file. If it's a scanned PDF, try a DOCX or add your experience manually."
+        );
+      }
+      await wait(300);
+      if (!isCurrent()) return;
+
+      setResumeStep(3); // Ready for role matching
+      // Keep the dialog up long enough to read — never flash for fast files.
+      const elapsed = performance.now() - startedAt;
+      if (elapsed < 1600) await wait(1600 - elapsed);
+      if (!isCurrent()) return;
+
+      setResumeStepsDone(true);
+      await wait(550);
+      if (!isCurrent()) return;
+
       setResumeText(text);
+      setResumeWordCount(words);
       setResumeUploadState('uploaded');
       console.log('[Rolewise] resume extraction', {
         resumeId: 'pending',
@@ -386,12 +426,23 @@ export default function AddJobPage() {
         resumeTextLength: text.length,
       });
     } catch (err: unknown) {
+      if (!isCurrent()) return;
       setResumeUploadState('error');
       setResumeError(
         err instanceof Error ? err.message : 'Could not extract text from the uploaded resume.'
       );
       console.error('[Rolewise] resume extraction error:', err);
+    } finally {
+      // Allow re-selecting the same file after cancel / error.
+      if (resumeInputRef.current) resumeInputRef.current.value = '';
     }
+  };
+
+  const cancelResumeProcessing = () => {
+    resumeJobRef.current += 1;
+    setResumeUploadState('idle');
+    setResumeFileName('');
+    setResumeStepsDone(false);
   };
 
   // Handle JD File Upload
@@ -429,6 +480,7 @@ export default function AddJobPage() {
 
     const stepTimer1 = setTimeout(() => setAnalysisStep(2), 700); // Reading experience
     const stepTimer2 = setTimeout(() => setAnalysisStep(3), 1400); // Connecting requirements
+    const stepTimer3 = setTimeout(() => setAnalysisStep((s) => (s === 3 ? 4 : s)), 9000); // Drafting roadmap
 
     try {
       // 1. Authenticate user
@@ -439,6 +491,7 @@ export default function AddJobPage() {
       if (sessionError || !user) {
         clearTimeout(stepTimer1);
         clearTimeout(stepTimer2);
+          clearTimeout(stepTimer3);
         setAnalysisStatus('failed');
         setGlobalError('You must be signed in to add a job.');
         return;
@@ -479,6 +532,7 @@ export default function AddJobPage() {
           });
           clearTimeout(stepTimer1);
           clearTimeout(stepTimer2);
+          clearTimeout(stepTimer3);
           setAnalysisStatus('failed');
           setGlobalError("Your resume couldn't be saved. Your uploaded file is still available. Please try again.");
           return;
@@ -522,6 +576,7 @@ export default function AddJobPage() {
           });
           clearTimeout(stepTimer1);
           clearTimeout(stepTimer2);
+          clearTimeout(stepTimer3);
           setAnalysisStatus('failed');
           setGlobalError("Your job couldn't be saved. Please try again.");
           return;
@@ -547,7 +602,10 @@ export default function AddJobPage() {
 
       clearTimeout(stepTimer1);
       clearTimeout(stepTimer2);
-      setAnalysisStep(4); // Finished
+          clearTimeout(stepTimer3);
+      setAnalysisStep(5); // Finished
+      // Let the bar land on 100% before swapping to the completed card.
+      await new Promise((r) => setTimeout(r, 650));
 
       const finalRoleId = res.role_id || res.id || res.role?.id || roleId;
       if (finalRoleId) {
@@ -557,6 +615,7 @@ export default function AddJobPage() {
     } catch (err: unknown) {
       clearTimeout(stepTimer1);
       clearTimeout(stepTimer2);
+          clearTimeout(stepTimer3);
       setAnalysisStatus('failed');
       const msg = err instanceof Error ? err.message : 'Unable to complete role analysis. Please try again.';
       setGlobalError(msg);
@@ -744,7 +803,7 @@ export default function AddJobPage() {
                       <CheckCircle2 className="w-5 h-5 text-[#6FA77F]" />
                       <div>
                         <p className="text-xs font-semibold text-[#252525]">{resumeFileName}</p>
-                        <p className="text-[11px] text-[#6FA77F]">Resume uploaded & text extracted successfully</p>
+                        <p className="text-[11px] text-[#6FA77F]">Resume read · {resumeWordCount.toLocaleString()} words ready to match with this role</p>
                       </div>
                     </div>
                     <button
@@ -772,8 +831,7 @@ export default function AddJobPage() {
                   >
                     {resumeUploadState === 'uploading' ? (
                       <div className="flex flex-col items-center gap-2">
-                        <Loader2 className="w-6 h-6 animate-spin text-[#252525]" />
-                        <p className="text-xs font-semibold text-[#252525]">Extracting resume content...</p>
+                        <p className="text-xs font-semibold text-[#252525]">Reading {resumeFileName}…</p>
                       </div>
                     ) : (
                       <div className="space-y-2">
@@ -836,72 +894,36 @@ export default function AddJobPage() {
       </div>
 
       {/* INLINE ANALYSIS STATE & RESULTS (Part 15: In-page loading, completed CTA, or retry on failure) */}
-      {analysisStatus === 'analyzing' && (
-        <div className="rolewise-card p-6 bg-[#FFF2B8]/40 border-[#FFF2B8] space-y-4 animate-in fade-in">
-          <div className="flex items-center gap-3">
-            <Loader2 className="w-5 h-5 animate-spin text-[#252525]" />
-            <div>
-              <h3 className="text-sm font-semibold text-[#252525]">Analyzing your role</h3>
-              <p className="text-xs text-[#73757A]">
-                Understanding the job requirements and comparing them with your experience...
-              </p>
-            </div>
-          </div>
+      {/* Resume reading — stepped progress dialog */}
+      <ProcessingDialog
+        open={resumeUploadState === 'uploading'}
+        title="Processing your resume"
+        subtitle={resumeFileName}
+        steps={[
+          { label: 'Opening your file' },
+          { label: 'Reading the text' },
+          { label: 'Checking it’s readable' },
+          { label: 'Ready for role matching' },
+        ]}
+        activeStep={resumeStep}
+        complete={resumeStepsDone}
+        onClose={cancelResumeProcessing}
+      />
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div
-              className={`p-3 rounded-xl border transition-all flex items-center gap-2 ${
-                analysisStep >= 1
-                  ? 'bg-white border-[#252525] text-[#252525]'
-                  : 'bg-white/50 border-[#D9D8D2] text-[#9A9B9E]'
-              }`}
-            >
-              {analysisStep > 1 ? (
-                <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
-              ) : (
-                <span className="w-4 h-4 rounded-full bg-[#FFD84D] text-[#252525] text-[10px] flex items-center justify-center font-bold">
-                  1
-                </span>
-              )}
-              <span>Understanding the role</span>
-            </div>
-
-            <div
-              className={`p-3 rounded-xl border transition-all flex items-center gap-2 ${
-                analysisStep >= 2
-                  ? 'bg-white border-[#252525] text-[#252525]'
-                  : 'bg-white/50 border-[#D9D8D2] text-[#9A9B9E]'
-              }`}
-            >
-              {analysisStep > 2 ? (
-                <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
-              ) : (
-                <span className="w-4 h-4 rounded-full bg-[#FFD84D] text-[#252525] text-[10px] flex items-center justify-center font-bold">
-                  2
-                </span>
-              )}
-              <span>Reading your experience</span>
-            </div>
-
-            <div
-              className={`p-3 rounded-xl border transition-all flex items-center gap-2 ${
-                analysisStep >= 3
-                  ? 'bg-white border-[#252525] text-[#252525]'
-                  : 'bg-white/50 border-[#D9D8D2] text-[#9A9B9E]'
-              }`}
-            >
-              {analysisStep >= 4 ? (
-                <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
-              ) : (
-                <span className="w-4 h-4 rounded-full bg-[#FFD84D] text-[#252525] text-[10px] flex items-center justify-center font-bold">
-                  3
-                </span>
-              )}
-              <span>Connecting requirements</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Role analysis — same pattern, no cancel (records are being written) */}
+      <ProcessingDialog
+        open={analysisStatus === 'analyzing'}
+        title="Analyzing your role"
+        subtitle={jobTitle && company ? `${jobTitle} · ${company}` : undefined}
+        steps={[
+          { label: 'Understanding the role' },
+          { label: 'Reading your experience' },
+          { label: 'Connecting requirements' },
+          { label: 'Drafting your preparation plan' },
+        ]}
+        activeStep={Math.max(0, Math.min(analysisStep - 1, 3))}
+        complete={analysisStep >= 5}
+      />
 
       {/* COMPLETED STATE (Part 15: "Analysis complete", [View role fit ->]) */}
       {analysisStatus === 'completed' && (
