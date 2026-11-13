@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 /* eslint-disable @next/next/no-img-element */
 import {
   FileText,
@@ -28,6 +28,35 @@ export const AuthView: React.FC = () => {
   const { signIn, signUp } = useAuth();
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const glowHostRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const host = glowHostRef.current;
+    const glow = glowRef.current;
+    if (!host || !glow) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    let frame = 0;
+    const onMove = (e: PointerEvent) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const r = host.getBoundingClientRect();
+        glow.style.setProperty('--gx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(2)}%`);
+        glow.style.setProperty('--gy', `${(((e.clientY - r.top) / r.height) * 100).toFixed(2)}%`);
+        glow.dataset.active = 'true';
+      });
+    };
+    const onLeave = () => {
+      glow.dataset.active = 'false';
+    };
+    host.addEventListener('pointermove', onMove);
+    host.addEventListener('pointerleave', onLeave);
+    return () => {
+      cancelAnimationFrame(frame);
+      host.removeEventListener('pointermove', onMove);
+      host.removeEventListener('pointerleave', onLeave);
+    };
+  }, []);
   // Read ?mode=signup after hydration so server and client render the same first frame.
   useEffect(() => {
     const id = requestAnimationFrame(() => {
@@ -201,43 +230,45 @@ export const AuthView: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#F3F2EE]">
-      {/* LEFT VISUAL PANEL: photo + glossy icons, same language as the landing hero */}
-      <div className="relative hidden w-full p-4 lg:flex lg:w-[50%] lg:p-5">
-        <div className="relative flex w-full flex-col overflow-hidden rounded-[32px] bg-[#252525]">
-          <img
-            src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?auto=format&fit=crop&w=1400&q=80"
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1B1A17] via-[#1B1A17]/35 to-[#1B1A17]/10" aria-hidden />
-          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[#FFD84D]/30 blur-3xl" aria-hidden />
+      {/* LEFT VISUAL PANEL: white, with the hero photo and glossy icons; a light yellow glow follows the pointer */}
+      <div
+        ref={glowHostRef}
+        className="relative hidden w-full flex-col overflow-hidden border-r border-[#E4E2DA] bg-white p-10 lg:flex lg:w-[50%] xl:p-14"
+      >
+        <div ref={glowRef} className="rwa-glow" aria-hidden />
 
-          <Link href="/welcome" aria-label="Rolewise home" className="relative z-10 m-8 inline-flex w-fit rounded-2xl bg-white px-4 py-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)]">
-            <span className="block w-[132px]">
-              <RolewiseLogo />
-            </span>
-          </Link>
+        <Link href="/welcome" aria-label="Rolewise home" className="relative z-10 block w-[150px]">
+          <RolewiseLogo />
+        </Link>
 
-          <div className="pointer-events-none absolute right-10 top-28 rwl-float" aria-hidden>
-            <GlossyIcon icon={Target} tone="coral" shape="squircle" size={70} className="rw-tilt-r" />
-          </div>
-          <div className="pointer-events-none absolute left-10 top-[42%] rwl-float rwl-float-b" aria-hidden>
-            <GlossyIcon icon={FileText} tone="yellow" shape="hex" size={80} className="rw-tilt-l" />
-          </div>
-          <div className="pointer-events-none absolute right-14 top-[52%] rwl-float rwl-float-c" aria-hidden>
-            <GlossyIcon icon={Mic} tone="ink" shape="hex" size={74} />
-          </div>
-          <div className="pointer-events-none absolute left-[46%] top-40 rwl-float rwl-float-c" aria-hidden>
-            <GlossyIcon icon={ListChecks} tone="green" shape="squircle" size={58} className="rw-tilt-r" />
+        <div className="relative z-10 my-auto pt-10">
+          <div className="relative mx-auto w-full max-w-[560px]">
+            <div className="overflow-hidden rounded-[28px] border border-[#E4E2DA] bg-[#F3F2EE] shadow-[0_30px_60px_-30px_rgba(37,37,37,0.35)]">
+              <img
+                src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?auto=format&fit=crop&w=1200&q=80"
+                alt=""
+                aria-hidden
+                className="block aspect-[16/11] w-full object-cover"
+              />
+            </div>
+            <div className="pointer-events-none absolute -left-8 top-[30%] rwl-float" aria-hidden>
+              <GlossyIcon icon={FileText} tone="yellow" shape="hex" size={76} className="rw-tilt-l" />
+            </div>
+            <div className="pointer-events-none absolute -right-6 -top-8 rwl-float rwl-float-b" aria-hidden>
+              <GlossyIcon icon={Target} tone="coral" shape="squircle" size={64} className="rw-tilt-r" />
+            </div>
+            <div className="pointer-events-none absolute -right-8 top-[48%] rwl-float rwl-float-c" aria-hidden>
+              <GlossyIcon icon={Mic} tone="ink" shape="hex" size={70} />
+            </div>
+            <div className="pointer-events-none absolute left-[38%] -top-10 rwl-float rwl-float-c" aria-hidden>
+              <GlossyIcon icon={ListChecks} tone="green" shape="squircle" size={56} className="rw-tilt-r" />
+            </div>
           </div>
 
-          <div className="relative z-10 mt-auto p-10 text-white">
-            <p className="max-w-[440px] text-[34px] font-semibold leading-[1.1] tracking-[-0.03em] [text-wrap:balance]">
-              Prepare for the role, not just the interview.
-            </p>
-            <p className="mt-3 text-[15px] text-white/75">Free during early access.</p>
-          </div>
+          <p className="mx-auto mt-12 max-w-[560px] text-[28px] font-semibold leading-[1.15] tracking-[-0.025em] text-[#252525] [text-wrap:balance]">
+            Prepare for the role, not just the interview.
+          </p>
+          <p className="mx-auto mt-2 max-w-[560px] text-[15px] text-[#5E6065]">Free during early access.</p>
         </div>
       </div>
 

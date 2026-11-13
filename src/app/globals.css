@@ -644,3 +644,15 @@ html, body {
 .rw-assistant-hint { animation: rw-assistant-in .35s cubic-bezier(.16,1,.3,1); }
 .rw-typing-dot { animation: rwl-dot 1.2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .rw-assistant-panel, .rw-assistant-hint, .rw-typing-dot { animation: none; } }
+
+/* Auth page: light yellow glow that follows the pointer on the white panel */
+.rwa-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(520px circle at var(--gx) var(--gy), rgba(255, 216, 77, 0.32) 0%, rgba(255, 236, 160, 0.16) 38%, rgba(255, 255, 255, 0) 65%);
+  opacity: 0;
+  transition: --gx 0.8s cubic-bezier(.16,1,.3,1), --gy 0.8s cubic-bezier(.16,1,.3,1), opacity 0.45s ease;
+}
+.rwa-glow[data-active='true'] { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .rwa-glow { display: none; } }
