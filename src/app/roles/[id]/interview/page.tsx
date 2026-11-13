@@ -20,6 +20,7 @@ import {
   Award,
 } from 'lucide-react';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
+import { ProcessingDialog } from '@/components/ui/ProcessingDialog';
 import {
   getRole,
   transcribeAudio,
@@ -168,6 +169,9 @@ export default function InterviewPage() {
     return saved?.flowState || 'READY';
   });
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  // Progress dialog for answer review: 0 read, 1 check structure, 2 write feedback, 3 done
+  const [analyzeStep, setAnalyzeStep] = useState(0);
+  const reviewRef = useRef<HTMLDivElement>(null);
   const [currentAnalysis, setCurrentAnalysis] = useState<CommunicationAnalysisResponse | null>(() => {
     const saved = loadStoredSession(roleId);
     return saved?.currentAnalysis || null;
@@ -599,14 +603,30 @@ export default function InterviewPage() {
     fetchFirstQuestion();
   };
 
+  // Bring the review into view (it renders below the long answer box).
+  useEffect(() => {
+    if (flowState !== 'REVIEWED' || !currentAnalysis) return;
+    const el = reviewRef.current;
+    if (!el) return;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    el.focus({ preventScroll: true });
+  }, [flowState, currentAnalysis]);
+
   // Submit Answer for AI Analysis (Requirement 1, 11, 18)
   const handleContinueWithAnswer = async () => {
     if (!answerText.trim() || isAnalyzing || isRecording) return;
 
     setIsAnalyzing(true);
+    setAnalyzeStep(0);
     setFlowState('ANALYZING');
     setGeneralError(null);
     saveStoredSession(roleId, { flowState: 'ANALYZING', answerText });
+    // The review is one AI call; later steps advance while it runs and the bar only completes on return.
+    const stepTimers = [
+      setTimeout(() => setAnalyzeStep((v) => Math.max(v, 1)), 900),
+      setTimeout(() => setAnalyzeStep((v) => Math.max(v, 2)), 3500),
+    ];
 
     const previousAnswers = completedRounds.map((r) => r.transcript);
     const type: 'voice' | 'text' = recordedBlobRef.current ? 'voice' : 'text';
@@ -618,6 +638,11 @@ export default function InterviewPage() {
         transcript: answerText.trim(),
         previousAnswers,
       });
+
+      stepTimers.forEach(clearTimeout);
+      setAnalyzeStep(3);
+      // Let the bar land on 100% before swapping the dialog for the review.
+      await new Promise((r) => setTimeout(r, 600));
 
       setCurrentAnalysis(analysisResult);
 
@@ -652,6 +677,7 @@ export default function InterviewPage() {
         pendingNext: nextStaged,
       });
     } catch (err: unknown) {
+      stepTimers.forEach(clearTimeout);
       console.error('Answer analysis error:', err);
       const msg =
         err instanceof Error
@@ -1431,22 +1457,28 @@ export default function InterviewPage() {
         </div>
       </section>
 
-      {/* STATE: ANALYZING LOADING (Requirement 11) */}
-      {isAnalyzing && (
-        <div className="rolewise-card p-8 space-y-3 text-center animate-in fade-in">
-          <Loader2 className="w-6 h-6 animate-spin text-[#252525] mx-auto" />
-          <h3 className="text-sm font-semibold text-[#252525]">
-            Analyzing communication quality…
-          </h3>
-          <p className="text-xs text-[#73757A]">
-            Evaluating relevance, clarity, structure, and outcome alignment.
-          </p>
-        </div>
-      )}
+      {/* STATE: ANALYZING — same stepped progress dialog as resume/role analysis */}
+      <ProcessingDialog
+        open={isAnalyzing}
+        title="Reviewing your answer"
+        subtitle={`Question ${questionNumber} of ${totalQuestions}`}
+        steps={[
+          { label: 'Reading your answer' },
+          { label: 'Checking relevance and structure' },
+          { label: 'Writing your feedback' },
+        ]}
+        activeStep={Math.min(analyzeStep, 2)}
+        complete={analyzeStep >= 3}
+      />
 
       {/* STATE: REVIEWED ANSWER FEEDBACK */}
       {flowState === 'REVIEWED' && currentAnalysis && (
-        <div className="space-y-4 animate-in fade-in">
+        <div
+          ref={reviewRef}
+          tabIndex={-1}
+          aria-live="polite"
+          className="space-y-4 animate-in fade-in scroll-mt-24 outline-none"
+        >
           <section className="rolewise-card p-6 space-y-4 border-[#6FA77F]/30 bg-[#EEF7F0]/20">
             <div className="flex items-center gap-2 text-sm font-semibold text-[#6FA77F]">
               <CheckCircle2 className="w-4 h-4" />

@@ -16,6 +16,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { transcribeAudio, analyzeInterviewAnswer, RolewiseApiError } from '@/services/api';
+import { ProcessingDialog } from '@/components/ui/ProcessingDialog';
 import { startLiveTranscription, stopLiveTranscription, cancelLiveTranscription } from '@/lib/browser-speech';
 import { CommunicationAnalysisResponse } from '@/types/database';
 
@@ -28,6 +29,19 @@ type VideoState =
 
 export default function VideoPracticePage() {
   const [flowState, setFlowState] = useState<VideoState>('READY');
+  // Processing dialog: 0 transcribe, 1 review, 2 write feedback, 3 done
+  const [procStep, setProcStep] = useState(0);
+  const reviewRef = useRef<HTMLDivElement>(null);
+
+  // Bring the review into view once it's ready.
+  useEffect(() => {
+    if (flowState !== 'REVIEWED') return;
+    const el = reviewRef.current;
+    if (!el) return;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    el.focus({ preventScroll: true });
+  }, [flowState]);
   const [question] = useState<string>(
     'Tell me about a project you are proud of and the impact it had.'
   );
@@ -249,6 +263,7 @@ export default function VideoPracticePage() {
       return;
     }
 
+    setProcStep(transcriptRef.current ? 1 : 0);
     setFlowState('PROCESSING');
     setErrorMessage(null);
 
@@ -274,14 +289,20 @@ export default function VideoPracticePage() {
     }
 
     // 2. Perform observable communication evaluation
+    setProcStep(1);
+    const writeTimer = setTimeout(() => setProcStep((v) => Math.max(v, 2)), 2500);
     try {
       const analysisResult = await analyzeInterviewAnswer({
         question,
         transcript: transcriptText.trim(),
       });
+      clearTimeout(writeTimer);
+      setProcStep(3);
+      await new Promise((r) => setTimeout(r, 600));
       setAnalysis(analysisResult);
       setFlowState('REVIEWED');
     } catch (err: unknown) {
+      clearTimeout(writeTimer);
       console.error('[VideoPractice] Analysis error:', err);
       setErrorMessage("Your video is saved, but AI feedback couldn't be generated just now. You can retry without recording again.");
       setFlowState('RECORDED');
@@ -483,19 +504,22 @@ export default function VideoPracticePage() {
       )}
 
       {/* STATE: PROCESSING */}
-      {flowState === 'PROCESSING' && (
-        <div className="rolewise-card p-8 space-y-3 text-center animate-in fade-in">
-          <Loader2 className="w-6 h-6 animate-spin text-[#252525] mx-auto" />
-          <h3 className="text-sm font-semibold text-[#252525]">Analyzing your communication...</h3>
-          <p className="text-xs text-[#73757A]">
-            Evaluating clarity, structure, specificity, conciseness, and key actions described.
-          </p>
-        </div>
-      )}
+      <ProcessingDialog
+        open={flowState === 'PROCESSING'}
+        title="Reviewing your answer"
+        subtitle={question}
+        steps={[
+          { label: 'Transcribing what you said' },
+          { label: 'Checking clarity and structure' },
+          { label: 'Writing your feedback' },
+        ]}
+        activeStep={Math.min(procStep, 2)}
+        complete={procStep >= 3}
+      />
 
       {/* STATE: REVIEWED (Requirement 20 - Observable feedback only) */}
       {flowState === 'REVIEWED' && analysis && (
-        <div className="space-y-6 animate-in fade-in">
+        <div ref={reviewRef} tabIndex={-1} aria-live="polite" className="space-y-6 animate-in fade-in scroll-mt-24 outline-none">
           <div className="rolewise-card p-6 space-y-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#6FA77F] flex items-center gap-1.5">

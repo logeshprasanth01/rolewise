@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 import { transcribeAudio, analyzeInterviewAnswer, RolewiseApiError } from '@/services/api';
+import { ProcessingDialog } from '@/components/ui/ProcessingDialog';
 import { CommunicationAnalysisResponse } from '@/types/database';
 
 type PracticeState =
@@ -29,6 +30,19 @@ type PracticeState =
 
 export default function VoicePracticePage() {
   const [flowState, setFlowState] = useState<PracticeState>('READY');
+  // Processing dialog: 0 transcribe, 1 review, 2 write feedback, 3 done
+  const [procStep, setProcStep] = useState(0);
+  const reviewRef = useRef<HTMLDivElement>(null);
+
+  // Bring the review into view once it's ready.
+  useEffect(() => {
+    if (flowState !== 'REVIEWED') return;
+    const el = reviewRef.current;
+    if (!el) return;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    el.focus({ preventScroll: true });
+  }, [flowState]);
   const [question] = useState<string>(
     'Tell me about a challenging situation you handled and what you learned from it.'
   );
@@ -83,10 +97,11 @@ export default function VoicePracticePage() {
   };
 
   const handleAnalyze = async (answerText?: string) => {
-    setFlowState('PROCESSING');
     setErrorMessage(null);
-
     let textToAnalyze = answerText || transcriptRef.current || '';
+    // Skip the transcribe step when we already have text (typed answer or retry).
+    setProcStep(textToAnalyze ? 1 : 0);
+    setFlowState('PROCESSING');
 
     // If voice and no transcript yet, transcribe first
     if (!textToAnalyze && recordedRef.current?.blob) {
@@ -113,14 +128,20 @@ export default function VoicePracticePage() {
       return;
     }
 
+    setProcStep(1);
+    const writeTimer = setTimeout(() => setProcStep((v) => Math.max(v, 2)), 2500);
     try {
       const result = await analyzeInterviewAnswer({
         question,
         transcript: textToAnalyze.trim(),
       });
+      clearTimeout(writeTimer);
+      setProcStep(3);
+      await new Promise((r) => setTimeout(r, 600));
       setAnalysis(result);
       setFlowState('REVIEWED');
     } catch (err: unknown) {
+      clearTimeout(writeTimer);
       console.error('Analysis error:', err);
       setErrorMessage(
         "Your recording is saved, but AI feedback couldn't be generated just now. You can retry without recording again."
@@ -352,15 +373,18 @@ export default function VoicePracticePage() {
       )}
 
       {/* STATE 4: PROCESSING */}
-      {flowState === 'PROCESSING' && (
-        <div className="rolewise-card p-8 space-y-3 text-center animate-in fade-in">
-          <Loader2 className="w-6 h-6 animate-spin text-[#252525] mx-auto" />
-          <h3 className="text-sm font-semibold text-[#252525]">Analyzing your communication...</h3>
-          <p className="text-xs text-[#73757A]">
-            Evaluating clarity, structure, conciseness, and key talking points.
-          </p>
-        </div>
-      )}
+      <ProcessingDialog
+        open={flowState === 'PROCESSING'}
+        title="Reviewing your answer"
+        subtitle={question}
+        steps={[
+          { label: 'Transcribing what you said' },
+          { label: 'Checking clarity and structure' },
+          { label: 'Writing your feedback' },
+        ]}
+        activeStep={Math.min(procStep, 2)}
+        complete={procStep >= 3}
+      />
 
       {/* STATE 5: TYPING */}
       {flowState === 'TYPING' && (
@@ -407,7 +431,7 @@ export default function VoicePracticePage() {
 
       {/* STATE 6: REVIEWED (Analysis Result) */}
       {flowState === 'REVIEWED' && analysis && (
-        <div className="space-y-6 animate-in fade-in">
+        <div ref={reviewRef} tabIndex={-1} aria-live="polite" className="space-y-6 animate-in fade-in scroll-mt-24 outline-none">
           <div className="rolewise-card p-6 space-y-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#6FA77F] flex items-center gap-1.5">
