@@ -289,6 +289,7 @@ const FLOATERS: { icon: LucideIcon; tone: GlossyTone; shape: GlossyShape; cls: s
   { icon: Mic, tone: 'ink', shape: 'hex', cls: 'right-[-7%] top-[40%]', depth: '-26px', size: 72, float: 'rwl-float-c', tilt: '' },
   { icon: ListChecks, tone: 'green', shape: 'squircle', cls: 'left-[38%] top-[-13%]', depth: '30px', size: 58, float: 'rwl-float-c', tilt: 'rw-tilt-r' },
   { icon: MessageSquare, tone: 'cream', shape: 'hex', cls: 'left-[2%] top-[-11%]', depth: '14px', size: 52, float: 'rwl-float-b', tilt: 'rw-tilt-l' },
+  { icon: Briefcase, tone: 'yellow', shape: 'squircle', cls: 'left-[10%] bottom-[-10%]', depth: '-20px', size: 74, float: 'rwl-float-c', tilt: 'rw-tilt-r' },
 ]
 
 function Hero() {
@@ -354,22 +355,6 @@ function Hero() {
                 alt="A candidate talking through her experience in an interview"
                 className="block aspect-[16/11] w-full object-cover"
               />
-            </div>
-          </div>
-
-          <div
-            className="rwl-parallax absolute -bottom-10 -left-3 w-[230px] rounded-2xl border border-white/40 bg-white/85 p-4 text-[#252525] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.55)] backdrop-blur-md sm:-left-10 sm:w-[260px]"
-            style={{ ['--depth' as string]: '-14px' }}
-          >
-            <p className="text-[12px] font-medium text-[#5E6065]">Your fit for Product Designer</p>
-            <div className="mt-1 flex items-end gap-2">
-              <span className="text-[38px] font-semibold leading-none tracking-tight tabular-nums">84%</span>
-              <span className="mb-1 rounded-full bg-[#6FA77F]/15 px-2 py-0.5 text-[12px] font-semibold text-[#3F7A50]">Strong fit</span>
-            </div>
-            <div className="mt-3 flex h-2 gap-[3px] overflow-hidden rounded-full" aria-hidden>
-              {['#6FA77F', '#6FA77F', '#6FA77F', '#6FA77F', '#6FA77F', '#D49A35', '#D97968'].map((c, i) => (
-                <span key={i} className="flex-1" style={{ background: c }} />
-              ))}
             </div>
           </div>
 
