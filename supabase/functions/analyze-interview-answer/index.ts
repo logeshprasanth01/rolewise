@@ -17,21 +17,17 @@ serve(async (req) => {
     const groqKey = Deno.env.get('GROQ_API_KEY');
     const geminiKey = Deno.env.get('GEMINI_API_KEY');
 
-    let endpoint = 'https://openrouter.ai/api/v1/chat/completions';
-    let apiKey = openrouterKey;
-    let model = 'openrouter/free';
-
-    if (!openrouterKey && groqKey) {
-      endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-      apiKey = groqKey;
-      model = 'llama-3.3-70b-versatile';
-    } else if (!openrouterKey && geminiKey) {
-      endpoint = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
-      apiKey = geminiKey;
-      model = 'gemini-2.5-flash-lite';
+    // Try every configured provider in order, ending on Gemini (current models only).
+    const providers: { endpoint: string; apiKey: string; model: string }[] = [];
+    if (openrouterKey) providers.push({ endpoint: 'https://openrouter.ai/api/v1/chat/completions', apiKey: openrouterKey, model: 'openrouter/free' });
+    if (groqKey) providers.push({ endpoint: 'https://api.groq.com/openai/v1/chat/completions', apiKey: groqKey, model: 'llama-3.3-70b-versatile' });
+    if (geminiKey) {
+      for (const model of ['gemini-3.6-flash', 'gemini-flash-lite-latest', 'gemini-flash-latest']) {
+        providers.push({ endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', apiKey: geminiKey, model });
+      }
     }
 
-    if (!apiKey) {
+    if (providers.length === 0) {
       return new Response(
         JSON.stringify({
           error: 'AI feedback is temporarily unavailable.',
@@ -85,47 +81,55 @@ CRITICAL RULES:
   "next_question": "string"
 }`;
 
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': 'https://rolewise.app',
-        'X-Title': 'Rolewise Communication Analysis',
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          {
-            role: 'user',
-            content: JSON.stringify({
-              question,
-              transcript,
-              previousQuestions,
-              previousAnswers,
-            }),
+    const failures: string[] = [];
+    let parsed: unknown = null;
+    for (const { endpoint, apiKey, model } of providers) {
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+            'HTTP-Referer': 'https://rolewise.app',
+            'X-Title': 'Rolewise Communication Analysis',
           },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.6,
-      }),
-    });
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              {
+                role: 'user',
+                content: JSON.stringify({ question, transcript, previousQuestions, previousAnswers }),
+              },
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.6,
+          }),
+        });
+        if (!res.ok) {
+          failures.push(`${model} (${res.status}): ${(await res.text()).slice(0, 200)}`);
+          continue;
+        }
+        const data = await res.json();
+        const content = String(data.choices?.[0]?.message?.content || '')
+          .replace(/^```(?:json)?\s*/i, '')
+          .replace(/```\s*$/, '')
+          .trim();
+        parsed = JSON.parse(content);
+        console.log('[analyze-interview-answer] feedback generated', { model });
+        break;
+      } catch (err) {
+        failures.push(`${model}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
 
-    if (!res.ok) {
-      const errorText = await res.text();
+    if (!parsed) {
+      console.error('[analyze-interview-answer] all providers failed', failures);
       return new Response(
-        JSON.stringify({
-          error: 'AI feedback is temporarily unavailable.',
-          details: errorText,
-        }),
+        JSON.stringify({ error: 'AI feedback is temporarily unavailable.' }),
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    const data = await res.json();
-    const content = data.choices?.[0]?.message?.content;
-    const parsed = JSON.parse(content);
 
     return new Response(
       JSON.stringify(parsed),

@@ -66,6 +66,8 @@ async function uploadToGemini(key: string, bytes: ArrayBuffer, mimeType: string)
   return uri;
 }
 
+const GEMINI_TRANSCRIBE_MODELS = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-3.8-flash'];
+
 async function transcribeWithGeminiFlash(key: string, bytes: ArrayBuffer, mimeType: string) {
   // Use Gemini's standard audio-understanding endpoint as a fallback. This avoids
   // relying exclusively on the currently overloaded gemini-3.5-transcribe model.
@@ -76,37 +78,48 @@ async function transcribeWithGeminiFlash(key: string, bytes: ArrayBuffer, mimeTy
     binary += String.fromCharCode(...view.subarray(offset, Math.min(offset + chunkSize, view.length)));
   }
   const audioBase64 = btoa(binary);
-  const response = await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-    {
-      method: 'POST',
-      headers: {
-        'x-goog-api-key': key,
-        'Content-Type': 'application/json',
+  const errors: string[] = [];
+  // gemini-2.5-flash was retired for this key (404). Try current Flash models in order;
+  // the same key already serves gemini-3.6-flash / gemini-flash-lite-latest for interview-ai.
+  for (const model of GEMINI_TRANSCRIBE_MODELS) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'x-goog-api-key': key,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [
+              { text: 'Transcribe the spoken audio exactly in English. Return only the words spoken. Do not summarize, explain, or add labels. If there is no speech, return an empty string.' },
+              { inline_data: { mime_type: mimeType, data: audioBase64 } },
+            ],
+          }],
+          generationConfig: { temperature: 0 },
+        }),
       },
-      body: JSON.stringify({
-        contents: [{
-          role: 'user',
-          parts: [
-            { text: 'Transcribe the spoken audio exactly in English. Return only the words spoken. Do not summarize, explain, or add labels.' },
-            { inline_data: { mime_type: mimeType, data: audioBase64 } },
-          ],
-        }],
-        generationConfig: { temperature: 0 },
-      }),
-    },
-  );
-  const raw = await response.text();
-  if (!response.ok) {
-    throw new Error(`Gemini Flash transcription failed (${response.status}): ${raw.slice(0, 500)}`);
+    );
+    const raw = await response.text();
+    if (!response.ok) {
+      errors.push(`${model} (${response.status}): ${raw.slice(0, 200)}`);
+      // 404 = model unavailable, 429/5xx = busy: move on to the next model.
+      continue;
+    }
+    const data = JSON.parse(raw);
+    const transcript = (data.candidates?.[0]?.content?.parts || [])
+      .map((part: { text?: string }) => part.text || '')
+      .join(' ')
+      .trim();
+    if (!transcript) {
+      errors.push(`${model}: no transcript`);
+      continue;
+    }
+    return { transcript, model };
   }
-  const data = JSON.parse(raw);
-  const transcript = (data.candidates?.[0]?.content?.parts || [])
-    .map((part: { text?: string }) => part.text || '')
-    .join(' ')
-    .trim();
-  if (!transcript) throw new Error('Gemini Flash returned no transcript.');
-  return transcript;
+  throw new Error(`Gemini Flash transcription failed: ${errors.join(' | ')}`);
 }
 
 async function transcribeWithFallbackProvider(
@@ -230,9 +243,9 @@ serve(async (req) => {
     // This avoids the overloaded dedicated transcription model and needs no extra secret.
     const attempts: string[] = [];
     try {
-      const transcript = await transcribeWithGeminiFlash(key, bytes, mimeType);
-      console.log('[transcribe-interview-answer] transcription succeeded', { provider: 'gemini-2.5-flash' });
-      return json({ success: true, transcript, duration_seconds: Math.round(durationSeconds), model: 'gemini-2.5-flash', provider: 'gemini' });
+      const result = await transcribeWithGeminiFlash(key, bytes, mimeType);
+      console.log('[transcribe-interview-answer] transcription succeeded', { provider: 'gemini', model: result.model });
+      return json({ success: true, transcript: result.transcript, duration_seconds: Math.round(durationSeconds), model: result.model, provider: 'gemini' });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       attempts.push(message);
