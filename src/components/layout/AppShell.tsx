@@ -65,8 +65,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    if (pathname?.startsWith('/welcome')) return;
     if (!isLoading && !session && pathname !== '/auth' && !pathname?.startsWith('/auth/')) {
-      router.replace('/auth');
+      // Signed-out visitors to the home page see the public landing page first.
+      router.replace(pathname === '/' ? '/welcome' : '/auth');
     }
   }, [isLoading, session, pathname, router]);
 
@@ -100,11 +102,15 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     playUiSound('click');
   };
 
+  // Public landing page: no app chrome, no boot screen.
+  if (pathname?.startsWith('/welcome')) return <>{children}</>;
+
   if (isLoading) {
     return <BootScreen />;
   }
 
   if (!session) {
+    if (pathname === '/') return <BootScreen />;
     if (pathname?.startsWith('/auth/callback')) return <>{children}</>;
     return <AuthView />;
   }

@@ -24,7 +24,10 @@ import { playUiSound } from '@/lib/ui-sound';
 export const AuthView: React.FC = () => {
   const { signIn, signUp } = useAuth();
 
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup'>(() => {
+    if (typeof window === 'undefined') return 'signin';
+    return new URLSearchParams(window.location.search).get('mode') === 'signup' ? 'signup' : 'signin';
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
