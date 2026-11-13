@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { AppShell } from '@/components/layout/AppShell';
+import { MascotAssistant } from '@/components/assistant/MascotAssistant';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#F7F7FB] text-[#1F2937]">
         <AuthProvider>
           <AppShell>{children}</AppShell>
+          <MascotAssistant />
         </AuthProvider>
       </body>
     </html>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useId, useRef } from 'react';
+import { playMascotSound } from '@/lib/mascot-sound';
 
 interface MascotProps {
   size?: number;
@@ -10,13 +11,25 @@ interface MascotProps {
   animated?: boolean;
   className?: string;
   title?: string;
+  /** Chirp on hover and squish on click. */
+  sound?: boolean;
+  /** React to hover/click with a wave or a hop. */
+  interactive?: boolean;
 }
 
 /**
  * Rolewise mascot: a glossy yellow "prep buddy" with an ink bow tie
  * (interview-ready) that blinks, bobs and watches the cursor.
  */
-export function Mascot({ size = 140, track = true, animated = true, className = '', title }: MascotProps) {
+export function Mascot({
+  size = 140,
+  track = true,
+  animated = true,
+  className = '',
+  title,
+  sound = true,
+  interactive = true,
+}: MascotProps) {
   const uid = useId().replace(/:/g, '');
   const rootRef = useRef<SVGSVGElement>(null);
   const eyesRef = useRef<SVGGElement>(null);
@@ -49,6 +62,25 @@ export function Mascot({ size = 140, track = true, animated = true, className = 
 
   const g = (n: string) => `${n}-${uid}`;
 
+  const replay = (cls: string) => {
+    const svg = rootRef.current;
+    if (!svg) return;
+    svg.classList.remove(cls);
+    // force reflow so the animation restarts
+    void svg.getBoundingClientRect();
+    svg.classList.add(cls);
+  };
+  const onEnter = () => {
+    if (!interactive) return;
+    replay('rw-mascot-wave-now');
+    if (sound) playMascotSound('hello');
+  };
+  const onPoke = () => {
+    if (!interactive) return;
+    replay('rw-mascot-hop');
+    if (sound) playMascotSound('boop');
+  };
+
   return (
     <svg
       ref={rootRef}
@@ -59,6 +91,14 @@ export function Mascot({ size = 140, track = true, animated = true, className = 
       role={title ? 'img' : undefined}
       aria-hidden={title ? undefined : true}
       aria-label={title}
+      onPointerEnter={onEnter}
+      onPointerDown={onPoke}
+      onAnimationEnd={(e) => {
+        const svg = rootRef.current;
+        if (!svg) return;
+        if (e.animationName === 'rw-mascot-hop') svg.classList.remove('rw-mascot-hop');
+        if (e.animationName === 'rw-mascot-wave-fast') svg.classList.remove('rw-mascot-wave-now');
+      }}
     >
       <defs>
         <linearGradient id={g('body')} x1="0.2" y1="0" x2="0.8" y2="1">
@@ -88,6 +128,7 @@ export function Mascot({ size = 140, track = true, animated = true, className = 
       {/* ground shadow */}
       <ellipse className="rw-mascot-shadow" cx="80" cy="166" rx="46" ry="7" fill={`url(#${g('shadow')})`} />
 
+      <g className="rw-mascot-hopper">
       <g className="rw-mascot-body">
         {/* waving arm (behind body) */}
         <g className="rw-mascot-arm">
@@ -126,6 +167,7 @@ export function Mascot({ size = 140, track = true, animated = true, className = 
           <path d="M3 0 L17 -8 Q20 0 17 8 Z" fill="#252525" />
           <rect x="-4.5" y="-4.5" width="9" height="9" rx="2.5" fill="#3A3A3A" />
         </g>
+      </g>
       </g>
     </svg>
   );
