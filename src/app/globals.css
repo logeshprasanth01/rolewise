@@ -558,3 +558,33 @@ html, body {
   }
   .rw-boot-track > span { left: 0; width: 100%; opacity: .35; }
 }
+
+/* ---------- Landing page (/welcome) ---------- */
+.rwl ::selection { background: #FFD84D; color: #252525; }
+.rwl-hero-bg {
+  background:
+    radial-gradient(60% 70% at 85% 30%, rgba(255,216,77,.32) 0%, rgba(255,216,77,0) 60%),
+    radial-gradient(45% 55% at 10% 100%, rgba(212,154,53,.28) 0%, rgba(212,154,53,0) 70%),
+    linear-gradient(135deg, #1B1A17 0%, #252525 38%, #3A3220 72%, #5A4612 100%);
+}
+.rwl-grid-lines {
+  background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(70% 70% at 70% 40%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(70% 70% at 70% 40%, #000 0%, transparent 75%);
+}
+.rwl-cta-bg { background: linear-gradient(120deg, #FFE27A 0%, #FFD84D 35%, #F2B941 75%, #D49A35 100%); }
+.rwl-float { animation: rwl-float 6s ease-in-out infinite; will-change: transform; }
+.rwl-float-b { animation-duration: 7.5s; animation-delay: -2s; }
+.rwl-float-c { animation-duration: 9s; animation-delay: -4s; }
+@keyframes rwl-float { 0%,100% { transform: translate3d(0,0,0) rotate(0deg); } 50% { transform: translate3d(0,-14px,0) rotate(-4deg); } }
+.rwl-parallax { transform: translate3d(calc(var(--mx,0) * var(--depth,10px)), calc(var(--my,0) * var(--depth,10px)), 0); transition: transform .4s cubic-bezier(.16,1,.3,1); }
+.rwl-enter { opacity: 0; transform: translateY(18px); animation: rwl-enter .9s cubic-bezier(.16,1,.3,1) forwards; }
+@keyframes rwl-enter { to { opacity: 1; transform: none; } }
+.rwl-fade { animation: rwl-fade .45s cubic-bezier(.16,1,.3,1); }
+@keyframes rwl-fade { from { opacity: 0; transform: translateY(8px) scale(.99); } to { opacity: 1; transform: none; } }
+.rwl-seg { transition: flex-grow .5s cubic-bezier(.16,1,.3,1), background-color .3s; }
+@media (prefers-reduced-motion: reduce) {
+  .rwl-float, .rwl-enter, .rwl-fade { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .rwl-parallax, .rwl-seg { transition: none !important; transform: none !important; }
+}

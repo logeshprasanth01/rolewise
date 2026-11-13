@@ -1,110 +1,156 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
   ArrowUpRight,
-  Briefcase,
-  Check,
+  CheckCircle2,
   ChevronDown,
+  Clock,
   FileText,
-  Gauge,
-  ListChecks,
+  Info,
+  Lock,
   Menu,
   MessageSquare,
   Mic,
-  ShieldCheck,
+  RotateCcw,
   Video,
   X,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { RolewiseLogo } from '@/components/brand/RolewiseLogo';
 
-/* Free Unsplash photos, served from Unsplash's CDN at the size each slot needs. */
-const photo = (id: string, w: number) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
+/* 3D icons: Microsoft Fluent Emoji 3D (MIT). Photos: Unsplash. */
+const icon3d = (name: string) => `/landing/3d/${name}.webp`;
+const photo = (id: string, w: number) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
 
 const PHOTOS = {
-  hero: '1573497620053-ea5300f94f21',
   videoCall: '1616587894289-86480e533129',
   resume: '1698047681432-006d2449c631',
   practice: '1758521541324-d304c5303fe5',
   interview: '1758520144437-f068ecaf0d83',
-  cta: '1543269664-56d93c1b41a6',
 };
 
 const NAV = [
-  { href: '#how', label: 'How it works' },
-  { href: '#features', label: 'Features' },
+  { href: '#product', label: 'Product' },
+  { href: '#fit', label: 'Fit score' },
   { href: '#practice', label: 'Practice' },
+  { href: '#start', label: 'Getting started' },
   { href: '#faq', label: 'FAQ' },
 ];
 
-const ROLES = [
-  'Product Designer',
-  'Software Engineer',
-  'Product Manager',
-  'Data Analyst',
-  'UX Researcher',
-  'Marketing Manager',
-  'Business Analyst',
-  'Frontend Developer',
+type TabId = 'fit' | 'prep' | 'interview' | 'tracker';
+
+const QUICK_NAV: { icon: string; label: string; tab: TabId | 'practice' }[] = [
+  { icon: 'bullseye', label: 'Role fit', tab: 'fit' },
+  { icon: 'clipboard', label: 'Prep plan', tab: 'prep' },
+  { icon: 'speech-balloon', label: 'Mock interview', tab: 'interview' },
+  { icon: 'microphone', label: 'Voice practice', tab: 'practice' },
+  { icon: 'video-camera', label: 'Video practice', tab: 'practice' },
+  { icon: 'briefcase', label: 'Job tracker', tab: 'tracker' },
 ];
 
-const STEPS = [
-  { icon: Briefcase, title: 'Add the job', body: 'Paste the job description for the exact role you are going for.' },
-  { icon: FileText, title: 'Add your resume', body: 'PDF or DOCX. Rolewise tells you how many words it read, so you know it really did.' },
-  { icon: Gauge, title: 'See your fit', body: 'Every requirement is matched to your experience and rolled into one score you can trace.' },
-  { icon: Mic, title: 'Prepare and practise', body: 'Work through a plan built from your gaps, then rehearse by text, voice or video.' },
-];
-
-const FEATURES = [
+const TABS: {
+  id: TabId;
+  label: string;
+  icon: string;
+  title: string;
+  body: string;
+  points: string[];
+  image: string;
+  alt: string;
+  tint: string;
+}[] = [
   {
-    eyebrow: 'Role fit',
-    title: 'One score, and exactly where it comes from',
-    body: 'See how well you fit the role at a glance, then open any requirement to see the line in your resume that backs it, or the gap that needs work.',
-    points: ['Strong, transferable, needs evidence or not shown', 'One bar segment per requirement', 'The formula is one click away'],
+    id: 'fit',
+    label: 'Role fit',
+    icon: 'bullseye',
+    title: 'See how well you fit, requirement by requirement',
+    body: 'One score for the role, with every requirement matched to the line in your resume that backs it, or marked as a gap.',
+    points: ['Strong, transferable, needs evidence or not shown', 'The legend doubles as a filter', 'The formula is one click away'],
     image: '/landing/role-fit.webp',
-    alt: 'Rolewise role fit page showing an 84% strong fit score and a requirement-by-requirement breakdown',
+    alt: 'Role fit page showing an 84% strong fit and a breakdown of each requirement',
+    tint: 'from-[#FFF3C2] to-[#FFE07A]',
   },
   {
-    eyebrow: 'Preparation plan',
-    title: 'Your gaps, turned into a plan',
-    body: 'Each weak requirement becomes a prep item, ordered by priority with gaps first. Mark items as prepared and watch the plan close.',
-    points: ['Quotes the job requirement it came from', '"Start here" on the next item', 'Progress is saved'],
+    id: 'prep',
+    label: 'Prep plan',
+    icon: 'clipboard',
+    title: 'Your gaps become a plan you can finish',
+    body: 'Each weak requirement turns into a prep item, ordered with gaps first. Mark items as prepared and the plan keeps your place.',
+    points: ['Quotes the job requirement it came from', '"Start here" on the next item', 'Progress is saved to your account'],
     image: '/landing/prep.webp',
-    alt: 'Rolewise preparation plan with a progress card and numbered prep items',
+    alt: 'Preparation plan with a progress card and numbered prep items',
+    tint: 'from-[#E4F1E7] to-[#BFDFC7]',
   },
   {
-    eyebrow: 'Mock interviews',
-    title: 'Questions built from this job, not a generic list',
-    body: 'Answer interview questions written for the role in front of you, and get feedback on relevance and structure for every answer.',
-    points: ['Feedback on each answer', 'Clear progress while it reviews', 'Your answer is never lost if the AI is busy'],
+    id: 'interview',
+    label: 'Mock interview',
+    icon: 'speech-balloon',
+    title: 'Questions written for this job',
+    body: 'Practise with interview questions built from the job description, and get feedback on relevance and structure for each answer.',
+    points: ['Feedback on every answer', 'Clear progress while it reviews', 'Your answer is kept if the AI is busy'],
     image: '/landing/dlg-review.webp',
-    alt: 'Rolewise reviewing an interview answer with a stepped progress window',
+    alt: 'Rolewise reviewing an answer with a stepped progress window',
+    tint: 'from-[#FBE6E1] to-[#F2C4B9]',
   },
   {
-    eyebrow: 'Job tracker',
-    title: 'Every application in one place',
-    body: 'Keep each role, its status and its follow-ups together, and jump from any job straight into its analysis and prep.',
-    points: ['Status for every role', 'Follow-up reminders', 'Linked to analysis and prep'],
+    id: 'tracker',
+    label: 'Job tracker',
+    icon: 'briefcase',
+    title: 'Every application, with its prep attached',
+    body: 'Track each role and its status in one board, and jump from any job straight into its fit analysis and plan.',
+    points: ['A status for every role', 'Follow-up reminders', 'Linked to analysis and prep'],
     image: '/landing/jobs.webp',
-    alt: 'Rolewise job tracker listing applications with their status',
+    alt: 'Job tracker listing applications with their status',
+    tint: 'from-[#F7EBD3] to-[#EBCB8E]',
   },
 ];
 
-const PRACTICE = [
-  { icon: MessageSquare, title: 'Text', body: 'Type your answer and refine it before you say it out loud.' },
-  { icon: Mic, title: 'Voice', body: 'Speak your answer. In Chrome and Edge it is transcribed as you talk, free.' },
-  { icon: Video, title: 'Video', body: 'Record yourself on camera and review how you come across.' },
+type Status = 'strong' | 'transferable' | 'evidence' | 'missing';
+const STATUS: Record<Status, { label: string; weight: number; color: string; chip: string }> = {
+  strong: { label: 'Strong', weight: 1, color: '#6FA77F', chip: 'bg-[#6FA77F]/15 text-[#3F7A50]' },
+  transferable: { label: 'Transferable', weight: 0.6, color: '#D49A35', chip: 'bg-[#D49A35]/15 text-[#8A5F14]' },
+  evidence: { label: 'Needs evidence', weight: 0.3, color: '#A3A4AA', chip: 'bg-[#73757A]/12 text-[#55575C]' },
+  missing: { label: 'Not shown', weight: 0, color: '#D97968', chip: 'bg-[#D97968]/15 text-[#A2483A]' },
+};
+const STATUS_ORDER: Status[] = ['strong', 'transferable', 'evidence', 'missing'];
+
+const SAMPLE_REQS: { text: string; status: Status }[] = [
+  { text: '3+ years designing digital products', status: 'strong' },
+  { text: 'End-to-end process, research to prototype', status: 'strong' },
+  { text: 'Design systems in Figma', status: 'strong' },
+  { text: 'Working closely with engineers', status: 'transferable' },
+  { text: 'Designing for accessibility at scale', status: 'missing' },
 ];
 
-const PROMISES = [
-  { title: 'We show our working', body: 'The fit score formula is public: strong 100%, transferable 60%, needs evidence 30%, not shown 0%.' },
-  { title: 'We never fake your resume', body: 'If a file cannot be read, we say so and offer a manual option. No guessed text, no confident nonsense.' },
-  { title: 'Your answers are safe', body: 'If AI feedback fails, your recording is kept. Retry the feedback or type your answer instead.' },
+const FIRST_TEN = [
+  {
+    icon: 'page-facing-up',
+    title: 'Have two things ready',
+    body: 'The job description as text, and your resume as a PDF or DOCX exported from Word, Google Docs or Canva.',
+    tip: 'Scanned or photographed resume? Add your experience by hand instead.',
+  },
+  {
+    icon: 'bullseye',
+    title: 'Add the job and your resume',
+    body: 'You will see "Resume read · N words" when it worked, so you know your real experience is being used.',
+    tip: 'Fewer than 40 readable words means the file could not be read.',
+  },
+  {
+    icon: 'chart-increasing',
+    title: 'Read your fit',
+    body: 'Start with the requirements marked "Not shown". They are the questions most likely to catch you out.',
+    tip: '"Not shown" means we could not find it, not that you cannot do it.',
+  },
+  {
+    icon: 'microphone',
+    title: 'Prepare, then practise',
+    body: 'Work through your plan in order, then answer one mock question out loud.',
+    tip: 'Short on time? One practice answer on your top gap is the best ten minutes you can spend.',
+  },
 ];
 
 const FAQS = [
@@ -114,132 +160,698 @@ const FAQS = [
   },
   {
     q: 'How is the fit score calculated?',
-    a: 'Each requirement counts equally. Strong evidence counts 100%, transferable experience 60%, needs more evidence 30% and not shown 0%. "Not shown" means we could not find it in what you uploaded, not that you cannot do it.',
+    a: 'Each requirement counts equally. Strong evidence counts 100%, transferable experience 60%, needs more evidence 30% and not shown 0%. You can try it in the fit score section above.',
+  },
+  {
+    q: 'What happens to my resume?',
+    a: 'It is saved to your account and sent to our AI only to match it against the jobs you add.',
+  },
+  {
+    q: 'Which browsers support voice practice?',
+    a: 'Voice and video practice work in modern browsers. Live, free transcription while you speak works in Chrome and Edge; in other browsers your recording is transcribed on our server after you stop.',
   },
   {
     q: 'Can I prepare for more than one job?',
     a: 'Yes. Every job gets its own fit analysis, preparation plan and mock interviews, and the job tracker keeps them together.',
   },
-  {
-    q: 'Which browsers support voice practice?',
-    a: 'Voice and video practice work in modern browsers. Live, free transcription works in Chrome and Edge; in other browsers your recording is transcribed on our server instead.',
-  },
 ];
+
+/* ------------------------------------------------------------------ */
 
 function useCta() {
   const { session } = useAuth();
-  return session
-    ? { href: '/', label: 'Open your dashboard' }
-    : { href: '/auth?mode=signup', label: 'Get started' };
+  return session ? { href: '/', label: 'Open your dashboard' } : { href: '/auth?mode=signup', label: 'Start preparing' };
 }
 
-function PrimaryButton({ className = '' }: { className?: string }) {
+function CtaButton({ variant = 'yellow', className = '' }: { variant?: 'yellow' | 'ink'; className?: string }) {
   const cta = useCta();
+  const styles =
+    variant === 'yellow'
+      ? 'bg-[#FFD84D] text-[#252525] hover:bg-[#FFE27A] shadow-[0_10px_30px_-10px_rgba(255,216,77,0.7)] focus-visible:ring-white'
+      : 'bg-[#252525] text-white hover:bg-black focus-visible:ring-[#252525]';
   return (
     <Link
       href={cta.href}
-      className={`inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-[#FFD84D] px-6 text-[15px] font-semibold text-[#252525] shadow-[0_1px_0_rgba(0,0,0,0.08)] transition hover:bg-[#F5CC3A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${className}`}
+      className={`group inline-flex min-h-[50px] items-center justify-center gap-2 rounded-full px-7 text-[15px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${styles} ${className}`}
     >
       {cta.label}
-      <ArrowRight className="h-4 w-4" aria-hidden />
+      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
     </Link>
   );
 }
 
-function BrowserFrame({ src, alt }: { src: string; alt: string }) {
+function Icon3D({ name, size = 56, className = '' }: { name: string; size?: number; className?: string }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#D9D8D2] bg-[#FAF9F4] shadow-[0_30px_60px_-30px_rgba(37,37,37,0.35)]">
-      <div className="flex items-center gap-1.5 border-b border-[#E4E2DA] px-4 py-3" aria-hidden>
+    <img
+      src={icon3d(name)}
+      alt=""
+      aria-hidden
+      width={size}
+      height={size}
+      draggable={false}
+      className={`select-none ${className}`}
+      style={{ width: size, height: size }}
+    />
+  );
+}
+
+function BrowserFrame({ src, alt, eager = false }: { src: string; alt: string; eager?: boolean }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#FAF9F4] shadow-[0_40px_80px_-30px_rgba(37,37,37,0.45)]">
+      <div className="flex items-center gap-1.5 border-b border-[#E4E2DA] bg-[#FAF9F4] px-4 py-2.5" aria-hidden>
         <span className="h-2.5 w-2.5 rounded-full bg-[#D97968]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#D49A35]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#6FA77F]" />
-        <span className="ml-3 h-5 flex-1 max-w-[260px] rounded-full bg-[#EDECE6]" />
+        <span className="ml-3 h-5 max-w-[240px] flex-1 rounded-full bg-[#EDECE6]" />
       </div>
-      <img src={src} alt={alt} loading="lazy" className="block aspect-[16/10] w-full object-cover object-top" />
+      <img src={src} alt={alt} loading={eager ? 'eager' : 'lazy'} className="block aspect-[16/10] w-full object-cover object-top" />
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero                                                                */
+/* ------------------------------------------------------------------ */
+
+const FLOATERS = [
+  { name: 'bullseye', cls: 'left-[-7%] top-[38%]', depth: '-18px', size: 84, float: '' },
+  { name: 'page-facing-up', cls: 'right-[-3%] top-[-8%]', depth: '22px', size: 72, float: 'rwl-float-b' },
+  { name: 'microphone', cls: 'right-[-6%] bottom-[16%]', depth: '-26px', size: 80, float: 'rwl-float-c' },
+  { name: 'sparkles', cls: 'left-[46%] top-[-12%]', depth: '30px', size: 52, float: 'rwl-float-c' },
+];
+
+function Hero() {
+  const ref = useRef<HTMLElement>(null);
+  const { session } = useAuth();
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    let frame = 0;
+    const onMove = (e: PointerEvent) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        el.style.setProperty('--mx', String(((e.clientX - r.left) / r.width - 0.5) * 2));
+        el.style.setProperty('--my', String(((e.clientY - r.top) / r.height - 0.5) * 2));
+      });
+    };
+    el.addEventListener('pointermove', onMove);
+    return () => {
+      el.removeEventListener('pointermove', onMove);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  return (
+    <section ref={ref} className="rwl-hero-bg relative overflow-hidden pt-[72px] text-white">
+      <div className="rwl-grid-lines pointer-events-none absolute inset-0" aria-hidden />
+      <div className="relative mx-auto grid max-w-[1240px] items-center gap-16 px-5 pb-28 pt-14 md:px-8 lg:grid-cols-[1fr_1.08fr] lg:gap-10 lg:pb-36 lg:pt-20">
+        <div>
+          <h1 className="rwl-enter text-[44px] font-semibold leading-[1.02] tracking-[-0.035em] [text-wrap:balance] sm:text-[58px] lg:text-[68px]">
+            Prepare for the role, not just the interview.
+          </h1>
+          <p className="rwl-enter mt-6 max-w-[520px] text-[18px] leading-relaxed text-white/75 [animation-delay:120ms]">
+            Add a job and your resume. Rolewise shows how well you fit each requirement, turns the gaps into a prep plan, and
+            runs mock interviews written for that exact role.
+          </p>
+          <div className="rwl-enter mt-9 flex flex-col gap-3 [animation-delay:220ms] sm:flex-row sm:items-center">
+            <CtaButton />
+            <a
+              href="#fit"
+              className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-full border border-white/25 bg-white/5 px-7 text-[15px] font-medium backdrop-blur transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              Try the fit score
+            </a>
+          </div>
+          <p className="rwl-enter mt-6 flex items-start gap-2 text-[14px] text-white/65 [animation-delay:300ms]">
+            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#FFD84D]" aria-hidden />
+            {session
+              ? 'You are signed in. Pick up where you left off.'
+              : 'About 10 minutes to your first fit score. Sign up with Google, LinkedIn or email.'}
+          </p>
+        </div>
+
+        <div className="rwl-enter relative mx-auto w-full max-w-[640px] [animation-delay:180ms]">
+          <div className="rwl-parallax relative" style={{ ['--depth' as string]: '8px' }}>
+            <BrowserFrame src="/landing/role-fit.webp" alt="Rolewise role fit page with an 84% strong fit score" eager />
+          </div>
+
+          <div
+            className="rwl-parallax absolute -bottom-10 -left-3 w-[230px] rounded-2xl border border-white/40 bg-white/85 p-4 text-[#252525] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.55)] backdrop-blur-md sm:-left-10 sm:w-[260px]"
+            style={{ ['--depth' as string]: '-14px' }}
+          >
+            <p className="text-[12px] font-medium text-[#5E6065]">Your fit for Product Designer</p>
+            <div className="mt-1 flex items-end gap-2">
+              <span className="text-[38px] font-semibold leading-none tracking-tight tabular-nums">84%</span>
+              <span className="mb-1 rounded-full bg-[#6FA77F]/15 px-2 py-0.5 text-[12px] font-semibold text-[#3F7A50]">Strong fit</span>
+            </div>
+            <div className="mt-3 flex h-2 gap-[3px] overflow-hidden rounded-full" aria-hidden>
+              {['#6FA77F', '#6FA77F', '#6FA77F', '#6FA77F', '#6FA77F', '#D49A35', '#D97968'].map((c, i) => (
+                <span key={i} className="flex-1" style={{ background: c }} />
+              ))}
+            </div>
+          </div>
+
+          {FLOATERS.map((f) => (
+            <div
+              key={f.name}
+              className={`rwl-parallax pointer-events-none absolute hidden sm:block ${f.cls}`}
+              style={{ ['--depth' as string]: f.depth }}
+              aria-hidden
+            >
+              <div className={`rwl-float ${f.float} drop-shadow-[0_18px_24px_rgba(0,0,0,0.45)]`}>
+                <Icon3D name={f.name} size={f.size} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Product tabs                                                        */
+/* ------------------------------------------------------------------ */
+
+function ProductTabs({ active, setActive }: { active: TabId; setActive: (t: TabId) => void }) {
+  const tab = TABS.find((t) => t.id === active) ?? TABS[0];
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const onKey = (e: React.KeyboardEvent, i: number) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    const next = (i + (e.key === 'ArrowRight' ? 1 : -1) + TABS.length) % TABS.length;
+    setActive(TABS[next].id);
+    tabRefs.current[next]?.focus();
+  };
+
+  return (
+    <section id="product" className="mx-auto max-w-[1240px] scroll-mt-20 px-5 py-24 md:px-8 lg:py-28">
+      <h2 className="max-w-[720px] text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
+        Everything for one role, from first read to final answer
+      </h2>
+
+      <div role="tablist" aria-label="Rolewise features" className="mt-10 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none]">
+        {TABS.map((t, i) => {
+          const on = t.id === active;
+          return (
+            <button
+              key={t.id}
+              ref={(el) => {
+                tabRefs.current[i] = el;
+              }}
+              role="tab"
+              id={`tab-${t.id}`}
+              aria-selected={on}
+              aria-controls={`panel-${t.id}`}
+              tabIndex={on ? 0 : -1}
+              onClick={() => setActive(t.id)}
+              onKeyDown={(e) => onKey(e, i)}
+              className={`flex min-h-[48px] shrink-0 items-center gap-2.5 rounded-full border px-4 pr-5 text-[15px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${
+                on ? 'border-[#252525] bg-[#252525] text-white' : 'border-[#D9D8D2] bg-[#FAF9F4] text-[#3A3C40] hover:border-[#252525]/40'
+              }`}
+            >
+              <Icon3D name={t.icon} size={26} />
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        key={tab.id}
+        role="tabpanel"
+        id={`panel-${tab.id}`}
+        aria-labelledby={`tab-${tab.id}`}
+        className={`rwl-fade mt-6 grid items-center gap-10 overflow-hidden rounded-[32px] bg-gradient-to-br ${tab.tint} p-6 sm:p-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14 lg:p-14`}
+      >
+        <div>
+          <Icon3D name={tab.icon} size={64} className="drop-shadow-[0_12px_16px_rgba(37,37,37,0.25)]" />
+          <h3 className="mt-6 text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#252525] [text-wrap:balance] sm:text-[34px]">
+            {tab.title}
+          </h3>
+          <p className="mt-4 text-[17px] leading-relaxed text-[#3F3A2E]">{tab.body}</p>
+          <ul className="mt-6 space-y-3">
+            {tab.points.map((p) => (
+              <li key={p} className="flex items-start gap-3 text-[15px] font-medium text-[#252525]">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+                {p}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <BrowserFrame src={tab.image} alt={tab.alt} />
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Interactive fit score                                               */
+/* ------------------------------------------------------------------ */
+
+function useAnimatedNumber(target: number) {
+  const [value, setValue] = useState(target);
+  const current = useRef(target);
+  useEffect(() => {
+    const start = current.current;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let id = 0;
+    if (reduce || start === target) {
+      id = requestAnimationFrame(() => {
+        current.current = target;
+        setValue(target);
+      });
+      return () => cancelAnimationFrame(id);
+    }
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - t0) / 600);
+      const v = Math.round(start + (target - start) * (1 - Math.pow(1 - p, 4)));
+      current.current = v;
+      setValue(v);
+      if (p < 1) id = requestAnimationFrame(tick);
+    };
+    id = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(id);
+  }, [target]);
+  return value;
+}
+
+function bandFor(score: number) {
+  if (score >= 80) return { label: 'Strong fit', cls: 'bg-[#6FA77F]/15 text-[#3F7A50]' };
+  if (score >= 60) return { label: 'Good fit', cls: 'bg-[#6FA77F]/12 text-[#3F7A50]' };
+  if (score >= 40) return { label: 'Partial fit', cls: 'bg-[#D49A35]/15 text-[#8A5F14]' };
+  return { label: 'Stretch role', cls: 'bg-[#D97968]/15 text-[#A2483A]' };
+}
+
+function FitSimulator() {
+  const [reqs, setReqs] = useState(SAMPLE_REQS);
+  const score = useMemo(() => Math.round((reqs.reduce((s, r) => s + STATUS[r.status].weight, 0) / reqs.length) * 100), [reqs]);
+  const shown = useAnimatedNumber(score);
+  const band = bandFor(score);
+  const counts = STATUS_ORDER.map((s) => reqs.filter((r) => r.status === s).length);
+  const gaps = reqs.filter((r) => r.status === 'missing' || r.status === 'evidence');
+
+  const cycle = (i: number) =>
+    setReqs((prev) => prev.map((r, j) => (j === i ? { ...r, status: STATUS_ORDER[(STATUS_ORDER.indexOf(r.status) + 1) % 4] } : r)));
+
+  return (
+    <section id="fit" className="scroll-mt-20 bg-[#252525] py-24 text-white lg:py-28">
+      <div className="mx-auto grid max-w-[1240px] gap-12 px-5 md:px-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <Icon3D name="chart-increasing" size={72} className="drop-shadow-[0_14px_20px_rgba(0,0,0,0.5)]" />
+          <h2 className="mt-6 text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
+            A score you can check yourself
+          </h2>
+          <p className="mt-5 max-w-[440px] text-[17px] leading-relaxed text-white/70">
+            Tap a requirement to change how well your resume backs it, and watch the score follow. This is the formula Rolewise
+            uses, so your own score will never be a mystery.
+          </p>
+          <dl className="mt-8 grid max-w-[440px] grid-cols-1 gap-3 min-[420px]:grid-cols-2">
+            {STATUS_ORDER.map((s) => (
+              <div key={s} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+                <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: STATUS[s].color }} aria-hidden />
+                <dt className="text-[14px] text-white/80">{STATUS[s].label}</dt>
+                <dd className="ml-auto text-[14px] font-semibold tabular-nums">{Math.round(STATUS[s].weight * 100)}%</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div className="rounded-[28px] bg-[#FAF9F4] p-6 text-[#252525] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.6)] sm:p-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-[14px] font-medium text-[#5E6065]">Sample role: Product Designer</p>
+              <div className="mt-1 flex items-end gap-3">
+                <span className="text-[64px] font-semibold leading-none tracking-[-0.04em] tabular-nums" aria-hidden>
+                  {shown}%
+                </span>
+                <span className={`mb-2 rounded-full px-2.5 py-1 text-[13px] font-semibold ${band.cls}`}>{band.label}</span>
+              </div>
+              <p className="sr-only" aria-live="polite">
+                Fit score {score} percent, {band.label}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReqs(SAMPLE_REQS)}
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#D9D8D2] px-4 text-[14px] font-medium text-[#3A3C40] hover:border-[#252525]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+            >
+              <RotateCcw className="h-4 w-4" aria-hidden /> Reset
+            </button>
+          </div>
+
+          <div className="mt-5 flex h-3 gap-[3px] overflow-hidden rounded-full" aria-hidden>
+            {STATUS_ORDER.map((s, i) => (
+              <span key={s} className="rwl-seg" style={{ flexGrow: counts[i], flexBasis: 0, background: STATUS[s].color }} />
+            ))}
+          </div>
+
+          <ul className="mt-6 space-y-2.5">
+            {reqs.map((r, i) => (
+              <li key={r.text}>
+                <button
+                  type="button"
+                  onClick={() => cycle(i)}
+                  aria-label={`${r.text}: ${STATUS[r.status].label}. Activate to change.`}
+                  className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl border border-[#E4E2DA] bg-white px-4 py-3 text-left transition hover:border-[#252525]/30 hover:shadow-[0_8px_20px_-12px_rgba(37,37,37,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+                >
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: STATUS[r.status].color }} aria-hidden />
+                  <span className="flex-1 text-[15px] font-medium">{r.text}</span>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold ${STATUS[r.status].chip}`}>
+                    {STATUS[r.status].label}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-6 rounded-2xl bg-[#FFF6D1] p-4">
+            <p className="flex items-start gap-2.5 text-[14px] leading-relaxed text-[#4A3F12]">
+              <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+              {gaps.length === 0
+                ? 'Every requirement is backed. Your prep plan would focus on sharpening your strongest stories.'
+                : `Your prep plan would start with: ${gaps.map((g) => g.text.toLowerCase()).join('; ')}.`}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Practice modes, with a live browser check                          */
+/* ------------------------------------------------------------------ */
+
+type Mode = 'text' | 'voice' | 'video';
+const MODES: { id: Mode; label: string; icon: typeof Mic; icon3d: string; body: string }[] = [
+  { id: 'text', label: 'Text', icon: MessageSquare, icon3d: 'speech-balloon', body: 'Type your answer and shape it before you say it out loud. Best for a first draft of a story.' },
+  { id: 'voice', label: 'Voice', icon: Mic, icon3d: 'microphone', body: 'Say your answer out loud. Rolewise writes down what you say and reviews it against the role.' },
+  { id: 'video', label: 'Video', icon: Video, icon3d: 'video-camera', body: 'Record yourself on camera to see how you come across, then get the same answer feedback.' },
+];
+
+function useSpeechSupport() {
+  const [support, setSupport] = useState<'unknown' | 'live' | 'server'>('unknown');
+  useEffect(() => {
+    const w = window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown };
+    const id = requestAnimationFrame(() => setSupport(w.SpeechRecognition || w.webkitSpeechRecognition ? 'live' : 'server'));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  return support;
+}
+
+function Practice() {
+  const [mode, setMode] = useState<Mode>('voice');
+  const support = useSpeechSupport();
+  const m = MODES.find((x) => x.id === mode) ?? MODES[1];
+
+  return (
+    <section id="practice" className="mx-auto max-w-[1240px] scroll-mt-20 px-5 py-24 md:px-8 lg:py-28">
+      <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="relative">
+          <img
+            src={photo(PHOTOS.videoCall, 1000)}
+            alt="A man practising an interview answer on a video call"
+            loading="lazy"
+            className="aspect-[4/3] w-full rounded-[28px] bg-[#E9E7DF] object-cover"
+          />
+          <div className="rwl-float absolute -right-3 -top-8 drop-shadow-[0_18px_24px_rgba(37,37,37,0.35)] sm:-right-6" aria-hidden>
+            <Icon3D name={m.icon3d} size={88} />
+          </div>
+          <div className="absolute bottom-5 left-5 right-5 flex items-center gap-3 rounded-2xl border border-white/20 bg-[#252525]/85 px-4 py-3 text-white backdrop-blur sm:right-auto">
+            <span className="relative flex h-3 w-3" aria-hidden>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#D97968] opacity-60 motion-reduce:hidden" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-[#D97968]" />
+            </span>
+            <p className="text-[14px]">
+              {mode === 'text' ? 'Drafting' : 'Recording'}:{' '}
+              <span className="text-white/70">{mode === 'text' ? 'take as long as you need' : 'your answer is kept even if feedback fails'}</span>
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
+            Rehearse the way you will actually answer
+          </h2>
+          <p className="mt-5 text-[17px] leading-relaxed text-[#5E6065]">
+            Knowing an answer and saying it are different skills. Pick the format that feels hardest.
+          </p>
+
+          <div role="radiogroup" aria-label="Practice mode" className="mt-8 grid grid-cols-3 gap-1.5 rounded-2xl bg-[#E9E7DF] p-1.5">
+            {MODES.map((x) => {
+              const on = x.id === mode;
+              return (
+                <button
+                  key={x.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => setMode(x.id)}
+                  className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-[15px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] ${
+                    on ? 'bg-[#FAF9F4] text-[#252525] shadow-[0_4px_14px_-6px_rgba(37,37,37,0.35)]' : 'text-[#5E6065] hover:text-[#252525]'
+                  }`}
+                >
+                  <x.icon className="h-4 w-4" aria-hidden />
+                  {x.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div key={mode} className="rwl-fade mt-5 rounded-2xl border border-[#E4E2DA] bg-[#FAF9F4] p-6" aria-live="polite">
+            <p className="text-[16px] leading-relaxed text-[#3A3C40]">{m.body}</p>
+            {mode !== 'text' && support !== 'unknown' && (
+              <p
+                className={`mt-4 flex items-start gap-2.5 rounded-xl px-3.5 py-3 text-[14px] leading-relaxed ${
+                  support === 'live' ? 'bg-[#6FA77F]/12 text-[#2F5E3D]' : 'bg-[#D49A35]/12 text-[#6E4A0E]'
+                }`}
+              >
+                {support === 'live' ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden /> : <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />}
+                {support === 'live'
+                  ? 'Good news: this browser writes down your answer live, for free, while you speak.'
+                  : 'This browser cannot transcribe live, so your recording is transcribed after you stop. For live transcription, use Chrome or Edge.'}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* First ten minutes, moments, trust, FAQ                              */
+/* ------------------------------------------------------------------ */
+
+function FirstTen() {
+  return (
+    <section id="start" className="scroll-mt-20 bg-[#FAF9F4] py-24 lg:py-28">
+      <div className="mx-auto max-w-[1240px] px-5 md:px-8">
+        <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <h2 className="max-w-[620px] text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
+            Your first ten minutes, so nothing trips you up
+          </h2>
+          <p className="max-w-[420px] text-[16px] leading-relaxed text-[#5E6065]">The places people usually get stuck, answered before you get there.</p>
+        </div>
+        <ol className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {FIRST_TEN.map((s, i) => (
+            <li key={s.title} className="flex flex-col rounded-[24px] border border-[#E4E2DA] bg-white p-6">
+              <div className="flex items-start justify-between">
+                <Icon3D name={s.icon} size={56} className="drop-shadow-[0_10px_14px_rgba(37,37,37,0.18)]" />
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#252525] text-[13px] font-semibold text-[#FFD84D]">
+                  <span className="sr-only">Step </span>
+                  {i + 1}
+                </span>
+              </div>
+              <h3 className="mt-6 text-[19px] font-semibold">{s.title}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-[#5E6065]">{s.body}</p>
+              <p className="mt-auto flex items-start gap-2 pt-5 text-[13px] leading-snug text-[#6E5A12]">
+                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+                {s.tip}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+function Moments() {
+  const items = [
+    { id: PHOTOS.resume, alt: 'A recruiter reading a resume', icon: 'magnifying-glass-tilted-left', title: 'Your resume, read properly', body: 'Matched the way a recruiter reads it: one requirement at a time.', tint: 'bg-[#FFF3C2]' },
+    { id: PHOTOS.practice, alt: 'A woman practising on a video call at home', icon: 'microphone', title: 'Practice that feels real', body: 'Say it out loud until the answer sounds like you.', tint: 'bg-[#E4F1E7]' },
+    { id: PHOTOS.interview, alt: 'A candidate in an interview with a hiring manager', icon: 'trophy', title: 'Walk in ready', body: 'Know your strongest stories and the gaps you have already prepared for.', tint: 'bg-[#FBE6E1]' },
+  ];
+  return (
+    <section className="mx-auto max-w-[1240px] px-5 py-24 md:px-8 lg:py-28">
+      <h2 className="max-w-[680px] text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
+        Built for the moments that decide an interview
+      </h2>
+      <div className="mt-14 grid gap-6 md:grid-cols-3">
+        {items.map((c) => (
+          <figure key={c.title} className={`overflow-hidden rounded-[28px] ${c.tint}`}>
+            <img src={photo(c.id, 800)} alt={c.alt} loading="lazy" className="aspect-[4/3] w-full bg-black/5 object-cover" />
+            <figcaption className="relative p-6 pt-10">
+              <Icon3D name={c.icon} size={56} className="absolute -top-7 left-6 drop-shadow-[0_10px_14px_rgba(37,37,37,0.25)]" />
+              <h3 className="text-[20px] font-semibold">{c.title}</h3>
+              <p className="mt-1.5 text-[15px] leading-relaxed text-[#4A4C51]">{c.body}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Trust() {
+  const items = [
+    { icon: Lock, title: 'Your resume stays yours', body: 'Saved to your account and used only to match the jobs you add.' },
+    { icon: FileText, title: 'No guessed resume text', body: 'If a file cannot be read, Rolewise says so and offers a manual option.' },
+    { icon: CheckCircle2, title: 'Answers are never lost', body: 'If AI feedback fails, your recording is kept. Retry, or type the answer instead.' },
+  ];
+  return (
+    <section className="rwl-hero-bg relative overflow-hidden py-24 text-white lg:py-28">
+      <div className="rwl-grid-lines pointer-events-none absolute inset-0" aria-hidden />
+      <div className="relative mx-auto grid max-w-[1240px] items-center gap-12 px-5 md:px-8 lg:grid-cols-[0.8fr_1.2fr]">
+        <div>
+          <Icon3D name="shield" size={80} className="rwl-float drop-shadow-[0_18px_24px_rgba(0,0,0,0.5)]" />
+          <h2 className="mt-6 text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
+            AI you can trust with your next job
+          </h2>
+          <p className="mt-4 max-w-[400px] text-[17px] leading-relaxed text-white/70">
+            Preparation only helps if what it tells you is true. These rules are built into the product.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+          {items.map((p) => (
+            <div key={p.title} className="flex gap-4 rounded-3xl border border-white/15 bg-white/[0.07] p-6 backdrop-blur-sm">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FFD84D] text-[#252525]">
+                <p.icon className="h-5 w-5" aria-hidden />
+              </span>
+              <div>
+                <h3 className="text-[18px] font-semibold">{p.title}</h3>
+                <p className="mt-1 text-[15px] leading-relaxed text-white/70">{p.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
 function Faq() {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <div className="divide-y divide-[#D9D8D2] border-y border-[#D9D8D2]">
-      {FAQS.map((item, i) => {
-        const isOpen = open === i;
-        return (
-          <div key={item.q}>
-            <button
-              type="button"
-              aria-expanded={isOpen}
-              aria-controls={`faq-${i}`}
-              onClick={() => setOpen(isOpen ? null : i)}
-              className="flex min-h-[64px] w-full items-center justify-between gap-6 py-5 text-left text-lg font-semibold text-[#252525] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD84D]"
-            >
-              {item.q}
-              <ChevronDown
-                className={`h-5 w-5 shrink-0 text-[#73757A] transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                aria-hidden
-              />
-            </button>
-            <div id={`faq-${i}`} hidden={!isOpen} className="pb-6 pr-10 text-[16px] leading-relaxed text-[#5E6065]">
-              {item.a}
+    <section id="faq" className="mx-auto grid max-w-[1240px] scroll-mt-20 gap-12 px-5 py-24 md:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:py-28">
+      <div>
+        <Icon3D name="light-bulb" size={72} className="drop-shadow-[0_14px_18px_rgba(37,37,37,0.2)]" />
+        <h2 className="mt-6 text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] sm:text-[46px]">Questions, answered</h2>
+      </div>
+      <div className="divide-y divide-[#D9D8D2] border-y border-[#D9D8D2]">
+        {FAQS.map((item, i) => {
+          const isOpen = open === i;
+          return (
+            <div key={item.q}>
+              <h3>
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-${i}`}
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  className="flex min-h-[64px] w-full items-center justify-between gap-6 py-5 text-left text-[18px] font-semibold text-[#252525] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+                >
+                  {item.q}
+                  <ChevronDown className={`h-5 w-5 shrink-0 text-[#73757A] transition-transform ${isOpen ? 'rotate-180' : ''}`} aria-hidden />
+                </button>
+              </h3>
+              <div id={`faq-${i}`} hidden={!isOpen} className="pb-6 pr-10 text-[16px] leading-relaxed text-[#5E6065]">
+                {item.a}
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
 
 export function Landing() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [tab, setTab] = useState<TabId>('fit');
   const { session } = useAuth();
+  const solid = scrolled || menuOpen;
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const goTo = (target: TabId | 'practice') => {
+    if (target !== 'practice') setTab(target);
+    document.getElementById(target === 'practice' ? 'practice' : 'product')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div className="min-h-screen w-full bg-[#F3F2EE] text-[#252525] [scroll-behavior:smooth]">
+    <div className="rwl min-h-screen w-full bg-[#F3F2EE] text-[#252525] [scroll-behavior:smooth]">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-[#252525] focus:px-4 focus:py-2 focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-[#FFD84D] focus:px-4 focus:py-2 focus:text-[#252525]"
       >
         Skip to content
       </a>
 
-      {/* Header */}
       <header
-        className={`sticky top-0 z-50 transition-colors ${
-          scrolled ? 'border-b border-[#E4E2DA] bg-[#F3F2EE]/90 backdrop-blur' : 'bg-transparent'
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,box-shadow,border-color] duration-300 ${
+          solid ? 'border-[#E4E2DA] bg-[#F3F2EE]/95 shadow-[0_8px_24px_-18px_rgba(37,37,37,0.4)] backdrop-blur' : 'border-transparent'
         }`}
       >
-        <div className="mx-auto flex h-[72px] max-w-[1200px] items-center justify-between px-5 md:px-8">
-          <Link href="/welcome" aria-label="Rolewise home" className="block w-[150px]">
+        <div className="mx-auto flex h-[72px] max-w-[1240px] items-center justify-between px-5 md:px-8">
+          <Link href="/welcome" aria-label="Rolewise home" className={`block w-[150px] transition ${solid ? '' : 'brightness-0 invert'}`}>
             <RolewiseLogo />
           </Link>
-          <nav aria-label="Main" className="hidden items-center gap-8 lg:flex">
+          <nav aria-label="Main" className="hidden items-center gap-7 lg:flex">
             {NAV.map((n) => (
-              <a key={n.href} href={n.href} className="text-[15px] font-medium text-[#4A4C51] hover:text-[#252525]">
+              <a
+                key={n.href}
+                href={n.href}
+                className={`text-[15px] font-medium transition-colors ${solid ? 'text-[#4A4C51] hover:text-[#252525]' : 'text-white/80 hover:text-white'}`}
+              >
                 {n.label}
               </a>
             ))}
           </nav>
-          <div className="hidden items-center gap-3 lg:flex">
+          <div className="hidden items-center gap-2 lg:flex">
             {!session && (
-              <Link href="/auth" className="px-3 py-2 text-[15px] font-medium text-[#252525] hover:underline">
+              <Link
+                href="/auth"
+                className={`rounded-full px-4 py-2.5 text-[15px] font-medium ${solid ? 'text-[#252525] hover:bg-black/5' : 'text-white hover:bg-white/10'}`}
+              >
                 Sign in
               </Link>
             )}
-            <PrimaryButton className="min-h-[44px] px-5 text-[14px]" />
+            <CtaButton className="min-h-[44px] px-5 text-[14px]" />
           </div>
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#D9D8D2] lg:hidden"
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-full border lg:hidden ${
+              solid ? 'border-[#D9D8D2] text-[#252525]' : 'border-white/30 text-white'
+            }`}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
@@ -248,14 +860,9 @@ export function Landing() {
           </button>
         </div>
         {menuOpen && (
-          <div className="border-t border-[#E4E2DA] bg-[#F3F2EE] px-5 pb-6 pt-2 lg:hidden">
+          <div className="border-t border-[#E4E2DA] px-5 pb-6 pt-2 lg:hidden">
             {NAV.map((n) => (
-              <a
-                key={n.href}
-                href={n.href}
-                onClick={() => setMenuOpen(false)}
-                className="block border-b border-[#E4E2DA] py-4 text-[17px] font-medium"
-              >
+              <a key={n.href} href={n.href} onClick={() => setMenuOpen(false)} className="block border-b border-[#E4E2DA] py-4 text-[17px] font-medium">
                 {n.label}
               </a>
             ))}
@@ -265,352 +872,79 @@ export function Landing() {
                   Sign in
                 </Link>
               )}
-              <PrimaryButton />
+              <CtaButton variant="ink" />
             </div>
           </div>
         )}
       </header>
 
       <main id="main">
-        {/* Hero */}
-        <section className="mx-auto grid max-w-[1200px] items-center gap-12 px-5 pb-20 pt-10 md:px-8 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:pb-28 lg:pt-16">
-          <div>
-            <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] px-3.5 py-1.5 text-[13px] font-medium text-[#4A4C51]">
-              <span className="h-2 w-2 rounded-full bg-[#FFD84D]" aria-hidden />
-              AI interview preparation, one role at a time
-            </p>
-            <h1 className="text-[44px] font-semibold leading-[1.04] tracking-[-0.03em] sm:text-[56px] lg:text-[68px]">
-              Prepare for the role,{' '}
-              <span className="relative whitespace-nowrap">
-                <span className="relative z-10">not just</span>
-                <span className="absolute inset-x-0 bottom-[0.08em] z-0 h-[0.32em] rounded-sm bg-[#FFD84D]" aria-hidden />
-              </span>{' '}
-              the interview.
-            </h1>
-            <p className="mt-6 max-w-[520px] text-[18px] leading-relaxed text-[#5E6065]">
-              Add the job and your resume. Rolewise shows how well you fit every requirement, turns your gaps into a
-              preparation plan, and lets you rehearse with mock interviews built for that exact role.
-            </p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <PrimaryButton />
-              <a
-                href="#how"
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-[#252525]/80 px-6 text-[15px] font-medium hover:bg-[#252525] hover:text-white"
-              >
-                See how it works
-              </a>
-            </div>
-            <ul className="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-[14px] text-[#5E6065]">
-              {['Works with any job description', 'PDF or DOCX resumes', 'Text, voice and video practice'].map((t) => (
-                <li key={t} className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#6FA77F]" aria-hidden />
-                  {t}
-                </li>
-              ))}
-            </ul>
-          </div>
+        <Hero />
 
-          <div className="relative mx-auto w-full max-w-[560px]">
-            <div className="absolute -right-6 -top-6 h-40 w-40 rounded-full bg-[#FFD84D]/70 blur-3xl" aria-hidden />
-            <div className="relative overflow-hidden rounded-[28px] bg-[#252525]">
-              <img
-                src={photo(PHOTOS.hero, 1100)}
-                alt="A candidate talking through her experience across a table"
-                className="aspect-[4/5] w-full object-cover sm:aspect-[5/5]"
-              />
-            </div>
-
-            {/* Floating fit card */}
-            <div className="absolute -left-4 bottom-10 w-[240px] rounded-2xl border border-[#E4E2DA] bg-[#FAF9F4] p-4 shadow-[0_24px_48px_-20px_rgba(37,37,37,0.45)] sm:-left-10 sm:w-[270px]">
-              <p className="text-[12px] font-medium text-[#73757A]">Your fit for Product Designer</p>
-              <div className="mt-1 flex items-end gap-2">
-                <span className="text-[40px] font-semibold leading-none tracking-tight">84%</span>
-                <span className="mb-1 rounded-full bg-[#6FA77F]/15 px-2 py-0.5 text-[12px] font-semibold text-[#3F7A50]">
-                  Strong fit
-                </span>
-              </div>
-              <div className="mt-3 flex h-2 gap-[3px] overflow-hidden rounded-full" aria-hidden>
-                {['#6FA77F', '#6FA77F', '#6FA77F', '#6FA77F', '#6FA77F', '#D49A35', '#D97968'].map((c, i) => (
-                  <span key={i} className="flex-1" style={{ background: c }} />
-                ))}
-              </div>
-              <p className="mt-3 text-[12px] leading-snug text-[#5E6065]">5 of 7 requirements backed directly by your resume.</p>
-            </div>
-
-            {/* Floating prep chip */}
-            <div className="absolute -right-3 top-8 flex items-center gap-3 rounded-2xl bg-[#252525] px-4 py-3 text-white shadow-[0_24px_48px_-20px_rgba(0,0,0,0.6)] sm:-right-8">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FFD84D] text-[#252525]">
-                <ListChecks className="h-4 w-4" aria-hidden />
-              </span>
-              <div>
-                <p className="text-[13px] font-semibold">1 of 4 prepared</p>
-                <p className="text-[11px] text-white/60">Next: accessibility story</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Role strip */}
-        <section aria-label="Roles people prepare for" className="border-y border-[#E4E2DA] bg-[#FAF9F4] py-6">
-          <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-5 md:flex-row md:items-center md:px-8">
-            <p className="shrink-0 text-[14px] font-medium text-[#73757A]">Built for any role, like</p>
-            <ul className="flex flex-wrap gap-2">
-              {ROLES.map((r) => (
-                <li key={r} className="rounded-full border border-[#D9D8D2] px-3.5 py-1.5 text-[14px] font-medium text-[#4A4C51]">
-                  {r}
+        <section aria-label="Jump to a feature" className="relative z-10 mx-auto -mt-12 max-w-[1240px] px-5 md:px-8">
+          <div className="rounded-[28px] border border-[#E4E2DA] bg-[#FAF9F4] p-3 shadow-[0_30px_60px_-30px_rgba(37,37,37,0.35)]">
+            <p className="px-3 pb-2 pt-1 text-[15px] font-medium text-[#5E6065]">What do you want to work on?</p>
+            <ul className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:grid-cols-6">
+              {QUICK_NAV.map((q) => (
+                <li key={q.label}>
+                  <button
+                    type="button"
+                    onClick={() => goTo(q.tab)}
+                    className="group flex min-h-[64px] w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-[15px] font-semibold transition hover:bg-white hover:shadow-[0_10px_24px_-14px_rgba(37,37,37,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+                  >
+                    <Icon3D
+                      name={q.icon}
+                      size={40}
+                      className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-110 motion-reduce:transform-none"
+                    />
+                    {q.label}
+                  </button>
                 </li>
               ))}
             </ul>
           </div>
         </section>
 
-        {/* Statement */}
-        <section className="mx-auto max-w-[1200px] px-5 py-24 md:px-8 lg:py-32">
-          <p className="max-w-[980px] text-[30px] font-medium leading-[1.2] tracking-[-0.02em] text-[#252525] sm:text-[40px] lg:text-[48px]">
-            Most interview prep is generic.{' '}
-            <span className="text-[#9A9CA1]">
-              Your interview isn&apos;t. It is one job description, one team, and one set of requirements you either
-              can back up, or need to prepare for.
-            </span>
-          </p>
-        </section>
+        <ProductTabs active={tab} setActive={setTab} />
+        <FitSimulator />
+        <Practice />
+        <FirstTen />
+        <Moments />
+        <Trust />
+        <Faq />
 
-        {/* How it works */}
-        <section id="how" className="scroll-mt-24 bg-[#252525] py-24 text-white lg:py-28">
-          <div className="mx-auto max-w-[1200px] px-5 md:px-8">
-            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+        <section className="px-5 pb-12 md:px-8">
+          <div className="rwl-cta-bg relative mx-auto max-w-[1240px] overflow-hidden rounded-[36px] px-8 py-14 sm:px-14 lg:px-20 lg:py-20">
+            <div className="pointer-events-none absolute -right-10 -top-10 h-72 w-72 rounded-full bg-white/30 blur-3xl" aria-hidden />
+            <div className="relative grid items-center gap-10 lg:grid-cols-[1.3fr_0.7fr]">
               <div>
-                <p className="text-[14px] font-semibold uppercase tracking-[0.14em] text-[#FFD84D]">How it works</p>
-                <h2 className="mt-3 max-w-[560px] text-[36px] font-semibold leading-[1.1] tracking-[-0.02em] sm:text-[44px]">
-                  From job post to ready, in four steps
+                <h2 className="max-w-[620px] text-[38px] font-semibold leading-[1.04] tracking-[-0.035em] text-[#252525] [text-wrap:balance] sm:text-[56px]">
+                  Your next interview is for one role. Prepare for that one.
                 </h2>
-              </div>
-              <p className="max-w-[380px] text-[16px] leading-relaxed text-white/65">
-                Every step uses the job you added, so nothing you practise is wasted on a role you are not going for.
-              </p>
-            </div>
-            <ol className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {STEPS.map((s, i) => (
-                <li key={s.title} className="rounded-3xl border border-white/10 bg-white/[0.04] p-7">
-                  <div className="flex items-center justify-between">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FFD84D] text-[#252525]">
-                      <s.icon className="h-5 w-5" aria-hidden />
-                    </span>
-                    <span className="text-[14px] font-medium text-white/40">0{i + 1}</span>
-                  </div>
-                  <h3 className="mt-8 text-[21px] font-semibold">{s.title}</h3>
-                  <p className="mt-2 text-[15px] leading-relaxed text-white/65">{s.body}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        {/* Features */}
-        <section id="features" className="scroll-mt-24 mx-auto max-w-[1200px] px-5 py-24 md:px-8 lg:py-32">
-          <div className="max-w-[640px]">
-            <p className="text-[14px] font-semibold uppercase tracking-[0.14em] text-[#8A7417]">Features</p>
-            <h2 className="mt-3 text-[36px] font-semibold leading-[1.1] tracking-[-0.02em] sm:text-[44px]">
-              Everything you need for one role, in one place
-            </h2>
-          </div>
-          <div className="mt-16 flex flex-col gap-24 lg:gap-32">
-            {FEATURES.map((f, i) => (
-              <article key={f.title} className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
-                <div className={i % 2 ? 'lg:order-2' : ''}>
-                  <p className="text-[14px] font-semibold text-[#8A7417]">
-                    0{i + 1} · {f.eyebrow}
-                  </p>
-                  <h3 className="mt-3 text-[30px] font-semibold leading-[1.15] tracking-[-0.02em] sm:text-[34px]">{f.title}</h3>
-                  <p className="mt-4 text-[17px] leading-relaxed text-[#5E6065]">{f.body}</p>
-                  <ul className="mt-6 space-y-3">
-                    {f.points.map((p) => (
-                      <li key={p} className="flex items-start gap-3 text-[15px] text-[#3A3C40]">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#FFD84D]">
-                          <Check className="h-3 w-3" aria-hidden />
-                        </span>
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className={`relative ${i % 2 ? 'lg:order-1' : ''}`}>
-                  <div
-                    className={`absolute inset-0 -z-0 translate-y-6 rounded-[32px] ${i % 2 ? '-translate-x-6' : 'translate-x-6'} bg-[#E9E6DA]`}
-                    aria-hidden
-                  />
-                  <div className="relative">
-                    <BrowserFrame src={f.image} alt={f.alt} />
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* Practice */}
-        <section id="practice" className="scroll-mt-24 bg-[#FAF9F4] py-24 lg:py-28">
-          <div className="mx-auto grid max-w-[1200px] items-center gap-12 px-5 md:px-8 lg:grid-cols-2 lg:gap-16">
-            <div className="relative">
-              <img
-                src={photo(PHOTOS.videoCall, 1000)}
-                alt="A man practising an interview answer on a video call"
-                loading="lazy"
-                className="aspect-[4/3] w-full rounded-[28px] object-cover"
-              />
-              <div className="absolute bottom-5 left-5 right-5 flex items-center gap-3 rounded-2xl bg-[#252525]/90 px-4 py-3 text-white backdrop-blur sm:right-auto">
-                <span className="relative flex h-3 w-3">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#D97968] opacity-60 motion-reduce:hidden" />
-                  <span className="relative inline-flex h-3 w-3 rounded-full bg-[#D97968]" />
-                </span>
-                <p className="text-[14px]">
-                  Recording · <span className="text-white/60">transcribing as you speak</span>
+                <p className="mt-5 max-w-[460px] text-[17px] leading-relaxed text-[#4A3F12]">
+                  Add the job, add your resume, and see where you stand in about ten minutes.
                 </p>
+                <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                  <CtaButton variant="ink" />
+                  <a
+                    href="#start"
+                    className="inline-flex min-h-[50px] items-center justify-center rounded-full border border-[#252525]/30 px-7 text-[15px] font-medium text-[#252525] hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+                  >
+                    What you need first
+                  </a>
+                </div>
+              </div>
+              <div className="relative mx-auto hidden h-[260px] w-[260px] lg:block" aria-hidden>
+                <div className="rwl-float absolute inset-0 flex items-center justify-center drop-shadow-[0_30px_40px_rgba(90,70,18,0.45)]">
+                  <Icon3D name="rocket" size={220} />
+                </div>
               </div>
             </div>
-            <div>
-              <p className="text-[14px] font-semibold uppercase tracking-[0.14em] text-[#8A7417]">Practice</p>
-              <h2 className="mt-3 text-[36px] font-semibold leading-[1.1] tracking-[-0.02em] sm:text-[44px]">
-                Rehearse the way you will actually answer
-              </h2>
-              <p className="mt-5 text-[17px] leading-relaxed text-[#5E6065]">
-                Saying an answer out loud is different from knowing it. Practise in the format that feels hardest, and get
-                feedback against what this role is asking for.
-              </p>
-              <div className="mt-8 grid gap-3">
-                {PRACTICE.map((p) => (
-                  <div key={p.title} className="flex items-start gap-4 rounded-2xl border border-[#E4E2DA] bg-[#F3F2EE] p-5">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#252525] text-[#FFD84D]">
-                      <p.icon className="h-5 w-5" aria-hidden />
-                    </span>
-                    <div>
-                      <h3 className="text-[17px] font-semibold">{p.title}</h3>
-                      <p className="mt-1 text-[15px] leading-relaxed text-[#5E6065]">{p.body}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Photo moments */}
-        <section className="mx-auto max-w-[1200px] px-5 py-24 md:px-8 lg:py-32">
-          <h2 className="max-w-[720px] text-[36px] font-semibold leading-[1.1] tracking-[-0.02em] sm:text-[44px]">
-            Built around the moments that decide an interview
-          </h2>
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
-            {[
-              { id: PHOTOS.resume, alt: 'A recruiter reading a resume', title: 'Your resume, read properly', body: 'Rolewise reads it the way a recruiter would: requirement by requirement.' },
-              { id: PHOTOS.practice, alt: 'A woman practising on a video call at home', title: 'Practice that feels real', body: 'Rehearse on camera or out loud until the answer feels like yours.' },
-              { id: PHOTOS.interview, alt: 'A candidate in an interview with a hiring manager', title: 'Walk in ready', body: 'Know your strongest examples and the gaps you have already prepared for.' },
-            ].map((c) => (
-              <figure key={c.title} className="group">
-                <div className="overflow-hidden rounded-[24px]">
-                  <img
-                    src={photo(c.id, 800)}
-                    alt={c.alt}
-                    loading="lazy"
-                    className="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none"
-                  />
-                </div>
-                <figcaption className="mt-5">
-                  <h3 className="text-[20px] font-semibold">{c.title}</h3>
-                  <p className="mt-1.5 text-[15px] leading-relaxed text-[#5E6065]">{c.body}</p>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-
-        {/* Promises */}
-        <section className="bg-[#252525] py-24 text-white lg:py-28">
-          <div className="mx-auto grid max-w-[1200px] gap-12 px-5 md:px-8 lg:grid-cols-[0.8fr_1.2fr]">
-            <div>
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFD84D] text-[#252525]">
-                <ShieldCheck className="h-6 w-6" aria-hidden />
-              </span>
-              <h2 className="mt-6 text-[36px] font-semibold leading-[1.1] tracking-[-0.02em] sm:text-[44px]">
-                AI you can check
-              </h2>
-              <p className="mt-4 max-w-[400px] text-[17px] leading-relaxed text-white/65">
-                A preparation tool is only useful if you can trust what it tells you. These are the rules Rolewise is built on.
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
-              {PROMISES.map((p, i) => (
-                <div key={p.title} className="flex gap-5 rounded-3xl border border-white/10 bg-white/[0.04] p-7">
-                  <span className="text-[28px] font-light text-[#FFD84D]">0{i + 1}</span>
-                  <div>
-                    <h3 className="text-[19px] font-semibold">{p.title}</h3>
-                    <p className="mt-1.5 text-[15px] leading-relaxed text-white/65">{p.body}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Mobile */}
-        <section className="overflow-hidden py-24 lg:py-28">
-          <div className="mx-auto grid max-w-[1200px] items-center gap-12 px-5 md:px-8 lg:grid-cols-2">
-            <div>
-              <p className="text-[14px] font-semibold uppercase tracking-[0.14em] text-[#8A7417]">On your phone</p>
-              <h2 className="mt-3 text-[36px] font-semibold leading-[1.1] tracking-[-0.02em] sm:text-[44px]">
-                Five spare minutes before the call? Use them.
-              </h2>
-              <p className="mt-5 max-w-[460px] text-[17px] leading-relaxed text-[#5E6065]">
-                Check your fit, tick off a prep item or run one more practice answer from your phone. Same plan, same
-                progress.
-              </p>
-            </div>
-            <div className="flex justify-center gap-4 sm:gap-6">
-              {[
-                { src: '/landing/m-role-fit.webp', alt: 'Role fit on mobile', cls: 'mt-12' },
-                { src: '/landing/m-prep.webp', alt: 'Preparation plan on mobile', cls: '' },
-              ].map((p) => (
-                <div
-                  key={p.src}
-                  className={`w-[46%] max-w-[250px] rounded-[38px] bg-gradient-to-b from-[#3A3B40] to-[#1C1C1F] p-[7px] shadow-[0_40px_70px_-30px_rgba(37,37,37,0.55)] ${p.cls}`}
-                >
-                  <img src={p.src} alt={p.alt} loading="lazy" className="block aspect-[1170/2532] w-full rounded-[32px] object-cover" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section id="faq" className="scroll-mt-24 mx-auto grid max-w-[1200px] gap-12 px-5 pb-24 md:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:pb-32">
-          <h2 className="text-[36px] font-semibold leading-[1.1] tracking-[-0.02em] sm:text-[44px]">Questions, answered</h2>
-          <Faq />
-        </section>
-
-        {/* CTA */}
-        <section className="px-5 pb-10 md:px-8">
-          <div className="mx-auto grid max-w-[1200px] overflow-hidden rounded-[32px] bg-[#FFD84D] lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="p-10 sm:p-14 lg:p-16">
-              <h2 className="max-w-[520px] text-[38px] font-semibold leading-[1.05] tracking-[-0.03em] text-[#252525] sm:text-[52px]">
-                Your next interview is for one role. Prepare for that one.
-              </h2>
-              <p className="mt-5 max-w-[440px] text-[17px] leading-relaxed text-[#4A3F12]">
-                Add the job, add your resume, and see where you stand in minutes.
-              </p>
-              <div className="mt-9">
-                <SecondaryDarkCta />
-              </div>
-            </div>
-            <img
-              src={photo(PHOTOS.cta, 900)}
-              alt="A smiling candidate holding a tablet"
-              loading="lazy"
-              className="h-72 w-full object-cover lg:h-full"
-            />
           </div>
         </section>
       </main>
 
-      <footer className="mx-auto max-w-[1200px] px-5 pb-10 pt-10 md:px-8">
+      <footer className="mx-auto max-w-[1240px] px-5 pb-10 pt-6 md:px-8">
         <div className="flex flex-col justify-between gap-8 border-t border-[#D9D8D2] pt-10 md:flex-row md:items-start">
           <div className="max-w-[300px]">
             <div className="w-[140px]">
@@ -622,8 +956,8 @@ export function Landing() {
             <div>
               <p className="font-semibold">Product</p>
               <ul className="mt-3 space-y-2 text-[#5E6065]">
-                <li><a href="#how" className="hover:text-[#252525]">How it works</a></li>
-                <li><a href="#features" className="hover:text-[#252525]">Features</a></li>
+                <li><a href="#product" className="hover:text-[#252525]">Features</a></li>
+                <li><a href="#fit" className="hover:text-[#252525]">Fit score</a></li>
                 <li><a href="#practice" className="hover:text-[#252525]">Practice</a></li>
               </ul>
             </div>
@@ -637,34 +971,26 @@ export function Landing() {
             <div>
               <p className="font-semibold">Help</p>
               <ul className="mt-3 space-y-2 text-[#5E6065]">
+                <li><a href="#start" className="hover:text-[#252525]">Getting started</a></li>
                 <li><a href="#faq" className="hover:text-[#252525]">FAQ</a></li>
               </ul>
             </div>
           </div>
         </div>
-        <div className="mt-10 flex flex-col justify-between gap-2 text-[13px] text-[#8A8C91] sm:flex-row">
+        <div className="mt-10 flex flex-col justify-between gap-2 text-[13px] text-[#73757A] sm:flex-row">
           <p>© {new Date().getFullYear()} Rolewise</p>
           <p>
             Photos from{' '}
             <a href="https://unsplash.com" className="inline-flex items-center gap-0.5 underline-offset-2 hover:underline" rel="noreferrer" target="_blank">
               Unsplash <ArrowUpRight className="h-3 w-3" aria-hidden />
             </a>
+            , 3D icons from{' '}
+            <a href="https://github.com/microsoft/fluentui-emoji" className="inline-flex items-center gap-0.5 underline-offset-2 hover:underline" rel="noreferrer" target="_blank">
+              Fluent Emoji <ArrowUpRight className="h-3 w-3" aria-hidden />
+            </a>
           </p>
         </div>
       </footer>
     </div>
-  );
-}
-
-function SecondaryDarkCta() {
-  const cta = useCta();
-  return (
-    <Link
-      href={cta.href}
-      className="inline-flex min-h-[52px] items-center gap-2 rounded-full bg-[#252525] px-7 text-[16px] font-semibold text-white transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFD84D]"
-    >
-      {cta.label}
-      <ArrowRight className="h-4 w-4" aria-hidden />
-    </Link>
   );
 }
