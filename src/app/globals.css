@@ -562,10 +562,8 @@ html, body {
 /* ---------- Landing page (/welcome) ---------- */
 .rwl ::selection { background: #FFD84D; color: #252525; }
 .rwl-hero-bg {
-  background:
-    radial-gradient(60% 70% at 85% 30%, rgba(255,216,77,.32) 0%, rgba(255,216,77,0) 60%),
-    radial-gradient(45% 55% at 10% 100%, rgba(212,154,53,.28) 0%, rgba(212,154,53,0) 70%),
-    linear-gradient(135deg, #1B1A17 0%, #252525 38%, #3A3220 72%, #5A4612 100%);
+  /* Flat ink base; the warm glow comes from the cursor-following .rwl-glow layer. */
+  background: linear-gradient(135deg, #1B1A17 0%, #252525 55%, #2A2724 100%);
 }
 .rwl-grid-lines {
   background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
