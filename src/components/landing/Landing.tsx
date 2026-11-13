@@ -289,7 +289,7 @@ const FLOATERS: { icon: LucideIcon; tone: GlossyTone; shape: GlossyShape; cls: s
   { icon: Mic, tone: 'ink', shape: 'hex', cls: 'right-[-7%] top-[40%]', depth: '-26px', size: 72, float: 'rwl-float-c', tilt: '' },
   { icon: ListChecks, tone: 'green', shape: 'squircle', cls: 'left-[38%] top-[-13%]', depth: '30px', size: 58, float: 'rwl-float-c', tilt: 'rw-tilt-r' },
   { icon: MessageSquare, tone: 'cream', shape: 'hex', cls: 'left-[2%] top-[-11%]', depth: '14px', size: 52, float: 'rwl-float-b', tilt: 'rw-tilt-l' },
-  { icon: Briefcase, tone: 'yellow', shape: 'squircle', cls: 'left-[10%] bottom-[-10%]', depth: '-20px', size: 74, float: 'rwl-float-c', tilt: 'rw-tilt-r' },
+  { icon: Briefcase, tone: 'green', shape: 'squircle', cls: 'left-[10%] bottom-[-10%]', depth: '-20px', size: 74, float: 'rwl-float-c', tilt: 'rw-tilt-r' },
 ]
 
 function Hero() {
