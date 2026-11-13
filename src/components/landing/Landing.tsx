@@ -35,6 +35,7 @@ import { CtaIllustration } from '@/components/landing/CtaIllustration';
 const photo = (id: string, w: number) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
 
 const PHOTOS = {
+  hero: '1573497620053-ea5300f94f21',
   videoCall: '1616587894289-86480e533129',
   resume: '1698047681432-006d2449c631',
   practice: '1758521541324-d304c5303fe5',
@@ -139,25 +140,21 @@ const FIRST_TEN = [
     icon: 'page-facing-up',
     title: 'Have two things ready',
     body: 'The job description as text, and your resume as a PDF or DOCX exported from Word, Google Docs or Canva.',
-    tip: 'Scanned or photographed resume? Add your experience by hand instead.',
   },
   {
     icon: 'bullseye',
     title: 'Add the job and your resume',
     body: 'You will see "Resume read · N words" when it worked, so you know your real experience is being used.',
-    tip: 'Fewer than 40 readable words means the file could not be read.',
   },
   {
     icon: 'chart-increasing',
     title: 'Read your fit',
     body: 'Start with the requirements marked "Not shown". They are the questions most likely to catch you out.',
-    tip: '"Not shown" means we could not find it, not that you cannot do it.',
   },
   {
     icon: 'microphone',
     title: 'Prepare, then practise',
     body: 'Work through your plan in order, then answer one mock question out loud.',
-    tip: 'Short on time? One practice answer on your top gap is the best ten minutes you can spend.',
   },
 ];
 
@@ -351,7 +348,13 @@ function Hero() {
 
         <div className="rwl-enter relative mx-auto w-full max-w-[640px] [animation-delay:180ms]">
           <div className="rwl-parallax relative" style={{ ['--depth' as string]: '8px' }}>
-            <BrowserFrame src="/landing/role-fit.webp" alt="Rolewise role fit page with an 84% strong fit score" eager />
+            <div className="overflow-hidden rounded-[28px] border border-white/15 bg-[#3A3220] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.6)]">
+              <img
+                src={photo(PHOTOS.hero, 1200)}
+                alt="A candidate talking through her experience in an interview"
+                className="block aspect-[16/11] w-full object-cover"
+              />
+            </div>
           </div>
 
           <div
@@ -717,37 +720,15 @@ function FirstTen() {
           </h2>
           <p className="max-w-[420px] text-[16px] leading-relaxed text-[#5E6065]">The places people usually get stuck, answered before you get there.</p>
         </div>
-        <ol className="mt-14 grid gap-8 lg:grid-cols-4 lg:gap-5">
-          {FIRST_TEN.map((s, i) => {
-            const last = i === FIRST_TEN.length - 1;
-            return (
-              <li key={s.title} className="relative grid grid-cols-[44px_1fr] gap-4 lg:flex lg:flex-col lg:gap-0">
-                {/* connector to the next step: vertical on mobile, horizontal on desktop */}
-                {!last && (
-                  <span
-                    className="absolute left-[21px] top-12 -bottom-8 w-0.5 bg-[repeating-linear-gradient(to_bottom,#D9D8D2_0_6px,transparent_6px_12px)] lg:-right-5 lg:bottom-auto lg:left-14 lg:top-[21px] lg:h-0.5 lg:w-auto lg:bg-[repeating-linear-gradient(to_right,#D9D8D2_0_6px,transparent_6px_12px)]"
-                    aria-hidden
-                  />
-                )}
-                <span className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-[#FFD84D] text-[17px] font-semibold tabular-nums text-[#252525] shadow-[0_0_0_6px_#FAF9F4]">
-                  <span className="sr-only">Step </span>
-                  {i + 1}
-                </span>
-                <div className="flex flex-1 flex-col rounded-[24px] border border-[#E4E2DA] bg-white p-6 lg:mt-5">
-                  <LineIcon name={s.icon} size={48} />
-                  <h3 className="mt-5 text-[19px] font-semibold leading-snug">{s.title}</h3>
-                  <p className="mt-2 text-[15px] leading-relaxed text-[#5E6065]">{s.body}</p>
-                  <div className="mt-auto pt-5">
-                    <p className="flex items-start gap-2 rounded-xl bg-[#FFF6D1] px-3 py-2.5 text-[13px] leading-snug text-[#4A3F12]">
-                      <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-                      {s.tip}
-                    </p>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+        <ul className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {FIRST_TEN.map((s) => (
+            <li key={s.title} className="flex flex-col rounded-[24px] border border-[#E4E2DA] bg-white p-6">
+              <LineIcon name={s.icon} size={48} />
+              <h3 className="mt-5 text-[19px] font-semibold leading-snug">{s.title}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-[#5E6065]">{s.body}</p>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
