@@ -195,12 +195,12 @@ function CtaButton({ variant = 'yellow', className = '' }: { variant?: 'yellow' 
   const cta = useCta();
   const styles =
     variant === 'yellow'
-      ? 'bg-[#FFD84D] text-[#252525] hover:bg-[#FFE27A] shadow-[0_10px_30px_-10px_rgba(255,216,77,0.7)] focus-visible:ring-white'
+      ? 'bg-[#FFD84D] text-[#252525] hover:bg-[#FFE27A] shadow-[0_10px_30px_-10px_rgba(255,216,77,0.7)] focus-visible:ring-[#252525] focus-visible:ring-offset-white'
       : 'bg-[#252525] text-white hover:bg-black focus-visible:ring-[#252525]';
   return (
     <Link
       href={cta.href}
-      className={`group inline-flex min-h-[50px] items-center justify-center gap-2 rounded-full px-7 text-[15px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${styles} ${className}`}
+      className={`group inline-flex min-h-[50px] items-center justify-center gap-2 rounded-full px-7 text-[15px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${styles} ${className}`}
     >
       {cta.label}
       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
@@ -810,7 +810,6 @@ export function Landing() {
   const [scrolled, setScrolled] = useState(false);
   const [tab, setTab] = useState<TabId>('fit');
   const { session } = useAuth();
-  const solid = scrolled || menuOpen;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -834,12 +833,12 @@ export function Landing() {
       </a>
 
       <header
-        className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,box-shadow,border-color] duration-300 ${
-          solid ? 'border-[#E4E2DA] bg-[#F3F2EE]/95 shadow-[0_8px_24px_-18px_rgba(37,37,37,0.4)] backdrop-blur' : 'border-transparent'
+        className={`fixed inset-x-0 top-0 z-50 border-b border-[#E4E2DA] bg-white transition-shadow duration-300 ${
+          scrolled ? 'shadow-[0_8px_24px_-18px_rgba(37,37,37,0.35)]' : ''
         }`}
       >
         <div className="mx-auto flex h-[72px] max-w-[1240px] items-center justify-between px-5 md:px-8">
-          <Link href="/welcome" aria-label="Rolewise home" className={`block w-[150px] transition ${solid ? '' : 'brightness-0 invert'}`}>
+          <Link href="/welcome" aria-label="Rolewise home" className="block w-[150px]">
             <RolewiseLogo />
           </Link>
           <nav aria-label="Main" className="hidden items-center gap-7 lg:flex">
@@ -847,7 +846,7 @@ export function Landing() {
               <a
                 key={n.href}
                 href={n.href}
-                className={`text-[15px] font-medium transition-colors ${solid ? 'text-[#4A4C51] hover:text-[#252525]' : 'text-white/80 hover:text-white'}`}
+                className="rounded-md text-[15px] font-medium text-[#4A4C51] transition-colors hover:text-[#252525] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-4"
               >
                 {n.label}
               </a>
@@ -857,18 +856,16 @@ export function Landing() {
             {!session && (
               <Link
                 href="/auth"
-                className={`rounded-full px-4 py-2.5 text-[15px] font-medium ${solid ? 'text-[#252525] hover:bg-black/5' : 'text-white hover:bg-white/10'}`}
+                className="inline-flex min-h-[44px] items-center rounded-full border border-[#252525]/80 px-5 text-[14px] font-medium text-[#252525] transition hover:bg-[#252525] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
               >
                 Sign in
               </Link>
             )}
-            <CtaButton className="min-h-[44px] px-5 text-[14px]" />
+            <CtaButton className="min-h-[44px] px-5 text-[14px] shadow-none" />
           </div>
           <button
             type="button"
-            className={`inline-flex h-11 w-11 items-center justify-center rounded-full border lg:hidden ${
-              solid ? 'border-[#D9D8D2] text-[#252525]' : 'border-white/30 text-white'
-            }`}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#D9D8D2] text-[#252525] lg:hidden"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
