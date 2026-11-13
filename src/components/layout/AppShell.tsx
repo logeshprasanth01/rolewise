@@ -2,7 +2,7 @@
 
 // Vercel build refresh: AppShell JSX validated
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -18,8 +18,7 @@ import {
   Bell,
   LogOut,
   Plus,
-  UserRound,
-  ChevronDown,
+  ChevronRight,
   PanelLeftClose,
   Menu,
   X,
@@ -38,11 +37,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
   const { userName, session, isLoading, signOut } = useAuth();
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [headerQuery, setHeaderQuery] = useState('');
-  const profileRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -83,17 +80,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }, [isSidebarCollapsed]);
 
   useEffect(() => {
-    const handleOutside = (event: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
-        setIsProfileOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleOutside);
-    return () => document.removeEventListener('mousedown', handleOutside);
-  }, []);
-
-  useEffect(() => {
-    setIsProfileOpen(false);
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
@@ -204,43 +190,27 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               <span className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}>Settings</span>
             </Link>
 
-            <div className="relative" ref={profileRef}>
-              <button
-                type="button"
-                onClick={() => setIsProfileOpen((value) => !value)}
-                title="Profile"
-                aria-expanded={isProfileOpen}
-                className={`flex items-center gap-3 min-h-12 rounded-[15px] bg-[#F3F2EE] border border-[#D9D8D2] hover:border-[#C9C7BE] transition-all duration-300 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 justify-center rounded-full' : 'w-full px-2.5 lg:px-3'}`}
-              >
-                <div className="w-8 h-8 rounded-full bg-[#252525] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
-                  {userName ? userName[0].toUpperCase() : 'U'}
-                </div>
-                <div className={`min-w-0 text-left flex-1 overflow-hidden transition-[max-width,opacity] duration-200 ${isSidebarCollapsed ? 'hidden' : 'max-w-[160px] opacity-100'}`}>
-                  <p className="text-xs font-bold text-[#252525] truncate">{userName || 'Candidate'}</p>
-                  <p className="text-[10px] text-[#73757A] truncate">{session.user?.email || 'Profile'}</p>
-                </div>
-                <ChevronDown className={`w-3.5 h-3.5 text-[#73757A] shrink-0 transition-all duration-200 ${isSidebarCollapsed ? 'hidden' : `opacity-100 ${isProfileOpen ? 'rotate-180' : ''}`}`} />
-              </button>
-
-              {isProfileOpen && (
-                <div className="absolute left-0 right-0 md:left-[calc(100%+8px)] md:right-auto bottom-14 md:bottom-0 w-56 rounded-2xl bg-[#FAF9F4] border border-[#D9D8D2] shadow-[0_14px_35px_rgba(37,37,37,0.16)] p-1.5 z-50 animate-rw-pop">
-                  <Link href="/profile" data-ui-sound="click" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-[#252525] hover:bg-[#F3F2EE]">
-                    <UserRound className="w-4 h-4 text-[#73757A]" /> Profile
-                  </Link>
-                  <Link href="/settings" data-ui-sound="click" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-[#252525] hover:bg-[#F3F2EE]">
-                    <Settings className="w-4 h-4 text-[#73757A]" /> Settings
-                  </Link>
-                  <button
-                    type="button"
-                    data-ui-sound="click"
-                    onClick={() => { setIsProfileOpen(false); signOut(); }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-[#D97968] hover:bg-[#FFF0ED] text-left"
-                  >
-                    <LogOut className="w-4 h-4" /> Sign out
-                  </button>
-                </div>
-              )}
-            </div>
+            {/* Profile card opens the profile page directly. (The old dropdown rendered
+                outside the overflow-hidden sidebar on desktop, so it was invisible.) */}
+            <Link
+              href="/profile"
+              data-ui-sound="click"
+              title={isSidebarCollapsed ? 'My profile' : undefined}
+              aria-label="My profile"
+              aria-current={isNavActive('/profile') ? 'page' : undefined}
+              className={`flex items-center gap-3 min-h-12 rounded-[15px] border transition-all duration-300 ${
+                isNavActive('/profile') ? 'bg-[#FFFFFF] border-[#252525]' : 'bg-[#F3F2EE] border-[#D9D8D2] hover:border-[#C9C7BE] hover:bg-[#EFEEE9]'
+              } ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 justify-center rounded-full' : 'w-full px-2.5 lg:px-3'}`}
+            >
+              <div className="w-8 h-8 rounded-full bg-[#252525] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
+                {userName ? userName[0].toUpperCase() : 'U'}
+              </div>
+              <div className={`min-w-0 text-left flex-1 overflow-hidden ${isSidebarCollapsed ? 'hidden' : ''}`}>
+                <p className="text-xs font-bold text-[#252525] truncate">{userName || 'Candidate'}</p>
+                <p className="text-[10px] text-[#73757A] truncate">{session.user?.email || 'Profile'}</p>
+              </div>
+              <ChevronRight className={`w-3.5 h-3.5 text-[#73757A] shrink-0 ${isSidebarCollapsed ? 'hidden' : ''}`} aria-hidden="true" />
+            </Link>
 
             <button
               type="button"
@@ -302,15 +272,16 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             </nav>
 
             <div className="p-3 border-t border-[#D9D8D2]">
-              <div className="flex items-center gap-3 px-2 py-2 mb-2">
+              <Link href="/profile" data-ui-sound="click" className="flex items-center gap-3 px-2 py-2 mb-2 rounded-[14px] hover:bg-[#F3F2EE]">
                 <div className="w-9 h-9 rounded-full bg-[#252525] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
                   {userName ? userName[0].toUpperCase() : 'U'}
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold text-[#252525] truncate">{userName || 'Candidate'}</p>
                   <p className="text-[10px] text-[#73757A] truncate">{session.user?.email || 'Profile'}</p>
                 </div>
-              </div>
+                <ChevronRight className="w-4 h-4 text-[#73757A] shrink-0" aria-hidden="true" />
+              </Link>
               <button type="button" data-ui-sound="click" onClick={() => signOut()} className="w-full flex items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-sm font-semibold text-[#73757A] hover:bg-[#FFF0ED] hover:text-[#D97968]">
                 <LogOut className="w-4 h-4 shrink-0" />
                 <span>Sign out</span>
