@@ -16,6 +16,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { transcribeAudio, analyzeInterviewAnswer, RolewiseApiError } from '@/services/api';
+import { startLiveTranscription, stopLiveTranscription, cancelLiveTranscription } from '@/lib/browser-speech';
 import { CommunicationAnalysisResponse } from '@/types/database';
 
 type VideoState =
@@ -175,6 +176,7 @@ export default function VideoPracticePage() {
     };
 
     recorder.start(250);
+    startLiveTranscription(); // free in-browser transcript (Chrome/Edge)
     startTimeRef.current = Date.now();
     setDurationSeconds(0);
     setFlowState('RECORDING');
@@ -194,6 +196,7 @@ export default function VideoPracticePage() {
 
     const elapsed = Math.max(1, Math.floor((Date.now() - startTimeRef.current) / 1000));
     setDurationSeconds(elapsed);
+    void stopLiveTranscription();
 
     const recorder = mediaRecorderRef.current;
     if (!recorder || recorder.state === 'inactive') {
@@ -231,6 +234,7 @@ export default function VideoPracticePage() {
     }
     recordedBlobRef.current = null;
     transcriptRef.current = null;
+    cancelLiveTranscription();
     setAnalysis(null);
     setErrorMessage(null);
     setDurationSeconds(0);

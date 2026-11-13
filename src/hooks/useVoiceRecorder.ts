@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { startLiveTranscription, stopLiveTranscription, cancelLiveTranscription } from '@/lib/browser-speech';
 
 export interface UseVoiceRecorderReturn {
   isRecording: boolean;
@@ -71,6 +72,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   }, []);
 
   const resetRecording = useCallback(() => {
+    cancelLiveTranscription();
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
@@ -170,6 +172,8 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       };
 
       recorder.start(250); // collect data every 250ms chunks
+      // Free in-browser transcription runs alongside the recording (Chrome/Edge).
+      startLiveTranscription();
       recordingStartTimeRef.current = Date.now();
       setIsRecording(true);
       setDurationSeconds(0);
@@ -206,7 +210,13 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   }, [clearPermissionError, resetRecording]);
 
   const stopRecording = useCallback((): Promise<{ blob: Blob; durationSeconds: number; audioUrl: string } | null> => {
-    return new Promise((resolve) => {
+    // Wait for the browser transcript to settle before handing the recording back.
+    const speechDone = stopLiveTranscription();
+    type StopResult = { blob: Blob; durationSeconds: number; audioUrl: string } | null;
+    return new Promise<StopResult>((resolveRaw) => {
+      const resolve = (value: StopResult) => {
+        speechDone.then(() => resolveRaw(value), () => resolveRaw(value));
+      };
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;

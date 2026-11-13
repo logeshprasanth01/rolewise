@@ -1,4 +1,5 @@
 import { getSupabaseClient } from '@/lib/supabase/client';
+import { getBrowserTranscript } from '@/lib/browser-speech';
 export { getSupabaseClient };
 import type { User } from '@supabase/supabase-js';
 import {
@@ -453,6 +454,13 @@ export async function transcribeAudio(
   audioBlob: Blob,
   durationSeconds: number
 ): Promise<VoiceTranscriptionResponse> {
+  // 0. Free path: the browser already transcribed while recording (Chrome/Edge).
+  //    Needs no API key or credits; the server is only used when this is empty.
+  const browserTranscript = await getBrowserTranscript();
+  if (browserTranscript.split(/\s+/).filter(Boolean).length >= 2) {
+    return { transcript: browserTranscript, duration_seconds: Math.round(durationSeconds) };
+  }
+
   const supabase = getSupabaseClient();
   const { data: sessionData } = await supabase.auth.getSession();
   const token = sessionData?.session?.access_token || '';
