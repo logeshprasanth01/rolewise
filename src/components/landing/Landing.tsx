@@ -281,12 +281,52 @@ function CursorGlow({ x = 78, y = 30, size = 560 }: { x?: number; y?: number; si
   return <div ref={ref} className="rwl-glow" style={{ ['--gsize' as string]: `${size}px` }} aria-hidden />;
 }
 
+/** Hero backdrop: soft light that follows the pointer and a faint grid revealed around it. */
+function HeroBackdrop() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    const host = el?.parentElement;
+    if (!el || !host) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    let frame = 0;
+    const onMove = (e: PointerEvent) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const r = host.getBoundingClientRect();
+        el.style.setProperty('--hx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(2)}%`);
+        el.style.setProperty('--hy', `${(((e.clientY - r.top) / r.height) * 100).toFixed(2)}%`);
+        el.dataset.active = 'true';
+      });
+    };
+    const onLeave = () => {
+      el.dataset.active = 'false';
+    };
+    host.addEventListener('pointermove', onMove);
+    host.addEventListener('pointerleave', onLeave);
+    return () => {
+      cancelAnimationFrame(frame);
+      host.removeEventListener('pointermove', onMove);
+      host.removeEventListener('pointerleave', onLeave);
+    };
+  }, []);
+  return (
+    <div ref={ref} className="rwl-hy" aria-hidden>
+      <div className="rwl-hy-blob rwl-hy-blob-a" />
+      <div className="rwl-hy-blob rwl-hy-blob-b" />
+      <div className="rwl-hy-grid" />
+      <div className="rwl-hy-light" />
+    </div>
+  );
+}
+
 const FLOATERS: { icon: LucideIcon; tone: GlossyTone; shape: GlossyShape; cls: string; depth: string; size: number; float: string; tilt: string }[] = [
-  { icon: FileText, tone: 'yellow', shape: 'hex', cls: 'left-[-7%] top-[30%]', depth: '-18px', size: 78, float: '', tilt: 'rw-tilt-l' },
+  { icon: FileText, tone: 'cream', shape: 'hex', cls: 'left-[-7%] top-[30%]', depth: '-18px', size: 78, float: '', tilt: 'rw-tilt-l' },
   { icon: Target, tone: 'coral', shape: 'squircle', cls: 'right-[-4%] top-[-10%]', depth: '22px', size: 66, float: 'rwl-float-b', tilt: 'rw-tilt-r' },
   { icon: Mic, tone: 'ink', shape: 'hex', cls: 'right-[-7%] top-[40%]', depth: '-26px', size: 72, float: 'rwl-float-c', tilt: '' },
   { icon: ListChecks, tone: 'green', shape: 'squircle', cls: 'left-[38%] top-[-13%]', depth: '30px', size: 58, float: 'rwl-float-c', tilt: 'rw-tilt-r' },
-  { icon: MessageSquare, tone: 'cream', shape: 'hex', cls: 'left-[2%] top-[-11%]', depth: '14px', size: 52, float: 'rwl-float-b', tilt: 'rw-tilt-l' },
+  { icon: MessageSquare, tone: 'ink', shape: 'hex', cls: 'left-[2%] top-[-11%]', depth: '14px', size: 52, float: 'rwl-float-b', tilt: 'rw-tilt-l' },
   { icon: Briefcase, tone: 'green', shape: 'squircle', cls: 'left-[10%] bottom-[-10%]', depth: '-20px', size: 74, float: 'rwl-float-c', tilt: 'rw-tilt-r' },
 ]
 
@@ -316,29 +356,28 @@ function Hero() {
   }, []);
 
   return (
-    <section ref={ref} className="rwl-hero-bg relative overflow-hidden pt-[72px] text-white">
-      <CursorGlow x={80} y={28} size={620} />
-      <div className="rwl-grid-lines pointer-events-none absolute inset-0" aria-hidden />
+    <section ref={ref} className="rwl-hero-yellow relative overflow-hidden pt-[72px] text-[#252525]">
+      <HeroBackdrop />
       <div className="relative mx-auto grid max-w-[1240px] items-center gap-16 px-5 pb-24 pt-14 md:px-8 lg:grid-cols-[1fr_1.08fr] lg:gap-10 lg:pb-28 lg:pt-20">
         <div>
           <h1 className="rwl-enter text-[44px] font-semibold leading-[1.02] tracking-[-0.035em] [text-wrap:balance] sm:text-[58px] lg:text-[68px]">
             Prepare for the role, not just the interview.
           </h1>
-          <p className="rwl-enter mt-6 max-w-[520px] text-[18px] leading-relaxed text-white/75 [animation-delay:120ms]">
+          <p className="rwl-enter mt-6 max-w-[520px] text-[18px] leading-relaxed text-[#3F3A2E] [animation-delay:120ms]">
             Add a job and your resume. Rolewise shows how well you fit each requirement, turns the gaps into a prep plan, and
             runs mock interviews written for that exact role.
           </p>
           <div className="rwl-enter mt-9 flex flex-col gap-3 [animation-delay:220ms] sm:flex-row sm:items-center">
-            <CtaButton />
+            <CtaButton variant="ink" />
             <a
               href="#fit"
-              className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-full border border-white/25 bg-white/5 px-7 text-[15px] font-medium backdrop-blur transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-full border border-[#252525]/35 bg-white/35 px-7 text-[15px] font-medium backdrop-blur transition hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
             >
               Try the fit score
             </a>
           </div>
-          <p className="rwl-enter mt-6 flex items-start gap-2 text-[14px] text-white/65 [animation-delay:300ms]">
-            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#FFD84D]" aria-hidden />
+          <p className="rwl-enter mt-6 flex items-start gap-2 text-[14px] text-[#4A3F12] [animation-delay:300ms]">
+            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#252525]" aria-hidden />
             {session
               ? 'You are signed in. Pick up where you left off.'
               : 'Free during early access. About 10 minutes to your first fit score.'}
@@ -347,7 +386,7 @@ function Hero() {
 
         <div className="rwl-enter relative mx-auto w-full max-w-[640px] [animation-delay:180ms]">
           <div className="rwl-parallax relative" style={{ ['--depth' as string]: '8px' }}>
-            <div className="overflow-hidden rounded-[28px] border border-white/15 bg-[#3A3220] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.6)]">
+            <div className="overflow-hidden rounded-[28px] border-4 border-white/70 bg-white/40 shadow-[0_40px_80px_-30px_rgba(120,80,0,0.55)]">
               <img
                 src={photo(PHOTOS.hero, 1200)}
                 alt="A candidate talking through her experience in an interview"
