@@ -619,3 +619,18 @@ html, body {
 
 /* Landing manages its own gutters. */
 .rwl main { padding-left: 0; padding-right: 0; }
+
+/* Cursor-following glow on dark landing sections */
+@property --gx { syntax: '<percentage>'; inherits: false; initial-value: 78%; }
+@property --gy { syntax: '<percentage>'; inherits: false; initial-value: 30%; }
+.rwl-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(var(--gsize, 560px) circle at var(--gx) var(--gy), rgba(255, 216, 77, 0.34) 0%, rgba(242, 185, 65, 0.14) 34%, rgba(255, 216, 77, 0) 62%);
+  transition: --gx 0.9s cubic-bezier(.16,1,.3,1), --gy 0.9s cubic-bezier(.16,1,.3,1), opacity 0.4s ease;
+  opacity: 0.75;
+}
+.rwl-glow[data-active='true'] { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .rwl-glow { transition: none; } }

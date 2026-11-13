@@ -250,6 +250,42 @@ function BrowserFrame({ src, alt, eager = false }: { src: string; alt: string; e
 /* Hero                                                                */
 /* ------------------------------------------------------------------ */
 
+/** Yellow glow that follows the pointer across a dark section; rests at (x%, y%) otherwise. */
+function CursorGlow({ x = 78, y = 30, size = 560 }: { x?: number; y?: number; size?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const glow = ref.current;
+    const host = glow?.parentElement;
+    if (!glow || !host) return;
+    const rest = () => {
+      glow.style.setProperty('--gx', `${x}%`);
+      glow.style.setProperty('--gy', `${y}%`);
+      glow.dataset.active = 'false';
+    };
+    rest();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    let frame = 0;
+    const onMove = (e: PointerEvent) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const r = host.getBoundingClientRect();
+        glow.style.setProperty('--gx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(2)}%`);
+        glow.style.setProperty('--gy', `${(((e.clientY - r.top) / r.height) * 100).toFixed(2)}%`);
+        glow.dataset.active = 'true';
+      });
+    };
+    host.addEventListener('pointermove', onMove);
+    host.addEventListener('pointerleave', rest);
+    return () => {
+      cancelAnimationFrame(frame);
+      host.removeEventListener('pointermove', onMove);
+      host.removeEventListener('pointerleave', rest);
+    };
+  }, [x, y]);
+  return <div ref={ref} className="rwl-glow" style={{ ['--gsize' as string]: `${size}px` }} aria-hidden />;
+}
+
 const FLOATERS: { icon: LucideIcon; tone: GlossyTone; shape: GlossyShape; cls: string; depth: string; size: number; float: string; tilt: string }[] = [
   { icon: FileText, tone: 'yellow', shape: 'hex', cls: 'left-[-7%] top-[30%]', depth: '-18px', size: 78, float: '', tilt: 'rw-tilt-l' },
   { icon: Target, tone: 'coral', shape: 'squircle', cls: 'right-[-4%] top-[-10%]', depth: '22px', size: 66, float: 'rwl-float-b', tilt: 'rw-tilt-r' },
@@ -285,6 +321,7 @@ function Hero() {
 
   return (
     <section ref={ref} className="rwl-hero-bg relative overflow-hidden pt-[72px] text-white">
+      <CursorGlow x={80} y={28} size={620} />
       <div className="rwl-grid-lines pointer-events-none absolute inset-0" aria-hidden />
       <div className="relative mx-auto grid max-w-[1240px] items-center gap-16 px-5 pb-28 pt-14 md:px-8 lg:grid-cols-[1fr_1.08fr] lg:gap-10 lg:pb-36 lg:pt-20">
         <div>
@@ -483,8 +520,9 @@ function FitSimulator() {
     setReqs((prev) => prev.map((r, j) => (j === i ? { ...r, status: STATUS_ORDER[(STATUS_ORDER.indexOf(r.status) + 1) % 4] } : r)));
 
   return (
-    <section id="fit" className="scroll-mt-20 bg-[#252525] py-24 text-white lg:py-28">
-      <div className="mx-auto grid max-w-[1240px] gap-12 px-5 md:px-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+    <section id="fit" className="relative scroll-mt-20 overflow-hidden bg-[#252525] py-24 text-white lg:py-28">
+      <CursorGlow x={22} y={18} size={520} />
+      <div className="relative mx-auto grid max-w-[1240px] gap-12 px-5 md:px-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
         <div className="lg:sticky lg:top-28 lg:self-start">
           <LineIcon name="chart-increasing" size={52} tone="yellow" />
           <h2 className="mt-6 text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
@@ -679,24 +717,35 @@ function FirstTen() {
           </h2>
           <p className="max-w-[420px] text-[16px] leading-relaxed text-[#5E6065]">The places people usually get stuck, answered before you get there.</p>
         </div>
-        <ol className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {FIRST_TEN.map((s, i) => (
-            <li key={s.title} className="flex flex-col rounded-[24px] border border-[#E4E2DA] bg-white p-6">
-              <div className="flex items-start justify-between">
-                <LineIcon name={s.icon} size={48} />
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#252525] text-[13px] font-semibold text-[#FFD84D]">
+        <ol className="mt-14 grid gap-8 lg:grid-cols-4 lg:gap-5">
+          {FIRST_TEN.map((s, i) => {
+            const last = i === FIRST_TEN.length - 1;
+            return (
+              <li key={s.title} className="relative grid grid-cols-[44px_1fr] gap-4 lg:flex lg:flex-col lg:gap-0">
+                {/* connector to the next step: vertical on mobile, horizontal on desktop */}
+                {!last && (
+                  <span
+                    className="absolute left-[21px] top-12 -bottom-8 w-0.5 bg-[repeating-linear-gradient(to_bottom,#D9D8D2_0_6px,transparent_6px_12px)] lg:-right-5 lg:bottom-auto lg:left-14 lg:top-[21px] lg:h-0.5 lg:w-auto lg:bg-[repeating-linear-gradient(to_right,#D9D8D2_0_6px,transparent_6px_12px)]"
+                    aria-hidden
+                  />
+                )}
+                <span className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-[#FFD84D] text-[17px] font-semibold tabular-nums text-[#252525] shadow-[0_0_0_6px_#FAF9F4]">
                   <span className="sr-only">Step </span>
                   {i + 1}
                 </span>
-              </div>
-              <h3 className="mt-6 text-[19px] font-semibold">{s.title}</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-[#5E6065]">{s.body}</p>
-              <p className="mt-auto flex items-start gap-2 pt-5 text-[13px] leading-snug text-[#6E5A12]">
-                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-                {s.tip}
-              </p>
-            </li>
-          ))}
+                <div className="flex flex-1 flex-col rounded-[24px] border border-[#E4E2DA] bg-white p-6 lg:mt-5">
+                  <h3 className="text-[19px] font-semibold leading-snug">{s.title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[#5E6065]">{s.body}</p>
+                  <div className="mt-auto pt-5">
+                    <p className="flex items-start gap-2 rounded-xl bg-[#FFF6D1] px-3 py-2.5 text-[13px] leading-snug text-[#4A3F12]">
+                      <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+                      {s.tip}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ol>
       </div>
     </section>
@@ -737,6 +786,7 @@ function Trust() {
   ];
   return (
     <section className="rwl-hero-bg relative overflow-hidden py-24 text-white lg:py-28">
+      <CursorGlow x={18} y={70} size={560} />
       <div className="rwl-grid-lines pointer-events-none absolute inset-0" aria-hidden />
       <div className="relative mx-auto grid max-w-[1240px] items-center gap-12 px-5 md:px-8 lg:grid-cols-[0.8fr_1.2fr]">
         <div>
