@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Sparkles, ClipboardList, ChevronRight, BellRing, Briefcase, X, CheckCircle2, AlertCircle } from 'lucide-react';
-import { getUserRoles, updateApplication } from '@/services/api';
+import { Plus, Search, Sparkles, ClipboardList, ChevronRight, BellRing, Briefcase, X, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
+import { getUserRoles, updateApplication, removeRole } from '@/services/api';
 import type { ApplicationStatus, Role } from '@/types/database';
 import {
   APPLICATION_STATUSES,
@@ -49,6 +49,22 @@ export default function JobTrackerPage() {
   const [query, setQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [toast, setToast] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const deleteJob = async (role: Role) => {
+    setDeletingId(role.id);
+    try {
+      await removeRole(role.id);
+      setRoles((prev) => prev.filter((r) => r.id !== role.id));
+      setToast({ text: `${role.title} removed.`, type: 'success' });
+    } catch {
+      setToast({ text: "Couldn't delete this job. Please try again.", type: 'error' });
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+    }
+  };
   const today = todayISO();
 
   useEffect(() => {
@@ -307,7 +323,37 @@ export default function JobTrackerPage() {
                     ))}
                   </select>
                   {role.contact_email && (
-                    <span className="ml-auto text-[12px] text-[#9A9086] truncate max-w-[45%]">{role.contact_email}</span>
+                    <span className="hidden sm:inline ml-auto text-[12px] text-[#9A9086] truncate max-w-[35%]">{role.contact_email}</span>
+                  )}
+                  {confirmDeleteId === role.id ? (
+                    <div className={`flex items-center gap-1.5 ${role.contact_email ? 'sm:ml-3' : ''} ml-auto`} role="group" aria-label={`Confirm deleting ${role.title}`}>
+                      <span className="hidden sm:inline text-[12px] text-[#6B6259]">Delete this job?</span>
+                      <button
+                        type="button"
+                        onClick={() => deleteJob(role)}
+                        disabled={deletingId === role.id}
+                        className="h-9 px-3 rounded-lg bg-[#B84F3D] text-white text-[13px] font-semibold disabled:opacity-60"
+                      >
+                        {deletingId === role.id ? 'Deleting…' : 'Delete'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDeleteId(null)}
+                        className="h-9 px-3 rounded-lg border border-[#E6E0D7] bg-white text-[13px] font-semibold text-[#1A1714]"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDeleteId(role.id)}
+                      aria-label={`Delete ${role.title} at ${role.company}`}
+                      className={`${role.contact_email ? 'sm:ml-3' : ''} ml-auto h-9 px-2.5 inline-flex items-center gap-1.5 rounded-lg text-[13px] font-semibold text-[#6B6259] hover:text-[#B84F3D] hover:bg-[#FFF0ED] transition-colors`}
+                    >
+                      <Trash2 className="w-4 h-4" aria-hidden="true" />
+                      <span className="hidden sm:inline">Delete</span>
+                    </button>
                   )}
                 </div>
               </li>

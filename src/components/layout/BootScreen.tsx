@@ -8,7 +8,7 @@ const STATUS_LINES = ['Restoring your session', 'Syncing your roles', 'Setting u
  * First-paint screen while the auth session restores.
  * Content fades in after a short delay, so fast loads never flash a loader.
  */
-export function BootScreen() {
+export function BootScreen({ message }: { message?: string } = {}) {
   const [line, setLine] = useState(0);
 
   useEffect(() => {
@@ -21,14 +21,13 @@ export function BootScreen() {
       className="rw-boot min-h-screen w-full flex items-center justify-center px-6"
       role="status"
       aria-live="polite"
-      aria-label="Loading ROLEWISE"
+      aria-label="Loading Rolewise"
     >
       <div className="rw-boot-content flex flex-col items-center" style={{ animationDelay: '150ms' }}>
         <div className="rw-boot-mark flex items-center justify-center">
           <span className="rw-boot-orbit" aria-hidden="true" />
-          <span className="text-[34px] font-bold leading-none tracking-[-0.04em] text-[#FFD84D]" aria-hidden="true">
-            R
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/rolewise-mark.png" alt="" aria-hidden="true" width={40} height={45} className="relative h-[45px] w-auto select-none" draggable={false} />
         </div>
 
         <p className="mt-8 text-[15px] font-bold tracking-[0.32em] text-[#1A1714] pl-[0.32em]">ROLEWISE</p>
@@ -42,7 +41,7 @@ export function BootScreen() {
         </div>
 
         <p key={line} className="rw-boot-word mt-4 h-4 text-[11px] font-medium uppercase tracking-[0.14em] text-[#574F46]">
-          {STATUS_LINES[line]}
+          {message ?? STATUS_LINES[line]}
         </p>
       </div>
     </div>

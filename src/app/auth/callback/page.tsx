@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { syncUserProfile } from '@/services/api';
+import { BootScreen } from '@/components/layout/BootScreen';
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -119,27 +120,13 @@ function AuthCallbackContent() {
     };
   }, [router]);
 
-  return (
-    <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center gap-3 text-[#6B6259]">
-      <div className="w-10 h-10 rounded-2xl bg-[#6D5DFB] flex items-center justify-center text-white font-bold text-lg shadow-sm animate-pulse">
-        R
-      </div>
-      <p className="text-xs font-medium tracking-wide">{statusMessage}</p>
-    </div>
-  );
+  return <BootScreen message={statusMessage} />;
 }
 
 export default function AuthCallbackPage() {
   return (
     <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center gap-3 text-[#6B6259]">
-          <div className="w-10 h-10 rounded-2xl bg-[#6D5DFB] flex items-center justify-center text-white font-bold text-lg shadow-sm animate-pulse">
-            R
-          </div>
-          <p className="text-xs font-medium tracking-wide">Completing sign-in...</p>
-        </div>
-      }
+      fallback={<BootScreen message="Completing sign-in" />}
     >
       <AuthCallbackContent />
     </Suspense>
