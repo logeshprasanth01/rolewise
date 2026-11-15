@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #F2EFEA;
+  --color-canvas: #F7F5F1;
   --color-surface: #FFFFFF;
   --color-surface-warm: #FFFFFF;
   --color-text-primary: #1A1714;
@@ -22,12 +22,12 @@
 }
 
 :root {
-  --background: #F2EFEA;
+  --background: #F7F5F1;
   --foreground: #1A1714;
 }
 
 body {
-  background-color: #F2EFEA;
+  background-color: #F7F5F1;
   color: #1A1714;
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -47,7 +47,7 @@ body {
 .rw-app-frame {
   position: relative;
   isolation: isolate;
-  background: #F2EFEA;
+  background: #F7F5F1;
 }
 
 /* Soft, low-opacity background glow — intentionally behind the interface surfaces. */
@@ -72,8 +72,9 @@ body {
 
 .rw-gradient-hero {
   background:
-    radial-gradient(circle at 90% 20%, rgba(255,216,77,.18) 0%, rgba(255,216,77,0) 34%),
-    linear-gradient(115deg, #F2EFEA 0%, #F6F3EE 68%, #EEE8E0 100%);
+    radial-gradient(circle at 88% 18%, rgba(255,216,77,.42) 0%, rgba(255,216,77,0) 38%),
+    radial-gradient(circle at 8% 110%, rgba(255,229,138,.30) 0%, rgba(255,229,138,0) 42%),
+    linear-gradient(115deg, #FFFFFF 0%, #FFFFFF 55%, #FFF8E1 100%);
 }
 
 .rw-gradient-surface {
@@ -194,7 +195,7 @@ body {
 [class*="bg-[#EEECFF]"], [class*="bg-[#F5F3FF]"], [class*="bg-[#DDD8FE]"], [class*="bg-[#D8D4FD]"], [class*="bg-[#E0DCFE]"] { background-color: #EFEAE3 !important; }
 [class*="text-[#6D5DFB]"], [class*="text-[#5A48F5]"], [class*="text-[#8B5CF6]"] { color: #1A1714 !important; }
 [class*="border-[#6D5DFB]"], [class*="border-[#5A48F5]"], [class*="border-[#8B5CF6]"] { border-color: #E6E0D7 !important; }
-[class*="bg-[#FFF5C9]"], [class*="bg-[#FFF7D8]"] { background-color: #F6F3EE !important; }
+[class*="bg-[#FFF5C9]"], [class*="bg-[#FFF7D8]"] { background-color: #FAF8F4 !important; }
 [class*="border-[#E8D77D]"] { border-color: #E6E0D7 !important; }
 
 @media (max-width: 767px) {
@@ -364,7 +365,7 @@ html[data-accessibility="enhanced"] .rw-search-input:focus-visible {
   color: #303234;
 }
 .rw-sidebar-nav a[aria-current="page"] {
-  color: #F6F3EE;
+  color: #FAF8F4;
 }
 
 .rw-accent-yellow {
@@ -504,7 +505,7 @@ html, body {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: linear-gradient(160deg, #FAF8F5 0%, #F2EFEA 55%, #EEE8E0 100%);
+  background: linear-gradient(160deg, #FAF8F5 0%, #F7F5F1 55%, #EEE8E0 100%);
 }
 .rw-boot::before {
   content: "";

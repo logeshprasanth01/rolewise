@@ -117,8 +117,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F3EE] text-[#1A1714] font-sans">
-      <div className="min-h-screen w-full bg-[#F6F3EE] flex min-w-0">
+    <div className="min-h-screen bg-[#FAF8F4] text-[#1A1714] font-sans">
+      <div className="min-h-screen w-full bg-[#FAF8F4] flex min-w-0">
 
         <aside
           className={`hidden lg:flex shrink-0 bg-[#FFFFFF] border-r border-[#E6E0D7] flex-col z-40 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-[68px]' : 'w-[280px]'}`}
@@ -171,7 +171,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   href={item.href}
                   title={isSidebarCollapsed ? item.label : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center min-h-11 text-xs font-semibold transition-all duration-300 ease-out ${isSidebarCollapsed ? 'w-full h-10 min-h-10 p-0 justify-center' : 'w-full h-12 min-h-12 gap-3 rounded-[14px] px-3.5'} ${!isSidebarCollapsed && (active ? 'bg-[#1A1714] text-[#FFFFFF] border border-[#1A1714] shadow-[0_4px_12px_rgba(26,23,20,0.12)]' : 'text-[#6B6259] hover:bg-[#F6F3EE] hover:text-[#1A1714]')}`}
+                  className={`group flex items-center min-h-11 text-xs font-semibold transition-all duration-300 ease-out ${isSidebarCollapsed ? 'w-full h-10 min-h-10 p-0 justify-center' : 'w-full h-12 min-h-12 gap-3 rounded-[14px] px-3.5'} ${!isSidebarCollapsed && (active ? 'bg-[#1A1714] text-[#FFFFFF] border border-[#1A1714] shadow-[0_4px_12px_rgba(26,23,20,0.12)]' : 'text-[#6B6259] hover:bg-[#FAF8F4] hover:text-[#1A1714]')}`}
                 >
                   <span className={`flex items-center justify-center shrink-0 transition-all duration-200 ${isSidebarCollapsed ? `w-10 h-10 rounded-xl ${active ? 'bg-[#1A1714] text-[#FFFFFF] border border-[#1A1714] shadow-[0_4px_12px_rgba(26,23,20,0.12)]' : 'text-[#6B6259]'}` : ''}`}>
                     <Icon className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105" />
@@ -191,7 +191,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               href="/settings"
               title={isSidebarCollapsed ? 'Settings' : undefined}
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] text-xs font-semibold transition-all duration-300 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 gap-0 justify-center rounded-xl' : 'w-full px-3 lg:px-3.5'} ${isNavActive('/settings') ? 'bg-[#1A1714] text-[#FFFFFF] border border-[#1A1714]' : 'text-[#6B6259] hover:bg-[#F6F3EE] hover:text-[#1A1714]'}`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] text-xs font-semibold transition-all duration-300 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 gap-0 justify-center rounded-xl' : 'w-full px-3 lg:px-3.5'} ${isNavActive('/settings') ? 'bg-[#1A1714] text-[#FFFFFF] border border-[#1A1714]' : 'text-[#6B6259] hover:bg-[#FAF8F4] hover:text-[#1A1714]'}`}
             >
               <Settings className="w-4 h-4 shrink-0" />
               <span className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}>Settings</span>
@@ -206,7 +206,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               aria-label="My profile"
               aria-current={isNavActive('/profile') ? 'page' : undefined}
               className={`flex items-center gap-3 min-h-12 rounded-[15px] border transition-all duration-300 ${
-                isNavActive('/profile') ? 'bg-[#FFFFFF] border-[#1A1714]' : 'bg-[#F6F3EE] border-[#E6E0D7] hover:border-[#CFC7BC] hover:bg-[#EFEEE9]'
+                isNavActive('/profile') ? 'bg-[#FFFFFF] border-[#1A1714]' : 'bg-[#FAF8F4] border-[#E6E0D7] hover:border-[#CFC7BC] hover:bg-[#EFEEE9]'
               } ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 justify-center rounded-full' : 'w-full px-2.5 lg:px-3'}`}
             >
               <div className="w-8 h-8 rounded-full bg-[#1A1714] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
@@ -261,7 +261,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                     key={item.label}
                     href={item.href}
                     data-ui-sound="click"
-                    className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3.5 text-sm font-semibold transition-all ${active ? 'bg-[#1A1714] text-[#FFFFFF]' : 'text-[#6B6259] hover:bg-[#F6F3EE] hover:text-[#1A1714]'}`}
+                    className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3.5 text-sm font-semibold transition-all ${active ? 'bg-[#1A1714] text-[#FFFFFF]' : 'text-[#6B6259] hover:bg-[#FAF8F4] hover:text-[#1A1714]'}`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
                     <span>{item.label}</span>
@@ -271,7 +271,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               <Link
                 href="/settings"
                 data-ui-sound="click"
-                className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3.5 text-sm font-semibold transition-all ${isNavActive('/settings') ? 'bg-[#1A1714] text-[#FFFFFF]' : 'text-[#6B6259] hover:bg-[#F6F3EE] hover:text-[#1A1714]'}`}
+                className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3.5 text-sm font-semibold transition-all ${isNavActive('/settings') ? 'bg-[#1A1714] text-[#FFFFFF]' : 'text-[#6B6259] hover:bg-[#FAF8F4] hover:text-[#1A1714]'}`}
               >
                 <Settings className="w-4 h-4 shrink-0" />
                 <span>Settings</span>
@@ -279,7 +279,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             </nav>
 
             <div className="p-3 border-t border-[#E6E0D7]">
-              <Link href="/profile" data-ui-sound="click" className="flex items-center gap-3 px-2 py-2 mb-2 rounded-[14px] hover:bg-[#F6F3EE]">
+              <Link href="/profile" data-ui-sound="click" className="flex items-center gap-3 px-2 py-2 mb-2 rounded-[14px] hover:bg-[#FAF8F4]">
                 <div className="w-9 h-9 rounded-full bg-[#1A1714] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
                   {userName ? userName[0].toUpperCase() : 'U'}
                 </div>
@@ -298,7 +298,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         </div>
 
         <div className="flex-1 min-w-0 flex flex-col min-h-screen">
-          <header className="sticky top-0 z-30 bg-[#F6F3EE]/95 backdrop-blur-xl border-b border-[#E6E0D7]/75">
+          <header className="sticky top-0 z-30 bg-[#FAF8F4]/95 backdrop-blur-xl border-b border-[#E6E0D7]/75">
             <div className="px-4 sm:px-6 lg:px-7 py-3 flex items-center gap-3">
               <button
                 type="button"

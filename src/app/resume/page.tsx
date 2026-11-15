@@ -91,7 +91,7 @@ export default function ResumePage() {
               {manualSkills.split(',').map((skill, idx) => (
                 <span
                   key={idx}
-                  className="px-3 py-1.5 rounded-lg bg-[#F6F3EE] border border-[#E6E0D7] text-xs font-medium text-[#1A1714]"
+                  className="px-3 py-1.5 rounded-lg bg-[#FAF8F4] border border-[#E6E0D7] text-xs font-medium text-[#1A1714]"
                 >
                   {skill.trim()}
                 </span>

@@ -216,7 +216,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
               {todayItems.length === 0 ? (
-                <p className="text-sm text-[#6B6259] rounded-xl bg-[#F6F3EE] p-4">Nothing due today. Use the time to prep for your strongest lead.</p>
+                <p className="text-sm text-[#6B6259] rounded-xl border border-dashed border-[#E6E0D7] bg-white p-4">Nothing due today. Use the time to prep for your strongest lead.</p>
               ) : (
                 <ul className="divide-y divide-[#E6E0D7]">
                   {todayItems.map(({ role, kind }) => (
@@ -249,7 +249,7 @@ export default function DashboardPage() {
                 <div className="pt-2 space-y-2">
                   <h3 className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#6B6259]">Prep in progress</h3>
                   {prepRoles.map((role) => (
-                    <div key={role.id} className="p-3.5 rounded-xl border border-[#E6E0D7] bg-[#F6F3EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div key={role.id} className="p-3.5 rounded-xl border border-[#E6E0D7] bg-[#FAF8F4] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <Link href={`/jobs/${role.id}`} className="min-w-0 space-y-1">
                         <p className="text-sm font-semibold text-[#1A1714] truncate">{role.title}</p>
                         <p className="text-[12px] text-[#6B6259] truncate flex items-center gap-2">{role.company} <StatusPill status={statusOf(role)} size="sm" /></p>
@@ -318,7 +318,7 @@ export default function DashboardPage() {
                   {[
                     { label: 'Completed', value: preparationStats.completed, track: 'bg-[#E7F2EA]', fill: 'bg-[#6FA77F]' },
                     { label: 'In progress', value: preparationStats.inProgress, track: 'bg-[#FFE58A]', fill: 'bg-[#D49A35]' },
-                    { label: 'Not started', value: preparationStats.notStarted, track: 'bg-[#ECEDEF]', fill: 'bg-[#9A9086]' },
+                    { label: 'Not started', value: preparationStats.notStarted, track: 'bg-[#EFEAE3]', fill: 'bg-[#9A9086]' },
                   ].map((item) => {
                     const total =
                       preparationStats.completed +
@@ -445,7 +445,7 @@ export default function DashboardPage() {
             { href: `/roles/${r.id}/fit`, title: 'Review your role fit', note: 'See which requirements you meet', icon: Compass, tint: 'bg-[#FFE58A] text-[#1A1714]' },
             { href: `/roles/${r.id}/preparation`, title: 'Work through your prep plan', note: 'Built from your gaps', icon: Layers, tint: 'bg-[#FFF5DF] text-[#D49A35]' },
             { href: `/roles/${r.id}/interview`, title: 'Mock interview with Rowi', note: 'Questions written for this role', icon: MessageSquare, tint: 'bg-[#EAF6F0] text-[#6FA77F]' },
-            { href: '/communication-practice', title: 'General drills', note: 'Voice and video practice', icon: FileText, tint: 'bg-[#F6F3EE] text-[#1A1714]' },
+            { href: '/communication-practice', title: 'General drills', note: 'Voice and video practice', icon: FileText, tint: 'bg-[#FAF8F4] text-[#1A1714]' },
           ];
           return (
             <section className="lg:col-span-2 space-y-3">
@@ -485,7 +485,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="py-6 text-center space-y-2 border border-dashed border-[#E6E0D7] rounded-xl bg-[#FFFFFF]/50">
-              <div className="w-8 h-8 rounded-full bg-[#F2F4F7] text-[#9A9086] flex items-center justify-center mx-auto">
+              <div className="w-8 h-8 rounded-full bg-[#FAF8F4] text-[#9A9086] flex items-center justify-center mx-auto">
                 <FileText className="w-4 h-4" />
               </div>
               <div className="space-y-0.5">

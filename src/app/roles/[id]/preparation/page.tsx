@@ -258,7 +258,7 @@ export default function PreparationPage() {
                           className={`touch-target inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer ${
                             done
                               ? 'bg-[#EEF7F0] text-[#3F7A52] hover:bg-[#E2F0E5]'
-                              : 'bg-[#F6F3EE] text-[#1A1714] hover:bg-[#EAE8E1]'
+                              : 'bg-[#FAF8F4] text-[#1A1714] hover:bg-[#EAE8E1]'
                           }`}
                         >
                           <span

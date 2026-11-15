@@ -906,7 +906,7 @@ export function Landing() {
 
 
   return (
-    <div className="rwl min-h-screen w-full bg-[#F6F3EE] text-[#1A1714] [scroll-behavior:smooth]">
+    <div className="rwl min-h-screen w-full bg-[#FAF8F4] text-[#1A1714] [scroll-behavior:smooth]">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-[#FFD84D] focus:px-4 focus:py-2 focus:text-[#1A1714]"

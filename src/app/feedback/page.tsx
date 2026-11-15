@@ -151,7 +151,7 @@ export default function FeedbackPage() {
                         </div>
                       </section>
                     ) : (
-                      <p className="text-sm text-[#6B6259] rounded-xl bg-[#F6F3EE] p-4">The overall summary wasn’t generated for this session. Your answer-by-answer feedback is below.</p>
+                      <p className="text-sm text-[#6B6259] rounded-xl bg-[#FAF8F4] p-4">The overall summary wasn’t generated for this session. Your answer-by-answer feedback is below.</p>
                     )}
 
                     {selected.rounds && selected.rounds.length > 0 && (

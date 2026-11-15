@@ -229,7 +229,7 @@ export const AuthView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#F6F3EE]">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#FAF8F4]">
       {/* LEFT VISUAL PANEL: white, with the hero photo and glossy icons; a light yellow glow follows the pointer */}
       <div
         ref={glowHostRef}
@@ -243,7 +243,7 @@ export const AuthView: React.FC = () => {
 
         <div className="relative z-10 my-auto pt-10">
           <div className="relative mx-auto w-full max-w-[560px]">
-            <div className="overflow-hidden rounded-[28px] border border-[#E6E0D7] bg-[#F6F3EE] shadow-[0_30px_60px_-30px_rgba(26,23,20,0.35)]">
+            <div className="overflow-hidden rounded-[28px] border border-[#E6E0D7] bg-[#FAF8F4] shadow-[0_30px_60px_-30px_rgba(26,23,20,0.35)]">
               <img
                 src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?auto=format&fit=crop&w=1200&q=80"
                 alt=""
@@ -405,7 +405,7 @@ export const AuthView: React.FC = () => {
           {/* Social Separator */}
           <div className="relative flex items-center justify-center">
             <div className="w-full border-t border-[#E6E0D7]" />
-            <span className="absolute bg-[#F6F3EE] px-3 text-xs text-[#6B6259]">or</span>
+            <span className="absolute bg-[#FAF8F4] px-3 text-xs text-[#6B6259]">or</span>
           </div>
 
           {/* Social Auth Actions */}

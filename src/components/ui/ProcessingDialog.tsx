@@ -76,7 +76,7 @@ function ProcessingPanel({
             type="button"
             onClick={onClose}
             aria-label="Cancel"
-            className="absolute right-4 top-4 touch-target rounded-full text-[#6B6259] hover:text-[#1A1714] hover:bg-[#F6F3EE] transition-colors cursor-pointer"
+            className="absolute right-4 top-4 touch-target rounded-full text-[#6B6259] hover:text-[#1A1714] hover:bg-[#FAF8F4] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

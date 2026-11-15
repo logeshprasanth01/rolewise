@@ -276,7 +276,7 @@ export function MascotAssistant() {
           <button
             type="button"
             onClick={toggle}
-            className="rounded-xl px-2.5 py-1.5 text-left text-[13px] font-medium text-[#1A1714] hover:bg-[#F6F3EE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
+            className="rounded-xl px-2.5 py-1.5 text-left text-[13px] font-medium text-[#1A1714] hover:bg-[#FAF8F4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
           >
             Hi, I&apos;m Rowi! Need a hand?
           </button>

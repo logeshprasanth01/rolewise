@@ -6,7 +6,7 @@ import { CONTACT_EMAIL, LEGAL_UPDATED } from '@/lib/site';
 
 export function LegalPage({ title, intro, children }: { title: string; intro: string; children: React.ReactNode }) {
   return (
-    <div className="min-h-screen w-full bg-[#F6F3EE] text-[#1A1714]">
+    <div className="min-h-screen w-full bg-[#FAF8F4] text-[#1A1714]">
       <header className="border-b border-[#E6E0D7] bg-white">
         <div className="mx-auto flex h-[72px] max-w-[880px] items-center justify-between px-5">
           <Link href="/welcome" aria-label="Rolewise home" className="block w-[140px]">

@@ -379,8 +379,8 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
                   : cell.isToday
                   ? 'border border-[#B8A93F] text-[#4D453C] font-semibold hover:bg-[#FFE58A]'
                   : cell.isCurrentMonth
-                  ? 'text-[#1A1714] hover:bg-[#F6F3EE]'
-                  : 'text-[#9A9086]/50 hover:bg-[#F6F3EE]'
+                  ? 'text-[#1A1714] hover:bg-[#FAF8F4]'
+                  : 'text-[#9A9086]/50 hover:bg-[#FAF8F4]'
               }`}
             >
               <span>{cell.day}</span>

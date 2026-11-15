@@ -426,7 +426,7 @@ export default function RoleFitPage() {
                       aria-pressed={active}
                       onClick={() => setStatusFilter(active ? 'all' : key)}
                       className={`inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors disabled:opacity-40 disabled:cursor-default cursor-pointer ${
-                        active ? 'bg-[#F6F3EE] text-[#1A1714] font-semibold' : 'text-[#574F46] hover:bg-[#FAF8F5]'
+                        active ? 'bg-[#FAF8F4] text-[#1A1714] font-semibold' : 'text-[#574F46] hover:bg-[#FAF8F5]'
                       }`}
                     >
                       <span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: STATUS_META[key].color }} />
@@ -507,7 +507,7 @@ export default function RoleFitPage() {
 
               {/* Expandable Content (Explanation + Evidence) */}
               {isExpanded && (
-                <div className="p-5 pt-0 border-t border-[#E6E0D7] bg-[#F6F3EE]/40 space-y-4 animate-in fade-in">
+                <div className="p-5 pt-0 border-t border-[#E6E0D7] bg-[#FAF8F4]/40 space-y-4 animate-in fade-in">
                   {/* Qualitative Explanation */}
                   <div className="space-y-1 pt-3">
                     <p className="text-xs font-semibold text-[#1A1714]">Why</p>

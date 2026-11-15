@@ -26,7 +26,7 @@ export function PracticeTabs({ active }: { active: 'job' | 'drills' }) {
   };
 
   return (
-    <nav aria-label="Practice type" className="inline-flex items-center gap-1 rounded-full border border-[#E6E0D7] bg-[#F6F3EE] p-1">
+    <nav aria-label="Practice type" className="inline-flex items-center gap-1 rounded-full border border-[#E6E0D7] bg-[#FAF8F4] p-1">
       {tab('job', '/roles', 'Mock interview for a job', Briefcase)}
       {tab('drills', '/communication-practice', 'General drills', MessageSquare)}
     </nav>

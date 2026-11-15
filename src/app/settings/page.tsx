@@ -255,11 +255,11 @@ export default function SettingsPage() {
             </label>
             <div className="space-y-1.5">
               <span className="text-xs font-semibold text-[#5E554B]">Workspace role</span>
-              <div className="w-full rounded-xl border border-[#E6E0D7] bg-[#F6F3EE] px-3.5 py-2.5 text-sm text-[#1A1714]">Editor</div>
+              <div className="w-full rounded-xl border border-[#E6E0D7] bg-[#FAF8F4] px-3.5 py-2.5 text-sm text-[#1A1714]">Editor</div>
             </div>
             <div className="space-y-1.5">
               <span className="text-xs font-semibold text-[#5E554B]">Account</span>
-              <div className="w-full rounded-xl border border-[#E6E0D7] bg-[#F6F3EE] px-3.5 py-2.5 text-sm text-[#1A1714]">
+              <div className="w-full rounded-xl border border-[#E6E0D7] bg-[#FAF8F4] px-3.5 py-2.5 text-sm text-[#1A1714]">
                 {session ? 'Authenticated' : 'Signed out'}
               </div>
             </div>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
           </span>
         </div>
 
-        <button type="button" onClick={handleResetAccessibility} className="touch-target inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#E6E0D7] bg-white text-[#1A1714] text-xs font-semibold hover:bg-[#F6F3EE]">
+        <button type="button" onClick={handleResetAccessibility} className="touch-target inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#E6E0D7] bg-white text-[#1A1714] text-xs font-semibold hover:bg-[#FAF8F4]">
           <RotateCcw className="w-3.5 h-3.5" /> Reset accessibility preferences
         </button>
       </section>
@@ -344,7 +344,7 @@ export default function SettingsPage() {
           Communication Practice uses your browser microphone and camera permissions.
         </p>
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" onClick={handleTestMic} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E6E0D7] hover:bg-[#F6F3EE] text-xs font-semibold text-[#1A1714]">
+          <button type="button" onClick={handleTestMic} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E6E0D7] hover:bg-[#FAF8F4] text-xs font-semibold text-[#1A1714]">
             <Mic className="w-3.5 h-3.5" /> Test microphone
           </button>
           {micTested !== null && (
@@ -353,7 +353,7 @@ export default function SettingsPage() {
               {micTested ? 'Microphone available' : 'Permission denied or unavailable'}
             </span>
           )}
-          <button type="button" onClick={handleTestCamera} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E6E0D7] hover:bg-[#F6F3EE] text-xs font-semibold text-[#1A1714]">
+          <button type="button" onClick={handleTestCamera} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E6E0D7] hover:bg-[#FAF8F4] text-xs font-semibold text-[#1A1714]">
             <Video className="w-3.5 h-3.5" /> Test camera
           </button>
           {cameraTested !== null && (
