@@ -229,11 +229,11 @@ export const AuthView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#F3F2EE]">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#F6F3EE]">
       {/* LEFT VISUAL PANEL: white, with the hero photo and glossy icons; a light yellow glow follows the pointer */}
       <div
         ref={glowHostRef}
-        className="relative hidden w-full flex-col overflow-hidden border-r border-[#E4E2DA] bg-white p-10 lg:flex lg:w-[50%] xl:p-14"
+        className="relative hidden w-full flex-col overflow-hidden border-r border-[#E6E0D7] bg-white p-10 lg:flex lg:w-[50%] xl:p-14"
       >
         <div ref={glowRef} className="rwa-glow" aria-hidden />
 
@@ -243,7 +243,7 @@ export const AuthView: React.FC = () => {
 
         <div className="relative z-10 my-auto pt-10">
           <div className="relative mx-auto w-full max-w-[560px]">
-            <div className="overflow-hidden rounded-[28px] border border-[#E4E2DA] bg-[#F3F2EE] shadow-[0_30px_60px_-30px_rgba(37,37,37,0.35)]">
+            <div className="overflow-hidden rounded-[28px] border border-[#E6E0D7] bg-[#F6F3EE] shadow-[0_30px_60px_-30px_rgba(26,23,20,0.35)]">
               <img
                 src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?auto=format&fit=crop&w=1200&q=80"
                 alt=""
@@ -265,10 +265,10 @@ export const AuthView: React.FC = () => {
             </div>
           </div>
 
-          <p className="mx-auto mt-12 max-w-[560px] text-[28px] font-semibold leading-[1.15] tracking-[-0.025em] text-[#252525] [text-wrap:balance]">
+          <p className="mx-auto mt-12 max-w-[560px] text-[28px] font-semibold leading-[1.15] tracking-[-0.025em] text-[#1A1714] [text-wrap:balance]">
             Prepare for the role, not just the interview.
           </p>
-          <p className="mx-auto mt-2 max-w-[560px] text-[15px] text-[#5E6065]">Free during early access.</p>
+          <p className="mx-auto mt-2 max-w-[560px] text-[15px] text-[#5E554B]">Free during early access.</p>
         </div>
       </div>
 
@@ -280,10 +280,10 @@ export const AuthView: React.FC = () => {
           </Link>
           {/* Header */}
           <div className="space-y-1.5">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#1A1714] tracking-tight">
               {mode === 'signin' ? 'Welcome back' : 'Create your account'}
             </h2>
-            <p className="text-sm text-[#73757A]">
+            <p className="text-sm text-[#6B6259]">
               {mode === 'signin'
                 ? 'Sign in to continue preparing.'
                 : 'Free during early access.'}
@@ -309,52 +309,52 @@ export const AuthView: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#252525]">Full Name</label>
+                <label className="text-xs font-semibold text-[#1A1714]">Full Name</label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-[#73757A] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <User className="w-4 h-4 text-[#6B6259] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="e.g. Alex Morgan"
-                    className="rw-input w-full pl-10 pr-3.5 py-3 rounded-xl border border-[#D9D8D2] text-sm text-[#252525] placeholder:text-[#9A9B9E] focus:outline-none focus:ring-2 focus:ring-[#252525]/20 focus:border-[#252525] transition-all bg-white"
+                    className="rw-input w-full pl-10 pr-3.5 py-3 rounded-xl border border-[#E6E0D7] text-sm text-[#1A1714] placeholder:text-[#9A9086] focus:outline-none focus:ring-2 focus:ring-[#1A1714]/20 focus:border-[#1A1714] transition-all bg-white"
                   />
                 </div>
               </div>
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#252525]">Email</label>
+              <label className="text-xs font-semibold text-[#1A1714]">Email</label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-[#73757A] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-[#6B6259] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="rw-input w-full pl-10 pr-3.5 py-3 rounded-xl border border-[#D9D8D2] text-sm text-[#252525] placeholder:text-[#9A9B9E] focus:outline-none focus:ring-2 focus:ring-[#252525]/20 focus:border-[#252525] transition-all bg-white"
+                  className="rw-input w-full pl-10 pr-3.5 py-3 rounded-xl border border-[#E6E0D7] text-sm text-[#1A1714] placeholder:text-[#9A9086] focus:outline-none focus:ring-2 focus:ring-[#1A1714]/20 focus:border-[#1A1714] transition-all bg-white"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#252525]">Password</label>
+              <label className="text-xs font-semibold text-[#1A1714]">Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-[#73757A] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-[#6B6259] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="rw-input w-full pl-10 pr-11 py-3 rounded-xl border border-[#D9D8D2] text-sm text-[#252525] placeholder:text-[#9A9B9E] focus:outline-none focus:ring-2 focus:ring-[#252525]/20 focus:border-[#252525] transition-all bg-white"
+                  className="rw-input w-full pl-10 pr-11 py-3 rounded-xl border border-[#E6E0D7] text-sm text-[#1A1714] placeholder:text-[#9A9086] focus:outline-none focus:ring-2 focus:ring-[#1A1714]/20 focus:border-[#1A1714] transition-all bg-white"
                 />
                 <button data-ui-sound="click"
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#73757A] hover:text-[#252525] transition-colors p-1"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#6B6259] hover:text-[#1A1714] transition-colors p-1"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -365,12 +365,12 @@ export const AuthView: React.FC = () => {
             {/* Remember me & Forgot Password */}
             {mode === 'signin' && (
               <div className="flex items-center justify-between text-xs pt-1">
-                <label className="flex items-center gap-2 text-[#73757A] cursor-pointer">
+                <label className="flex items-center gap-2 text-[#6B6259] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rw-input w-4 h-4 rounded text-[#252525] border-[#D9D8D2] focus:ring-[#252525]"
+                    className="rw-input w-4 h-4 rounded text-[#1A1714] border-[#E6E0D7] focus:ring-[#1A1714]"
                   />
                   <span>Remember me</span>
                 </label>
@@ -379,7 +379,7 @@ export const AuthView: React.FC = () => {
                   onClick={() => {
                     setErrorMessage('Password reset instructions will be sent to your email.');
                   }}
-                  className="text-[#252525] hover:underline font-medium"
+                  className="text-[#1A1714] hover:underline font-medium"
                 >
                   Forgot password?
                 </button>
@@ -391,7 +391,7 @@ export const AuthView: React.FC = () => {
               <button data-ui-sound="click"
                 type="submit"
                 disabled={isLoading}
-                className="w-full touch-target h-12 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-semibold transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+                className="w-full touch-target h-12 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-sm font-semibold transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
               >
                 {isLoading ? (
                   <span>Processing...</span>
@@ -404,8 +404,8 @@ export const AuthView: React.FC = () => {
 
           {/* Social Separator */}
           <div className="relative flex items-center justify-center">
-            <div className="w-full border-t border-[#D9D8D2]" />
-            <span className="absolute bg-[#F3F2EE] px-3 text-xs text-[#73757A]">or</span>
+            <div className="w-full border-t border-[#E6E0D7]" />
+            <span className="absolute bg-[#F6F3EE] px-3 text-xs text-[#6B6259]">or</span>
           </div>
 
           {/* Social Auth Actions */}
@@ -414,11 +414,11 @@ export const AuthView: React.FC = () => {
               type="button"
               onClick={() => handleSocialAuth('Google')}
               disabled={isLoading || socialLoading !== null}
-              className="w-full touch-target h-11 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs sm:text-sm font-medium text-[#252525] transition-all flex items-center justify-center gap-2.5 shadow-2xs disabled:opacity-60 cursor-pointer"
+              className="w-full touch-target h-11 rounded-xl bg-white border border-[#E6E0D7] hover:bg-[#FFFFFF] text-xs sm:text-sm font-medium text-[#1A1714] transition-all flex items-center justify-center gap-2.5 shadow-2xs disabled:opacity-60 cursor-pointer"
             >
               {socialLoading === 'Google' ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin text-[#73757A]" />
+                  <Loader2 className="w-4 h-4 animate-spin text-[#6B6259]" />
                   <span>Signing in...</span>
                 </>
               ) : (
@@ -450,7 +450,7 @@ export const AuthView: React.FC = () => {
               type="button"
               onClick={() => handleSocialAuth('LinkedIn')}
               disabled={isLoading || socialLoading !== null}
-              className="w-full touch-target h-11 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs sm:text-sm font-medium text-[#252525] transition-all flex items-center justify-center gap-2.5 shadow-2xs disabled:opacity-60 cursor-pointer"
+              className="w-full touch-target h-11 rounded-xl bg-white border border-[#E6E0D7] hover:bg-[#FFFFFF] text-xs sm:text-sm font-medium text-[#1A1714] transition-all flex items-center justify-center gap-2.5 shadow-2xs disabled:opacity-60 cursor-pointer"
             >
               {socialLoading === 'LinkedIn' ? (
                 <>
@@ -469,7 +469,7 @@ export const AuthView: React.FC = () => {
           </div>
 
           {/* Toggle Sign In / Create Account */}
-          <div className="text-center text-xs text-[#73757A]">
+          <div className="text-center text-xs text-[#6B6259]">
             {mode === 'signin' ? (
               <p>
                 Don&apos;t have an account?{' '}
@@ -479,7 +479,7 @@ export const AuthView: React.FC = () => {
                     setMode('signup');
                     setErrorMessage(null);
                   }}
-                  className="text-[#252525] font-semibold hover:underline"
+                  className="text-[#1A1714] font-semibold hover:underline"
                 >
                   Sign up
                 </button>
@@ -493,7 +493,7 @@ export const AuthView: React.FC = () => {
                     setMode('signin');
                     setErrorMessage(null);
                   }}
-                  className="text-[#252525] font-semibold hover:underline"
+                  className="text-[#1A1714] font-semibold hover:underline"
                 >
                   Sign in
                 </button>
@@ -502,10 +502,10 @@ export const AuthView: React.FC = () => {
           </div>
 
           {/* Terms Notice */}
-          <p className="text-[11px] text-[#9A9B9E] text-center leading-relaxed">
+          <p className="text-[11px] text-[#9A9086] text-center leading-relaxed">
             By continuing, you agree to our{' '}
-            <Link href="/terms" className="underline underline-offset-2 hover:text-[#252525]">Terms</Link> and{' '}
-            <Link href="/privacy" className="underline underline-offset-2 hover:text-[#252525]">Privacy</Link>.
+            <Link href="/terms" className="underline underline-offset-2 hover:text-[#1A1714]">Terms</Link> and{' '}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-[#1A1714]">Privacy</Link>.
           </p>
         </div>
       </div>

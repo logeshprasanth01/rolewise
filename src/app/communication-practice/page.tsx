@@ -42,26 +42,26 @@ export default function CommunicationPracticePage() {
       {/* Header */}
       <section className="space-y-2">
         <PracticeTabs active="drills" />
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight pt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1714] tracking-tight pt-2">
           General drills
         </h1>
-        <p className="text-xs sm:text-base text-[#73757A] leading-relaxed max-w-2xl">
+        <p className="text-xs sm:text-base text-[#6B6259] leading-relaxed max-w-2xl">
           Build fluency and clarity by practicing how you communicate, independent of any specific job application.
         </p>
 
         {/* Dynamic Context Header */}
         <div className="pt-2">
           {activeRole ? (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#D9D8D2] text-xs sm:text-sm text-[#252525]">
-              <Briefcase className="w-4 h-4 text-[#252525]" />
-              <span className="text-[#73757A]">Contextual prompt available:</span>
-              <span className="font-semibold text-[#252525]">{activeRole.title}</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E6E0D7] text-xs sm:text-sm text-[#1A1714]">
+              <Briefcase className="w-4 h-4 text-[#1A1714]" />
+              <span className="text-[#6B6259]">Contextual prompt available:</span>
+              <span className="font-semibold text-[#1A1714]">{activeRole.title}</span>
               <span>·</span>
-              <span className="font-medium text-[#73757A]">{activeRole.company}</span>
+              <span className="font-medium text-[#6B6259]">{activeRole.company}</span>
             </div>
           ) : (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#D9D8D2] text-xs text-[#73757A]">
-              <Sparkles className="w-3.5 h-3.5 text-[#252525]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E6E0D7] text-xs text-[#6B6259]">
+              <Sparkles className="w-3.5 h-3.5 text-[#1A1714]" />
               <span>General communication drills (accessible anytime without a job)</span>
             </div>
           )}
@@ -71,21 +71,21 @@ export default function CommunicationPracticePage() {
       {/* Practice Modes Selection (Voice Practice & Video Practice) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Mode 1: Voice Practice (Screen 9) */}
-        <div className="rolewise-card p-6 flex flex-col justify-between space-y-6 hover:border-[#252525] transition-all group">
+        <div className="rolewise-card p-6 flex flex-col justify-between space-y-6 hover:border-[#1A1714] transition-all group">
           <div className="space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#FFE58A] text-[#1A1714] flex items-center justify-center">
               <Mic className="w-6 h-6" />
             </div>
             <div className="space-y-1.5">
-              <h2 className="text-lg font-bold text-[#252525] group-hover:text-[#252525] transition-colors">
+              <h2 className="text-lg font-bold text-[#1A1714] group-hover:text-[#1A1714] transition-colors">
                 Voice Practice
               </h2>
-              <p className="text-xs sm:text-sm text-[#73757A] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#6B6259] leading-relaxed">
                 Record your spoken responses using your microphone. Listen to your playback and receive observable feedback on clarity, structure, and conciseness.
               </p>
             </div>
 
-            <div className="space-y-2 pt-2 text-xs text-[#55565A]">
+            <div className="space-y-2 pt-2 text-xs text-[#574F46]">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
                 <span>Real microphone recording with instant audio review</span>
@@ -101,10 +101,10 @@ export default function CommunicationPracticePage() {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#D9D8D2]">
+          <div className="pt-4 border-t border-[#E6E0D7]">
             <Link
               href="/communication-practice/voice"
-              className="touch-target w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
+              className="touch-target w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-xs sm:text-sm font-semibold transition-all shadow-xs"
             >
               <span>Start Voice Practice</span>
               <ArrowRight className="w-4 h-4" />
@@ -113,21 +113,21 @@ export default function CommunicationPracticePage() {
         </div>
 
         {/* Mode 2: Video Practice (Screen 10) */}
-        <div className="rolewise-card p-6 flex flex-col justify-between space-y-6 hover:border-[#252525] transition-all group">
+        <div className="rolewise-card p-6 flex flex-col justify-between space-y-6 hover:border-[#1A1714] transition-all group">
           <div className="space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#E7E7EE] text-[#FFD84D] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#EFEAE3] text-[#FFD84D] flex items-center justify-center">
               <Video className="w-6 h-6" />
             </div>
             <div className="space-y-1.5">
-              <h2 className="text-lg font-bold text-[#252525] group-hover:text-[#252525] transition-colors">
+              <h2 className="text-lg font-bold text-[#1A1714] group-hover:text-[#1A1714] transition-colors">
                 Video Practice
               </h2>
-              <p className="text-xs sm:text-sm text-[#73757A] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#6B6259] leading-relaxed">
                 Simulate a real video conference interview with live camera and microphone preview. Review your captured recording and re-record as needed.
               </p>
             </div>
 
-            <div className="space-y-2 pt-2 text-xs text-[#55565A]">
+            <div className="space-y-2 pt-2 text-xs text-[#574F46]">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
                 <span>Live video mirror and recording playback</span>
@@ -143,10 +143,10 @@ export default function CommunicationPracticePage() {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#D9D8D2]">
+          <div className="pt-4 border-t border-[#E6E0D7]">
             <Link
               href="/communication-practice/video"
-              className="touch-target w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs"
+              className="touch-target w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-xs sm:text-sm font-semibold transition-all shadow-xs"
             >
               <span>Start Video Practice</span>
               <ArrowRight className="w-4 h-4" />

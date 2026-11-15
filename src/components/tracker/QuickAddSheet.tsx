@@ -77,23 +77,23 @@ export function QuickAddSheet({ open, onClose, onAdded }: QuickAddSheetProps) {
 
   if (!open) return null;
 
-  const field = 'w-full h-12 px-3.5 rounded-xl bg-white border border-[#D9D8D2] text-[15px] text-[#252525] placeholder:text-[#9A9B9E] outline-none focus:border-[#252525] transition-colors';
-  const label = 'text-xs font-semibold text-[#4A4B4F]';
+  const field = 'w-full h-12 px-3.5 rounded-xl bg-white border border-[#E6E0D7] text-[15px] text-[#1A1714] placeholder:text-[#9A9086] outline-none focus:border-[#1A1714] transition-colors';
+  const label = 'text-xs font-semibold text-[#4D453C]';
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="quick-add-title">
-      <button type="button" aria-label="Close" className="absolute inset-0 bg-[#252525]/35 backdrop-blur-[2px]" onClick={() => !isSaving && onClose()} />
+      <button type="button" aria-label="Close" className="absolute inset-0 bg-[#1A1714]/35 backdrop-blur-[2px]" onClick={() => !isSaving && onClose()} />
       <form
         onSubmit={handleSubmit}
-        className="relative w-full sm:max-w-lg max-h-[92vh] overflow-y-auto bg-[#FAF9F4] rounded-t-[26px] sm:rounded-[26px] border border-[#D9D8D2] shadow-[0_-12px_40px_rgba(37,37,37,0.18)] px-5 pt-3 pb-[max(20px,env(safe-area-inset-bottom))] sm:p-6 animate-rw-pop"
+        className="relative w-full sm:max-w-lg max-h-[92vh] overflow-y-auto bg-[#FFFFFF] rounded-t-[26px] sm:rounded-[26px] border border-[#E6E0D7] shadow-[0_-12px_40px_rgba(26,23,20,0.18)] px-5 pt-3 pb-[max(20px,env(safe-area-inset-bottom))] sm:p-6 animate-rw-pop"
       >
-        <div className="sm:hidden mx-auto mb-3 h-1.5 w-10 rounded-full bg-[#D9D8D2]" aria-hidden="true" />
+        <div className="sm:hidden mx-auto mb-3 h-1.5 w-10 rounded-full bg-[#E6E0D7]" aria-hidden="true" />
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
-            <h2 id="quick-add-title" className="text-lg font-bold text-[#252525] tracking-tight">Log an application</h2>
-            <p className="text-[13px] text-[#73757A]">Takes 10 seconds. Ask Rowi for the fit analysis later from the job page.</p>
+            <h2 id="quick-add-title" className="text-lg font-bold text-[#1A1714] tracking-tight">Log an application</h2>
+            <p className="text-[13px] text-[#6B6259]">Takes 10 seconds. Ask Rowi for the fit analysis later from the job page.</p>
           </div>
-          <button type="button" onClick={() => { setError(null); onClose(); }} aria-label="Close" className="touch-target w-10 h-10 rounded-full border border-[#D9D8D2] flex items-center justify-center text-[#73757A] hover:text-[#252525] shrink-0">
+          <button type="button" onClick={() => { setError(null); onClose(); }} aria-label="Close" className="touch-target w-10 h-10 rounded-full border border-[#E6E0D7] flex items-center justify-center text-[#6B6259] hover:text-[#1A1714] shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -110,14 +110,14 @@ export function QuickAddSheet({ open, onClose, onAdded }: QuickAddSheetProps) {
 
           <fieldset className="space-y-1.5">
             <legend className={label}>Where is it at?</legend>
-            <div className="grid grid-cols-4 gap-1.5 p-1 rounded-2xl bg-[#EFEEE8]">
+            <div className="grid grid-cols-4 gap-1.5 p-1 rounded-2xl bg-[#F3EFE9]">
               {QUICK_STATUSES.map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => setStatus(s)}
                   aria-pressed={status === s}
-                  className={`h-10 rounded-xl text-[13px] font-semibold transition-all ${status === s ? 'bg-white text-[#252525] shadow-[0_2px_8px_rgba(37,37,37,0.10)]' : 'text-[#73757A]'}`}
+                  className={`h-10 rounded-xl text-[13px] font-semibold transition-all ${status === s ? 'bg-white text-[#1A1714] shadow-[0_2px_8px_rgba(26,23,20,0.10)]' : 'text-[#6B6259]'}`}
                 >
                   {STATUS_META[s].label}
                 </button>
@@ -140,9 +140,9 @@ export function QuickAddSheet({ open, onClose, onAdded }: QuickAddSheetProps) {
             </div>
           </div>
 
-          <details className="group rounded-2xl border border-[#D9D8D2] bg-white">
-            <summary className="list-none cursor-pointer px-4 h-12 flex items-center justify-between text-[13px] font-semibold text-[#4A4B4F]">
-              Contact and job link <span className="text-[#9A9B9E] font-medium">optional</span>
+          <details className="group rounded-2xl border border-[#E6E0D7] bg-white">
+            <summary className="list-none cursor-pointer px-4 h-12 flex items-center justify-between text-[13px] font-semibold text-[#4D453C]">
+              Contact and job link <span className="text-[#9A9086] font-medium">optional</span>
             </summary>
             <div className="px-4 pb-4 space-y-3">
               <div className="space-y-1.5">
@@ -162,7 +162,7 @@ export function QuickAddSheet({ open, onClose, onAdded }: QuickAddSheetProps) {
             type="submit"
             disabled={isSaving}
             data-ui-sound="success"
-            className="w-full h-12 rounded-2xl bg-[#252525] text-white text-[15px] font-semibold flex items-center justify-center gap-2 hover:bg-[#3A3A3A] disabled:opacity-60 transition-colors"
+            className="w-full h-12 rounded-2xl bg-[#1A1714] text-white text-[15px] font-semibold flex items-center justify-center gap-2 hover:bg-[#3B342D] disabled:opacity-60 transition-colors"
           >
             {isSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : 'Add to tracker'}
           </button>

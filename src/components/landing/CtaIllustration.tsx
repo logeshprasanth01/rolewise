@@ -5,7 +5,7 @@ import React from 'react';
  * the prep buddy next to a checked-off resume, a fit score and an interview bubble.
  */
 export function CtaIllustration() {
-  const ink = '#252525';
+  const ink = '#1A1714';
   return (
     <svg viewBox="0 0 380 320" className="h-auto w-full" role="img" aria-label="The Rolewise prep buddy celebrating next to a checked-off resume and an 84% fit score">
       {/* backdrop */}

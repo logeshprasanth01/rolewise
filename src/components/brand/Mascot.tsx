@@ -116,8 +116,8 @@ export function Mascot({
           <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
         </radialGradient>
         <radialGradient id={g('shadow')} cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="#252525" stopOpacity="0.28" />
-          <stop offset="1" stopColor="#252525" stopOpacity="0" />
+          <stop offset="0" stopColor="#1A1714" stopOpacity="0.28" />
+          <stop offset="1" stopColor="#1A1714" stopOpacity="0" />
         </radialGradient>
         <linearGradient id={g('arm')} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#FFE27A" />
@@ -151,21 +151,21 @@ export function Mascot({
         {/* eyes */}
         <g className="rw-mascot-blink">
           <g ref={eyesRef} className="rw-mascot-eyes">
-            <ellipse cx="60" cy="72" rx="8.5" ry="11" fill="#252525" />
-            <ellipse cx="100" cy="72" rx="8.5" ry="11" fill="#252525" />
+            <ellipse cx="60" cy="72" rx="8.5" ry="11" fill="#1A1714" />
+            <ellipse cx="100" cy="72" rx="8.5" ry="11" fill="#1A1714" />
             <circle cx="63" cy="67.5" r="3.2" fill="#FFFFFF" />
             <circle cx="103" cy="67.5" r="3.2" fill="#FFFFFF" />
           </g>
         </g>
 
         {/* smile */}
-        <path d="M68 96 Q80 106 92 96" fill="none" stroke="#252525" strokeWidth="4.5" strokeLinecap="round" />
+        <path d="M68 96 Q80 106 92 96" fill="none" stroke="#1A1714" strokeWidth="4.5" strokeLinecap="round" />
 
         {/* bow tie: interview-ready */}
         <g transform="translate(80 128)">
-          <path d="M-3 0 L-17 -8 Q-20 0 -17 8 Z" fill="#252525" />
-          <path d="M3 0 L17 -8 Q20 0 17 8 Z" fill="#252525" />
-          <rect x="-4.5" y="-4.5" width="9" height="9" rx="2.5" fill="#3A3A3A" />
+          <path d="M-3 0 L-17 -8 Q-20 0 -17 8 Z" fill="#1A1714" />
+          <path d="M3 0 L17 -8 Q20 0 17 8 Z" fill="#1A1714" />
+          <rect x="-4.5" y="-4.5" width="9" height="9" rx="2.5" fill="#3B342D" />
         </g>
       </g>
       </g>

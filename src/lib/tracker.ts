@@ -17,9 +17,9 @@ export const STATUS_META: Record<
   ApplicationStatus,
   { label: string; short: string; bg: string; fg: string; dot: string; hint: string }
 > = {
-  saved: { label: 'Saved', short: 'Saved', bg: '#EFEEE8', fg: '#4A4B4F', dot: '#9A9B9E', hint: 'Not applied yet' },
-  applied: { label: 'Applied', short: 'Applied', bg: '#FFF2B8', fg: '#5C4A00', dot: '#E0B400', hint: 'Waiting to hear back' },
-  screening: { label: 'Screening', short: 'Screen', bg: '#E7E7EE', fg: '#3D3E66', dot: '#6F71B8', hint: 'Recruiter or HR call' },
+  saved: { label: 'Saved', short: 'Saved', bg: '#F3EFE9', fg: '#4D453C', dot: '#9A9086', hint: 'Not applied yet' },
+  applied: { label: 'Applied', short: 'Applied', bg: '#FFE58A', fg: '#5C4A00', dot: '#E0B400', hint: 'Waiting to hear back' },
+  screening: { label: 'Screening', short: 'Screen', bg: '#EFEAE3', fg: '#3D3E66', dot: '#6F71B8', hint: 'Recruiter or HR call' },
   interview: { label: 'Interview', short: 'Interview', bg: '#E3EEF9', fg: '#1F4E79', dot: '#3D7FC4', hint: 'In interview rounds' },
   offer: { label: 'Offer', short: 'Offer', bg: '#EEF7F0', fg: '#2F6B42', dot: '#6FA77F', hint: 'Offer received' },
   rejected: { label: 'Rejected', short: 'Closed', bg: '#FFF0ED', fg: '#8F3B2E', dot: '#D97968', hint: 'Not moving forward' },

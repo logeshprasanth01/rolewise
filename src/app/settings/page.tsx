@@ -42,12 +42,12 @@ function Toggle({
       className="w-full flex items-center justify-between gap-4 text-left py-3 focus-visible:outline-none"
     >
       <span className="min-w-0">
-        <span className="block text-sm font-semibold text-[#252525]">{label}</span>
-        <span className="block text-xs text-[#73757A] mt-1 leading-relaxed">{description}</span>
+        <span className="block text-sm font-semibold text-[#1A1714]">{label}</span>
+        <span className="block text-xs text-[#6B6259] mt-1 leading-relaxed">{description}</span>
       </span>
       <span
         aria-hidden="true"
-        className={`relative w-11 h-6 rounded-full shrink-0 transition-colors ${checked ? 'bg-[#252525]' : 'bg-[#D9D8D2]'}`}
+        className={`relative w-11 h-6 rounded-full shrink-0 transition-colors ${checked ? 'bg-[#1A1714]' : 'bg-[#E6E0D7]'}`}
       >
         <span
           className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`}
@@ -209,33 +209,33 @@ export default function SettingsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-16 animate-in fade-in duration-300">
       <section className="space-y-1">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">Settings</h1>
-        <p className="text-xs sm:text-sm text-[#73757A]">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1714] tracking-tight">Settings</h1>
+        <p className="text-xs sm:text-sm text-[#6B6259]">
           Manage your profile, accessibility, practice permissions, and workspace preferences.
         </p>
       </section>
 
       <section className="rolewise-card p-6 space-y-5">
         <div className="flex items-center gap-2">
-          <User className="w-4 h-4 text-[#5F6368]" />
+          <User className="w-4 h-4 text-[#5E554B]" />
           <div>
-            <h2 className="text-sm font-semibold text-[#252525]">Profile</h2>
-            <p className="text-xs text-[#73757A]">Edit the information shown across your Rolewise workspace.</p>
+            <h2 className="text-sm font-semibold text-[#1A1714]">Profile</h2>
+            <p className="text-xs text-[#6B6259]">Edit the information shown across your Rolewise workspace.</p>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
           <div className="relative shrink-0">
             {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="w-20 h-20 rounded-2xl object-cover border border-[#D9D8D2]" />
+              <img src={avatarUrl} alt="" className="w-20 h-20 rounded-2xl object-cover border border-[#E6E0D7]" />
             ) : (
-              <div className="w-20 h-20 rounded-2xl bg-[#252525] text-[#E5E5E5] flex items-center justify-center font-bold text-2xl">
+              <div className="w-20 h-20 rounded-2xl bg-[#1A1714] text-[#E5E5E5] flex items-center justify-center font-bold text-2xl">
                 {(name || 'U')[0].toUpperCase()}
               </div>
             )}
             <label
               htmlFor="profile-image"
-              className="absolute -right-2 -bottom-2 w-9 h-9 rounded-full bg-[#FFD84D] text-[#252525] flex items-center justify-center border-2 border-[#FAF9F4] cursor-pointer hover:bg-[#E7C43E] transition-colors"
+              className="absolute -right-2 -bottom-2 w-9 h-9 rounded-full bg-[#FFD84D] text-[#1A1714] flex items-center justify-center border-2 border-[#FFFFFF] cursor-pointer hover:bg-[#E7C43E] transition-colors"
               title="Upload profile image"
             >
               <Upload className="w-4 h-4" />
@@ -246,20 +246,20 @@ export default function SettingsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
             <label className="space-y-1.5">
-              <span className="text-xs font-semibold text-[#5F6368]">Full name</span>
-              <input value={name} onChange={(e) => setName(e.target.value)} className="rw-input w-full rounded-xl border border-[#D9D8D2] bg-white px-3.5 py-2.5 text-sm text-[#252525] outline-none" />
+              <span className="text-xs font-semibold text-[#5E554B]">Full name</span>
+              <input value={name} onChange={(e) => setName(e.target.value)} className="rw-input w-full rounded-xl border border-[#E6E0D7] bg-white px-3.5 py-2.5 text-sm text-[#1A1714] outline-none" />
             </label>
             <label className="space-y-1.5">
-              <span className="text-xs font-semibold text-[#5F6368]">Email address</span>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rw-input w-full rounded-xl border border-[#D9D8D2] bg-white px-3.5 py-2.5 text-sm text-[#252525] outline-none" />
+              <span className="text-xs font-semibold text-[#5E554B]">Email address</span>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rw-input w-full rounded-xl border border-[#E6E0D7] bg-white px-3.5 py-2.5 text-sm text-[#1A1714] outline-none" />
             </label>
             <div className="space-y-1.5">
-              <span className="text-xs font-semibold text-[#5F6368]">Workspace role</span>
-              <div className="w-full rounded-xl border border-[#D9D8D2] bg-[#F3F2EE] px-3.5 py-2.5 text-sm text-[#252525]">Editor</div>
+              <span className="text-xs font-semibold text-[#5E554B]">Workspace role</span>
+              <div className="w-full rounded-xl border border-[#E6E0D7] bg-[#F6F3EE] px-3.5 py-2.5 text-sm text-[#1A1714]">Editor</div>
             </div>
             <div className="space-y-1.5">
-              <span className="text-xs font-semibold text-[#5F6368]">Account</span>
-              <div className="w-full rounded-xl border border-[#D9D8D2] bg-[#F3F2EE] px-3.5 py-2.5 text-sm text-[#252525]">
+              <span className="text-xs font-semibold text-[#5E554B]">Account</span>
+              <div className="w-full rounded-xl border border-[#E6E0D7] bg-[#F6F3EE] px-3.5 py-2.5 text-sm text-[#1A1714]">
                 {session ? 'Authenticated' : 'Signed out'}
               </div>
             </div>
@@ -273,19 +273,19 @@ export default function SettingsPage() {
         )}
 
         <div className="flex flex-wrap items-center gap-3 pt-1">
-          <button type="button" data-ui-sound="success" onClick={handleSaveProfile} disabled={savingProfile} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#252525] text-white text-xs font-semibold hover:bg-[#3A3A3A] disabled:opacity-60">
+          <button type="button" data-ui-sound="success" onClick={handleSaveProfile} disabled={savingProfile} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1A1714] text-white text-xs font-semibold hover:bg-[#3B342D] disabled:opacity-60">
             <Save className="w-3.5 h-3.5" /> {savingProfile ? 'Saving…' : 'Save profile'}
           </button>
-          <span className="text-[11px] text-[#73757A]">Email changes may require confirmation from your new email address.</span>
+          <span className="text-[11px] text-[#6B6259]">Email changes may require confirmation from your new email address.</span>
         </div>
       </section>
 
       <section className="rolewise-card p-6 space-y-2">
         <div className="flex items-center gap-2 mb-2">
-          <Accessibility className="w-4 h-4 text-[#5F6368]" />
+          <Accessibility className="w-4 h-4 text-[#5E554B]" />
           <div>
-            <h2 className="text-sm font-semibold text-[#252525]">Accessibility</h2>
-            <p className="text-xs text-[#73757A]">Optional interface enhancements for clearer focus, contrast, and interaction.</p>
+            <h2 className="text-sm font-semibold text-[#1A1714]">Accessibility</h2>
+            <p className="text-xs text-[#6B6259]">Optional interface enhancements for clearer focus, contrast, and interaction.</p>
           </div>
         </div>
 
@@ -302,7 +302,7 @@ export default function SettingsPage() {
           description="Minimize interface animation and transition effects."
         />
 
-        <div className="pt-3 border-t border-[#D9D8D2] flex flex-wrap gap-3">
+        <div className="pt-3 border-t border-[#E6E0D7] flex flex-wrap gap-3">
           <span className="inline-flex items-center gap-1.5 text-xs text-[#4F7F5B] font-semibold">
             <CheckCircle2 className="w-4 h-4" /> Keyboard focus visible
           </span>
@@ -314,17 +314,17 @@ export default function SettingsPage() {
           </span>
         </div>
 
-        <button type="button" onClick={handleResetAccessibility} className="touch-target inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#D9D8D2] bg-white text-[#252525] text-xs font-semibold hover:bg-[#F3F2EE]">
+        <button type="button" onClick={handleResetAccessibility} className="touch-target inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#E6E0D7] bg-white text-[#1A1714] text-xs font-semibold hover:bg-[#F6F3EE]">
           <RotateCcw className="w-3.5 h-3.5" /> Reset accessibility preferences
         </button>
       </section>
 
       <section className="rolewise-card p-6 space-y-2">
         <div className="flex items-center gap-2 mb-2">
-          <Bell className="w-4 h-4 text-[#5F6368]" />
+          <Bell className="w-4 h-4 text-[#5E554B]" />
           <div>
-            <h2 className="text-sm font-semibold text-[#252525]">Notifications</h2>
-            <p className="text-xs text-[#73757A]">Control non-critical browser notifications from Rolewise.</p>
+            <h2 className="text-sm font-semibold text-[#1A1714]">Notifications</h2>
+            <p className="text-xs text-[#6B6259]">Control non-critical browser notifications from Rolewise.</p>
           </div>
         </div>
         <Toggle
@@ -337,14 +337,14 @@ export default function SettingsPage() {
 
       <section className="rolewise-card p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Mic className="w-4 h-4 text-[#5F6368]" />
-          <h2 className="text-sm font-semibold text-[#252525]">Audio & Video</h2>
+          <Mic className="w-4 h-4 text-[#5E554B]" />
+          <h2 className="text-sm font-semibold text-[#1A1714]">Audio & Video</h2>
         </div>
-        <p className="text-xs text-[#73757A] leading-relaxed">
+        <p className="text-xs text-[#6B6259] leading-relaxed">
           Communication Practice uses your browser microphone and camera permissions.
         </p>
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" onClick={handleTestMic} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#F3F2EE] text-xs font-semibold text-[#252525]">
+          <button type="button" onClick={handleTestMic} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E6E0D7] hover:bg-[#F6F3EE] text-xs font-semibold text-[#1A1714]">
             <Mic className="w-3.5 h-3.5" /> Test microphone
           </button>
           {micTested !== null && (
@@ -353,7 +353,7 @@ export default function SettingsPage() {
               {micTested ? 'Microphone available' : 'Permission denied or unavailable'}
             </span>
           )}
-          <button type="button" onClick={handleTestCamera} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#F3F2EE] text-xs font-semibold text-[#252525]">
+          <button type="button" onClick={handleTestCamera} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E6E0D7] hover:bg-[#F6F3EE] text-xs font-semibold text-[#1A1714]">
             <Video className="w-3.5 h-3.5" /> Test camera
           </button>
           {cameraTested !== null && (
@@ -367,10 +367,10 @@ export default function SettingsPage() {
 
       <section className="rolewise-card p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-[#5F6368]" />
-          <h2 className="text-sm font-semibold text-[#252525]">Privacy & Security</h2>
+          <Shield className="w-4 h-4 text-[#5E554B]" />
+          <h2 className="text-sm font-semibold text-[#1A1714]">Privacy & Security</h2>
         </div>
-        <p className="text-xs text-[#73757A] leading-relaxed">
+        <p className="text-xs text-[#6B6259] leading-relaxed">
           Your job descriptions, resume details, and practice recordings are tied to your authenticated account. Rolewise does not expose workspace data to other users.
         </p>
         <div className="flex flex-wrap items-center gap-3">
@@ -385,8 +385,8 @@ export default function SettingsPage() {
 
       <section className="rolewise-card p-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-sm font-semibold text-[#252525]">Account session</h2>
-          <p className="text-xs text-[#73757A] mt-1">{session?.user?.email || 'No active account'}</p>
+          <h2 className="text-sm font-semibold text-[#1A1714]">Account session</h2>
+          <p className="text-xs text-[#6B6259] mt-1">{session?.user?.email || 'No active account'}</p>
         </div>
         <button type="button" onClick={() => signOut()} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#F6D8D1] text-[#B84F3D] hover:bg-[#FFF0ED] text-xs font-semibold">
           <LogOut className="w-3.5 h-3.5" /> Sign out

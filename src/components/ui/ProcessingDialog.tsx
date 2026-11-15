@@ -69,14 +69,14 @@ function ProcessingPanel({
         aria-modal="true"
         aria-labelledby="rw-processing-title"
         tabIndex={-1}
-        className="rw-processing-panel relative w-full max-w-[440px] rounded-[28px] bg-[#FFFFFF] px-6 pb-8 pt-10 sm:px-10 sm:pb-10 sm:pt-12 shadow-[0_30px_80px_-20px_rgba(37,37,37,0.35)] outline-none"
+        className="rw-processing-panel relative w-full max-w-[440px] rounded-[28px] bg-[#FFFFFF] px-6 pb-8 pt-10 sm:px-10 sm:pb-10 sm:pt-12 shadow-[0_30px_80px_-20px_rgba(26,23,20,0.35)] outline-none"
       >
         {onClose && (
           <button
             type="button"
             onClick={onClose}
             aria-label="Cancel"
-            className="absolute right-4 top-4 touch-target rounded-full text-[#73757A] hover:text-[#252525] hover:bg-[#F3F2EE] transition-colors cursor-pointer"
+            className="absolute right-4 top-4 touch-target rounded-full text-[#6B6259] hover:text-[#1A1714] hover:bg-[#F6F3EE] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -108,12 +108,12 @@ function ProcessingPanel({
 
         <h2
           id="rw-processing-title"
-          className="text-center text-[22px] sm:text-[24px] font-semibold tracking-[-0.01em] text-[#252525]"
+          className="text-center text-[22px] sm:text-[24px] font-semibold tracking-[-0.01em] text-[#1A1714]"
         >
           {title}
         </h2>
         {subtitle && (
-          <p className="mt-1.5 text-center text-xs text-[#73757A] truncate" title={subtitle}>
+          <p className="mt-1.5 text-center text-xs text-[#6B6259] truncate" title={subtitle}>
             {subtitle}
           </p>
         )}
@@ -129,11 +129,11 @@ function ProcessingPanel({
             className="relative h-2 w-full overflow-hidden rounded-full bg-[#F1EEE2]"
           >
             <div
-              className="rw-processing-fill absolute inset-y-0 left-0 rounded-full bg-[#252525]"
+              className="rw-processing-fill absolute inset-y-0 left-0 rounded-full bg-[#1A1714]"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="mt-3 text-center text-[15px] font-semibold text-[#252525] tabular-nums">
+          <p className="mt-3 text-center text-[15px] font-semibold text-[#1A1714] tabular-nums">
             {pct}% completed
           </p>
         </div>
@@ -146,21 +146,21 @@ function ProcessingPanel({
               <li key={step.label} className="flex items-center gap-3 text-sm">
                 <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
                   {state === 'done' && (
-                    <span className="rw-step-done flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#252525]">
+                    <span className="rw-step-done flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#1A1714]">
                       <Check className="h-3 w-3 text-[#FFD84D]" strokeWidth={3} />
                     </span>
                   )}
                   {state === 'active' && (
                     <>
                       <span className="rw-step-ring absolute inset-[-3px] rounded-full bg-[#FFD84D]/60" />
-                      <span className="relative h-3 w-3 rounded-full bg-[#252525] ring-[3px] ring-[#FFD84D]" />
+                      <span className="relative h-3 w-3 rounded-full bg-[#1A1714] ring-[3px] ring-[#FFD84D]" />
                     </>
                   )}
                   {state === 'todo' && <span className="h-2 w-2 rounded-full bg-[#DCD9CC]" />}
                 </span>
                 <span
                   className={`transition-colors duration-300 ${
-                    state === 'todo' ? 'text-[#9A9B9E]' : state === 'active' ? 'text-[#252525] font-medium' : 'text-[#55565A]'
+                    state === 'todo' ? 'text-[#9A9086]' : state === 'active' ? 'text-[#1A1714] font-medium' : 'text-[#574F46]'
                   }`}
                 >
                   {step.label}

@@ -116,7 +116,7 @@ type Status = 'strong' | 'transferable' | 'evidence' | 'missing';
 const STATUS: Record<Status, { label: string; weight: number; color: string; chip: string }> = {
   strong: { label: 'Strong', weight: 1, color: '#6FA77F', chip: 'bg-[#6FA77F]/15 text-[#3F7A50]' },
   transferable: { label: 'Transferable', weight: 0.6, color: '#D49A35', chip: 'bg-[#D49A35]/15 text-[#8A5F14]' },
-  evidence: { label: 'Needs evidence', weight: 0.3, color: '#A3A4AA', chip: 'bg-[#73757A]/12 text-[#55575C]' },
+  evidence: { label: 'Needs evidence', weight: 0.3, color: '#A3A4AA', chip: 'bg-[#6B6259]/12 text-[#55575C]' },
   missing: { label: 'Not shown', weight: 0, color: '#D97968', chip: 'bg-[#D97968]/15 text-[#A2483A]' },
 };
 const STATUS_ORDER: Status[] = ['strong', 'transferable', 'evidence', 'missing'];
@@ -190,8 +190,8 @@ function CtaButton({ variant = 'yellow', className = '' }: { variant?: 'yellow' 
   const cta = useCta();
   const styles =
     variant === 'yellow'
-      ? 'bg-[#FFD84D] text-[#252525] hover:bg-[#FFE27A] shadow-[0_10px_30px_-10px_rgba(255,216,77,0.7)] focus-visible:ring-[#252525] focus-visible:ring-offset-white'
-      : 'bg-[#252525] text-white hover:bg-black focus-visible:ring-[#252525]';
+      ? 'bg-[#FFD84D] text-[#1A1714] hover:bg-[#FFE27A] shadow-[0_10px_30px_-10px_rgba(255,216,77,0.7)] focus-visible:ring-[#1A1714] focus-visible:ring-offset-white'
+      : 'bg-[#1A1714] text-white hover:bg-black focus-visible:ring-[#1A1714]';
   return (
     <Link
       href={cta.href}
@@ -219,7 +219,7 @@ const LINE_ICONS: Record<string, LucideIcon> = {
 function LineIcon({ name, size = 48, tone = 'ink' }: { name: string; size?: number; tone?: 'ink' | 'yellow' | 'bare' }) {
   const Icon = LINE_ICONS[name] ?? CheckCircle2;
   if (tone === 'bare') return <Icon className="h-[18px] w-[18px]" aria-hidden />;
-  const cls = tone === 'yellow' ? 'bg-[#FFD84D] text-[#252525]' : 'bg-[#252525] text-[#FFD84D]';
+  const cls = tone === 'yellow' ? 'bg-[#FFD84D] text-[#1A1714]' : 'bg-[#1A1714] text-[#FFD84D]';
   return (
     <span className={`inline-flex shrink-0 items-center justify-center rounded-[30%] ${cls}`} style={{ width: size, height: size }} aria-hidden>
       <Icon style={{ width: size * 0.46, height: size * 0.46 }} strokeWidth={2} />
@@ -229,8 +229,8 @@ function LineIcon({ name, size = 48, tone = 'ink' }: { name: string; size?: numb
 
 function BrowserFrame({ src, alt, eager = false }: { src: string; alt: string; eager?: boolean }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#FAF9F4] shadow-[0_40px_80px_-30px_rgba(37,37,37,0.45)]">
-      <div className="flex items-center gap-1.5 border-b border-[#E4E2DA] bg-[#FAF9F4] px-4 py-2.5" aria-hidden>
+    <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#FFFFFF] shadow-[0_40px_80px_-30px_rgba(26,23,20,0.45)]">
+      <div className="flex items-center gap-1.5 border-b border-[#E6E0D7] bg-[#FFFFFF] px-4 py-2.5" aria-hidden>
         <span className="h-2.5 w-2.5 rounded-full bg-[#D97968]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#D49A35]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#6FA77F]" />
@@ -356,7 +356,7 @@ function Hero() {
   }, []);
 
   return (
-    <section ref={ref} className="rwl-hero-yellow relative overflow-hidden pt-[72px] text-[#252525]">
+    <section ref={ref} className="rwl-hero-yellow relative overflow-hidden pt-[72px] text-[#1A1714]">
       <HeroBackdrop />
       <div className="relative mx-auto grid max-w-[1240px] items-center gap-16 px-5 pb-24 pt-14 md:px-8 lg:grid-cols-[1fr_1.08fr] lg:gap-10 lg:pb-28 lg:pt-20">
         <div>
@@ -371,13 +371,13 @@ function Hero() {
             <CtaButton variant="ink" />
             <a
               href="#fit"
-              className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-full border border-[#252525]/40 bg-transparent px-7 text-[15px] font-medium transition hover:bg-[#252525]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+              className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-full border border-[#1A1714]/40 bg-transparent px-7 text-[15px] font-medium transition hover:bg-[#1A1714]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
             >
               Try the fit score
             </a>
           </div>
           <p className="rwl-enter mt-6 flex items-start gap-2 text-[14px] text-[#4A3F12] [animation-delay:300ms]">
-            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#252525]" aria-hidden />
+            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#1A1714]" aria-hidden />
             {session
               ? 'You are signed in. Pick up where you left off.'
               : 'Free during early access. About 10 minutes to your first fit score.'}
@@ -452,8 +452,8 @@ function ProductTabs({ active, setActive }: { active: TabId; setActive: (t: TabI
               tabIndex={on ? 0 : -1}
               onClick={() => setActive(t.id)}
               onKeyDown={(e) => onKey(e, i)}
-              className={`flex min-h-[48px] shrink-0 items-center gap-2.5 rounded-full border px-4 pr-5 text-[15px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2 ${
-                on ? 'border-[#252525] bg-[#252525] text-white' : 'border-[#D9D8D2] bg-[#FAF9F4] text-[#3A3C40] hover:border-[#252525]/40'
+              className={`flex min-h-[48px] shrink-0 items-center gap-2.5 rounded-full border px-4 pr-5 text-[15px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714] focus-visible:ring-offset-2 ${
+                on ? 'border-[#1A1714] bg-[#1A1714] text-white' : 'border-[#E6E0D7] bg-[#FFFFFF] text-[#3B342D] hover:border-[#1A1714]/40'
               }`}
             >
               <LineIcon name={t.icon} tone="bare" />
@@ -472,13 +472,13 @@ function ProductTabs({ active, setActive }: { active: TabId; setActive: (t: TabI
       >
         <div>
           <LineIcon name={tab.icon} size={52} />
-          <h3 className="mt-6 text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#252525] [text-wrap:balance] sm:text-[34px]">
+          <h3 className="mt-6 text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#1A1714] [text-wrap:balance] sm:text-[34px]">
             {tab.title}
           </h3>
           <p className="mt-4 text-[17px] leading-relaxed text-[#3F3A2E]">{tab.body}</p>
           <ul className="mt-6 space-y-3">
             {tab.points.map((p) => (
-              <li key={p} className="flex items-start gap-3 text-[15px] font-medium text-[#252525]">
+              <li key={p} className="flex items-start gap-3 text-[15px] font-medium text-[#1A1714]">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
                 {p}
               </li>
@@ -542,7 +542,7 @@ function FitSimulator() {
     setReqs((prev) => prev.map((r, j) => (j === i ? { ...r, status: STATUS_ORDER[(STATUS_ORDER.indexOf(r.status) + 1) % 4] } : r)));
 
   return (
-    <section id="fit" className="relative scroll-mt-20 overflow-hidden bg-[#252525] py-24 text-white lg:py-28">
+    <section id="fit" className="relative scroll-mt-20 overflow-hidden bg-[#1A1714] py-24 text-white lg:py-28">
       <CursorGlow x={22} y={18} size={520} />
       <div className="relative mx-auto grid max-w-[1240px] gap-12 px-5 md:px-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
         <div className="lg:sticky lg:top-28 lg:self-start">
@@ -565,10 +565,10 @@ function FitSimulator() {
           </dl>
         </div>
 
-        <div className="rounded-[28px] bg-[#FAF9F4] p-6 text-[#252525] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.6)] sm:p-8">
+        <div className="rounded-[28px] bg-[#FFFFFF] p-6 text-[#1A1714] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.6)] sm:p-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[14px] font-medium text-[#5E6065]">Sample role: Product Designer</p>
+              <p className="text-[14px] font-medium text-[#5E554B]">Sample role: Product Designer</p>
               <div className="mt-1 flex items-end gap-3">
                 <span className="text-[64px] font-semibold leading-none tracking-[-0.04em] tabular-nums" aria-hidden>
                   {shown}%
@@ -582,7 +582,7 @@ function FitSimulator() {
             <button
               type="button"
               onClick={() => setReqs(SAMPLE_REQS)}
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#D9D8D2] px-4 text-[14px] font-medium text-[#3A3C40] hover:border-[#252525]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#E6E0D7] px-4 text-[14px] font-medium text-[#3B342D] hover:border-[#1A1714]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
             >
               <RotateCcw className="h-4 w-4" aria-hidden /> Reset
             </button>
@@ -601,7 +601,7 @@ function FitSimulator() {
                   type="button"
                   onClick={() => cycle(i)}
                   aria-label={`${r.text}: ${STATUS[r.status].label}. Activate to change.`}
-                  className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl border border-[#E4E2DA] bg-white px-4 py-3 text-left transition hover:border-[#252525]/30 hover:shadow-[0_8px_20px_-12px_rgba(37,37,37,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+                  className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl border border-[#E6E0D7] bg-white px-4 py-3 text-left transition hover:border-[#1A1714]/30 hover:shadow-[0_8px_20px_-12px_rgba(26,23,20,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
                 >
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: STATUS[r.status].color }} aria-hidden />
                   <span className="flex-1 text-[15px] font-medium">{r.text}</span>
@@ -663,7 +663,7 @@ function Practice() {
             loading="lazy"
             className="aspect-[4/3] w-full rounded-[28px] bg-[#E9E7DF] object-cover"
           />
-          <div className="absolute bottom-5 left-5 right-5 flex items-center gap-3 rounded-2xl border border-white/20 bg-[#252525]/85 px-4 py-3 text-white backdrop-blur sm:right-auto">
+          <div className="absolute bottom-5 left-5 right-5 flex items-center gap-3 rounded-2xl border border-white/20 bg-[#1A1714]/85 px-4 py-3 text-white backdrop-blur sm:right-auto">
             <span className="relative flex h-3 w-3" aria-hidden>
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#D97968] opacity-60 motion-reduce:hidden" />
               <span className="relative inline-flex h-3 w-3 rounded-full bg-[#D97968]" />
@@ -679,7 +679,7 @@ function Practice() {
           <h2 className="text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
             Rehearse the way you will actually answer
           </h2>
-          <p className="mt-5 text-[17px] leading-relaxed text-[#5E6065]">
+          <p className="mt-5 text-[17px] leading-relaxed text-[#5E554B]">
             Knowing an answer and saying it are different skills. Pick the format that feels hardest.
           </p>
 
@@ -693,8 +693,8 @@ function Practice() {
                   role="radio"
                   aria-checked={on}
                   onClick={() => setMode(x.id)}
-                  className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-[15px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] ${
-                    on ? 'bg-[#FAF9F4] text-[#252525] shadow-[0_4px_14px_-6px_rgba(37,37,37,0.35)]' : 'text-[#5E6065] hover:text-[#252525]'
+                  className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-[15px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714] ${
+                    on ? 'bg-[#FFFFFF] text-[#1A1714] shadow-[0_4px_14px_-6px_rgba(26,23,20,0.35)]' : 'text-[#5E554B] hover:text-[#1A1714]'
                   }`}
                 >
                   <x.icon className="h-4 w-4" aria-hidden />
@@ -704,8 +704,8 @@ function Practice() {
             })}
           </div>
 
-          <div key={mode} className="rwl-fade mt-5 rounded-2xl border border-[#E4E2DA] bg-[#FAF9F4] p-6" aria-live="polite">
-            <p className="text-[16px] leading-relaxed text-[#3A3C40]">{m.body}</p>
+          <div key={mode} className="rwl-fade mt-5 rounded-2xl border border-[#E6E0D7] bg-[#FFFFFF] p-6" aria-live="polite">
+            <p className="text-[16px] leading-relaxed text-[#3B342D]">{m.body}</p>
             {mode !== 'text' && support !== 'unknown' && (
               <p
                 className={`mt-4 flex items-start gap-2.5 rounded-xl px-3.5 py-3 text-[14px] leading-relaxed ${
@@ -731,20 +731,20 @@ function Practice() {
 
 function FirstTen() {
   return (
-    <section id="start" className="scroll-mt-20 bg-[#FAF9F4] py-24 lg:py-28">
+    <section id="start" className="scroll-mt-20 bg-[#FFFFFF] py-24 lg:py-28">
       <div className="mx-auto max-w-[1240px] px-5 md:px-8">
         <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <h2 className="max-w-[620px] text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] [text-wrap:balance] sm:text-[46px]">
             Your first ten minutes, so nothing trips you up
           </h2>
-          <p className="max-w-[420px] text-[16px] leading-relaxed text-[#5E6065]">The places people usually get stuck, answered before you get there.</p>
+          <p className="max-w-[420px] text-[16px] leading-relaxed text-[#5E554B]">The places people usually get stuck, answered before you get there.</p>
         </div>
         <ul className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {FIRST_TEN.map((s) => (
-            <li key={s.title} className="flex flex-col rounded-[24px] border border-[#E4E2DA] bg-white p-6">
+            <li key={s.title} className="flex flex-col rounded-[24px] border border-[#E6E0D7] bg-white p-6">
               <LineIcon name={s.icon} size={48} />
               <h3 className="mt-5 text-[19px] font-semibold leading-snug">{s.title}</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-[#5E6065]">{s.body}</p>
+              <p className="mt-2 text-[15px] leading-relaxed text-[#5E554B]">{s.body}</p>
             </li>
           ))}
         </ul>
@@ -770,7 +770,7 @@ function Moments() {
             <img src={photo(c.id, 800)} alt={c.alt} loading="lazy" className="aspect-[4/3] w-full bg-black/5 object-cover" />
             <figcaption className="p-6">
               <h3 className="text-[20px] font-semibold">{c.title}</h3>
-              <p className="mt-1.5 text-[15px] leading-relaxed text-[#4A4C51]">{c.body}</p>
+              <p className="mt-1.5 text-[15px] leading-relaxed text-[#4D453C]">{c.body}</p>
             </figcaption>
           </figure>
         ))}
@@ -802,7 +802,7 @@ function Trust() {
         <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
           {items.map((p) => (
             <div key={p.title} className="flex gap-4 rounded-3xl border border-white/15 bg-white/[0.07] p-6 backdrop-blur-sm">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FFD84D] text-[#252525]">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FFD84D] text-[#1A1714]">
                 <p.icon className="h-5 w-5" aria-hidden />
               </span>
               <div>
@@ -823,18 +823,18 @@ function Faq() {
     <section id="faq" className="mx-auto grid max-w-[1240px] scroll-mt-20 gap-12 px-5 py-24 md:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:py-28">
       <div className="lg:sticky lg:top-28 lg:self-start">
         <h2 className="text-[36px] font-semibold leading-[1.08] tracking-[-0.025em] sm:text-[46px]">Questions, answered</h2>
-        <p className="mt-4 max-w-[380px] text-[16px] leading-relaxed text-[#5E6065]">
+        <p className="mt-4 max-w-[380px] text-[16px] leading-relaxed text-[#5E554B]">
           The things people ask most before they start. Anything else, Rowi is around.
         </p>
 
-        <div className="relative mt-10 max-w-[400px] overflow-hidden rounded-[28px] bg-[#252525] p-6 pr-36 text-white">
+        <div className="relative mt-10 max-w-[400px] overflow-hidden rounded-[28px] bg-[#1A1714] p-6 pr-36 text-white">
           <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-[#FFD84D]/25 blur-3xl" aria-hidden />
           <p className="relative text-[19px] font-semibold leading-snug">Still have a question?</p>
           <p className="relative mt-1.5 text-[14px] leading-relaxed text-white/70">Ask Rowi, your prep buddy. Answers in seconds.</p>
           <button
             type="button"
             onClick={() => openRowi()}
-            className="relative mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#FFD84D] px-5 text-[14px] font-semibold text-[#252525] transition hover:bg-[#FFE27A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#252525]"
+            className="relative mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#FFD84D] px-5 text-[14px] font-semibold text-[#1A1714] transition hover:bg-[#FFE27A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1A1714]"
           >
             Ask Rowi
             <ArrowRight className="h-4 w-4" aria-hidden />
@@ -850,7 +850,7 @@ function Faq() {
               <button
                 type="button"
                 onClick={() => openRowi(q)}
-                className="min-h-[40px] rounded-full border border-[#D9D8D2] bg-[#FAF9F4] px-4 text-[14px] font-medium text-[#3A3C40] transition hover:border-[#252525]/40 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+                className="min-h-[40px] rounded-full border border-[#E6E0D7] bg-[#FFFFFF] px-4 text-[14px] font-medium text-[#3B342D] transition hover:border-[#1A1714]/40 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
               >
                 {q}
               </button>
@@ -858,7 +858,7 @@ function Faq() {
           ))}
         </ul>
       </div>
-      <div className="divide-y divide-[#D9D8D2] border-y border-[#D9D8D2]">
+      <div className="divide-y divide-[#E6E0D7] border-y border-[#E6E0D7]">
         {FAQS.map((item, i) => {
           const isOpen = open === i;
           return (
@@ -869,13 +869,13 @@ function Faq() {
                   aria-expanded={isOpen}
                   aria-controls={`faq-${i}`}
                   onClick={() => setOpen(isOpen ? null : i)}
-                  className="flex min-h-[64px] w-full items-center justify-between gap-6 py-5 text-left text-[18px] font-semibold text-[#252525] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+                  className="flex min-h-[64px] w-full items-center justify-between gap-6 py-5 text-left text-[18px] font-semibold text-[#1A1714] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
                 >
                   {item.q}
-                  <ChevronDown className={`h-5 w-5 shrink-0 text-[#73757A] transition-transform ${isOpen ? 'rotate-180' : ''}`} aria-hidden />
+                  <ChevronDown className={`h-5 w-5 shrink-0 text-[#6B6259] transition-transform ${isOpen ? 'rotate-180' : ''}`} aria-hidden />
                 </button>
               </h3>
-              <div id={`faq-${i}`} hidden={!isOpen} className="pb-6 pr-10 text-[16px] leading-relaxed text-[#5E6065]">
+              <div id={`faq-${i}`} hidden={!isOpen} className="pb-6 pr-10 text-[16px] leading-relaxed text-[#5E554B]">
                 {item.a}
               </div>
             </div>
@@ -906,17 +906,17 @@ export function Landing() {
 
 
   return (
-    <div className="rwl min-h-screen w-full bg-[#F3F2EE] text-[#252525] [scroll-behavior:smooth]">
+    <div className="rwl min-h-screen w-full bg-[#F6F3EE] text-[#1A1714] [scroll-behavior:smooth]">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-[#FFD84D] focus:px-4 focus:py-2 focus:text-[#252525]"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-[#FFD84D] focus:px-4 focus:py-2 focus:text-[#1A1714]"
       >
         Skip to content
       </a>
 
       <header
-        className={`fixed inset-x-0 top-0 z-50 border-b border-[#E4E2DA] bg-white transition-shadow duration-300 ${
-          scrolled ? 'shadow-[0_8px_24px_-18px_rgba(37,37,37,0.35)]' : ''
+        className={`fixed inset-x-0 top-0 z-50 border-b border-[#E6E0D7] bg-white transition-shadow duration-300 ${
+          scrolled ? 'shadow-[0_8px_24px_-18px_rgba(26,23,20,0.35)]' : ''
         }`}
       >
         <div className="mx-auto flex h-[72px] max-w-[1240px] items-center justify-between px-5 md:px-8">
@@ -928,7 +928,7 @@ export function Landing() {
               <a
                 key={n.href}
                 href={n.href}
-                className="inline-flex min-h-[44px] items-center rounded-md px-1 text-[15px] font-medium text-[#4A4C51] transition-colors hover:text-[#252525] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
+                className="inline-flex min-h-[44px] items-center rounded-md px-1 text-[15px] font-medium text-[#4D453C] transition-colors hover:text-[#1A1714] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714] focus-visible:ring-offset-2"
               >
                 {n.label}
               </a>
@@ -938,7 +938,7 @@ export function Landing() {
             {!session && (
               <Link
                 href="/auth"
-                className="inline-flex min-h-[44px] items-center rounded-full border border-[#252525]/80 px-5 text-[14px] font-medium text-[#252525] transition hover:bg-[#252525] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
+                className="inline-flex min-h-[44px] items-center rounded-full border border-[#1A1714]/80 px-5 text-[14px] font-medium text-[#1A1714] transition hover:bg-[#1A1714] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714] focus-visible:ring-offset-2"
               >
                 Sign in
               </Link>
@@ -947,7 +947,7 @@ export function Landing() {
           </div>
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#D9D8D2] text-[#252525] lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#E6E0D7] text-[#1A1714] lg:hidden"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
@@ -956,15 +956,15 @@ export function Landing() {
           </button>
         </div>
         {menuOpen && (
-          <div className="border-t border-[#E4E2DA] px-5 pb-6 pt-2 lg:hidden">
+          <div className="border-t border-[#E6E0D7] px-5 pb-6 pt-2 lg:hidden">
             {NAV.map((n) => (
-              <a key={n.href} href={n.href} onClick={() => setMenuOpen(false)} className="block border-b border-[#E4E2DA] py-4 text-[17px] font-medium">
+              <a key={n.href} href={n.href} onClick={() => setMenuOpen(false)} className="block border-b border-[#E6E0D7] py-4 text-[17px] font-medium">
                 {n.label}
               </a>
             ))}
             <div className="mt-5 flex flex-col gap-3">
               {!session && (
-                <Link href="/auth" className="inline-flex min-h-[48px] items-center justify-center rounded-full border border-[#252525] font-medium">
+                <Link href="/auth" className="inline-flex min-h-[48px] items-center justify-center rounded-full border border-[#1A1714] font-medium">
                   Sign in
                 </Link>
               )}
@@ -992,7 +992,7 @@ export function Landing() {
             <div className="pointer-events-none absolute -right-10 -top-10 h-72 w-72 rounded-full bg-white/30 blur-3xl" aria-hidden />
             <div className="relative grid items-center gap-10 lg:grid-cols-[1.3fr_0.7fr]">
               <div>
-                <h2 className="max-w-[620px] text-[38px] font-semibold leading-[1.04] tracking-[-0.035em] text-[#252525] [text-wrap:balance] sm:text-[56px]">
+                <h2 className="max-w-[620px] text-[38px] font-semibold leading-[1.04] tracking-[-0.035em] text-[#1A1714] [text-wrap:balance] sm:text-[56px]">
                   Your next interview is for one role. Prepare for that one.
                 </h2>
                 <p className="mt-5 max-w-[460px] text-[17px] leading-relaxed text-[#4A3F12]">
@@ -1002,7 +1002,7 @@ export function Landing() {
                   <CtaButton variant="ink" />
                   <a
                     href="#start"
-                    className="inline-flex min-h-[50px] items-center justify-center rounded-full border border-[#252525]/30 px-7 text-[15px] font-medium text-[#252525] hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+                    className="inline-flex min-h-[50px] items-center justify-center rounded-full border border-[#1A1714]/30 px-7 text-[15px] font-medium text-[#1A1714] hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
                   >
                     What you need first
                   </a>
@@ -1017,41 +1017,41 @@ export function Landing() {
       </main>
 
       <footer className="mx-auto max-w-[1240px] px-5 pb-10 pt-6 md:px-8">
-        <div className="flex flex-col justify-between gap-8 border-t border-[#D9D8D2] pt-10 md:flex-row md:items-start">
+        <div className="flex flex-col justify-between gap-8 border-t border-[#E6E0D7] pt-10 md:flex-row md:items-start">
           <div className="max-w-[300px]">
             <div className="w-[140px]">
               <RolewiseLogo />
             </div>
-            <p className="mt-4 text-[14px] leading-relaxed text-[#5E6065]">Prepare for the role, not just the interview.</p>
+            <p className="mt-4 text-[14px] leading-relaxed text-[#5E554B]">Prepare for the role, not just the interview.</p>
           </div>
           <div className="grid grid-cols-2 gap-10 text-[14px] sm:grid-cols-3">
             <div>
               <p className="font-semibold">Product</p>
-              <ul className="mt-2 space-y-0.5 text-[#5E6065]">
-                <li><a href="#product" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Features</a></li>
-                <li><a href="#fit" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Fit score</a></li>
-                <li><a href="#practice" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Practice</a></li>
+              <ul className="mt-2 space-y-0.5 text-[#5E554B]">
+                <li><a href="#product" className="inline-flex min-h-[32px] items-center hover:text-[#1A1714]">Features</a></li>
+                <li><a href="#fit" className="inline-flex min-h-[32px] items-center hover:text-[#1A1714]">Fit score</a></li>
+                <li><a href="#practice" className="inline-flex min-h-[32px] items-center hover:text-[#1A1714]">Practice</a></li>
               </ul>
             </div>
             <div>
               <p className="font-semibold">Account</p>
-              <ul className="mt-2 space-y-0.5 text-[#5E6065]">
-                <li><Link href="/auth" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Sign in</Link></li>
-                <li><Link href="/auth?mode=signup" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Create account</Link></li>
+              <ul className="mt-2 space-y-0.5 text-[#5E554B]">
+                <li><Link href="/auth" className="inline-flex min-h-[32px] items-center hover:text-[#1A1714]">Sign in</Link></li>
+                <li><Link href="/auth?mode=signup" className="inline-flex min-h-[32px] items-center hover:text-[#1A1714]">Create account</Link></li>
               </ul>
             </div>
             <div>
               <p className="font-semibold">Help</p>
-              <ul className="mt-2 space-y-0.5 text-[#5E6065]">
-                <li><a href="#start" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Getting started</a></li>
-                <li><a href="#faq" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">FAQ</a></li>
-                <li><Link href="/privacy" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Privacy</Link></li>
-                <li><Link href="/terms" className="inline-flex min-h-[32px] items-center hover:text-[#252525]">Terms</Link></li>
+              <ul className="mt-2 space-y-0.5 text-[#5E554B]">
+                <li><a href="#start" className="inline-flex min-h-[32px] items-center hover:text-[#1A1714]">Getting started</a></li>
+                <li><a href="#faq" className="inline-flex min-h-[32px] items-center hover:text-[#1A1714]">FAQ</a></li>
+                <li><Link href="/privacy" className="inline-flex min-h-[32px] items-center hover:text-[#1A1714]">Privacy</Link></li>
+                <li><Link href="/terms" className="inline-flex min-h-[32px] items-center hover:text-[#1A1714]">Terms</Link></li>
               </ul>
             </div>
           </div>
         </div>
-        <div className="mt-10 flex flex-col justify-between gap-2 text-[13px] text-[#5E6065] sm:flex-row">
+        <div className="mt-10 flex flex-col justify-between gap-2 text-[13px] text-[#5E554B] sm:flex-row">
           <p>© {new Date().getFullYear()} Rolewise</p>
           <p>
             Photos from{' '}

@@ -233,12 +233,12 @@ export const AuthModal: React.FC = () => {
         }
       }}
     >
-      <div className="bg-white rounded-[20px] border border-[#E7E8EF] shadow-2xl max-w-[440px] w-full p-6 sm:p-8 relative animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-[20px] border border-[#EFEAE3] shadow-2xl max-w-[440px] w-full p-6 sm:p-8 relative animate-in fade-in zoom-in-95 duration-200">
         {/* Subtle Close Button */}
         <button
           onClick={closeAuthModal}
           disabled={isLoading}
-          className="absolute top-5 right-5 text-[#667085] hover:text-[#1F2937] p-1.5 rounded-full hover:bg-[#F7F7FB] transition-colors touch-target disabled:opacity-40"
+          className="absolute top-5 right-5 text-[#6B6259] hover:text-[#1A1714] p-1.5 rounded-full hover:bg-[#FAF8F5] transition-colors touch-target disabled:opacity-40"
           aria-label="Close dialog"
         >
           <X className="w-5 h-5" />
@@ -257,38 +257,38 @@ export const AuthModal: React.FC = () => {
 
           {session ? (
             <div>
-              <h2 className="text-xl font-bold text-[#1F2937] tracking-tight">Your Account</h2>
-              <p className="text-sm text-[#667085] mt-1">Manage your active Rolewise session.</p>
+              <h2 className="text-xl font-bold text-[#1A1714] tracking-tight">Your Account</h2>
+              <p className="text-sm text-[#6B6259] mt-1">Manage your active Rolewise session.</p>
             </div>
           ) : isRateLimited ? (
             <div>
-              <h2 className="text-xl font-bold text-[#1F2937] tracking-tight">
+              <h2 className="text-xl font-bold text-[#1A1714] tracking-tight">
                 Verification Unavailable
               </h2>
-              <p className="text-sm text-[#667085] mt-1">
+              <p className="text-sm text-[#6B6259] mt-1">
                 Email verification is temporarily paused.
               </p>
             </div>
           ) : isEmailConfirmationPending ? (
             <div>
-              <h2 className="text-2xl font-bold text-[#1F2937] tracking-tight">Account created</h2>
-              <p className="text-sm text-[#667085] mt-1">
+              <h2 className="text-2xl font-bold text-[#1A1714] tracking-tight">Account created</h2>
+              <p className="text-sm text-[#6B6259] mt-1">
                 Check your email to verify your account before signing in.
               </p>
             </div>
           ) : mode === 'signin' ? (
             <div>
-              <h2 className="text-2xl font-bold text-[#1F2937] tracking-tight">Welcome back</h2>
-              <p className="text-sm text-[#667085] mt-1">
+              <h2 className="text-2xl font-bold text-[#1A1714] tracking-tight">Welcome back</h2>
+              <p className="text-sm text-[#6B6259] mt-1">
                 Sign in to continue preparing for your next role.
               </p>
             </div>
           ) : (
             <div>
-              <h2 className="text-2xl font-bold text-[#1F2937] tracking-tight">
+              <h2 className="text-2xl font-bold text-[#1A1714] tracking-tight">
                 Create your account
               </h2>
-              <p className="text-sm text-[#667085] mt-1">
+              <p className="text-sm text-[#6B6259] mt-1">
                 Start preparing for the role you actually want.
               </p>
             </div>
@@ -314,7 +314,7 @@ export const AuthModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsRateLimited(false)}
-                className="w-full py-2.5 sm:py-3 bg-white hover:bg-[#F7F7FB] text-[#1F2937] text-sm font-semibold rounded-xl border border-[#E7E8EF] transition-all touch-target"
+                className="w-full py-2.5 sm:py-3 bg-white hover:bg-[#FAF8F5] text-[#1A1714] text-sm font-semibold rounded-xl border border-[#EFEAE3] transition-all touch-target"
               >
                 Try again later
               </button>
@@ -381,13 +381,13 @@ export const AuthModal: React.FC = () => {
             {/* Active User Session */}
             {session ? (
               <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-[#F7F7FB] border border-[#E7E8EF] flex items-center gap-3.5">
+                <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#EFEAE3] flex items-center gap-3.5">
                   <div className="w-11 h-11 rounded-full bg-[#EEECFF] text-[#6D5DFB] flex items-center justify-center font-bold text-sm">
                     {user?.email ? user.email[0].toUpperCase() : 'U'}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs text-[#667085]">Signed in as</p>
-                    <p className="text-sm font-semibold text-[#1F2937] truncate">{user?.email}</p>
+                    <p className="text-xs text-[#6B6259]">Signed in as</p>
+                    <p className="text-sm font-semibold text-[#1A1714] truncate">{user?.email}</p>
                     <p className="text-xs text-[#4E9B76] mt-0.5 flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" /> Ready to prepare
                     </p>
@@ -408,11 +408,11 @@ export const AuthModal: React.FC = () => {
               /* Sign In Form */
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">
+                  <label className="block text-xs font-semibold text-[#1A1714] mb-1.5">
                     Email address
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-[#98A2B3] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Mail className="w-4 h-4 text-[#A0968A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="email"
                       required
@@ -420,14 +420,14 @@ export const AuthModal: React.FC = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="your@email.com"
-                      className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#E7E8EF] bg-white text-[#1F2937] placeholder:text-[#98A2B3] focus:outline-none focus:border-[#6D5DFB] focus:ring-1 focus:ring-[#6D5DFB] transition-all"
+                      className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#EFEAE3] bg-white text-[#1A1714] placeholder:text-[#A0968A] focus:outline-none focus:border-[#6D5DFB] focus:ring-1 focus:ring-[#6D5DFB] transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-[#1F2937]">Password</label>
+                    <label className="block text-xs font-semibold text-[#1A1714]">Password</label>
                     <button
                       type="button"
                       onClick={handleForgotPassword}
@@ -437,20 +437,20 @@ export const AuthModal: React.FC = () => {
                     </button>
                   </div>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-[#98A2B3] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Lock className="w-4 h-4 text-[#A0968A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="•••••••••"
-                      className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#E7E8EF] bg-white text-[#1F2937] placeholder:text-[#98A2B3] focus:outline-none focus:border-[#6D5DFB] focus:ring-1 focus:ring-[#6D5DFB] transition-all"
+                      className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#EFEAE3] bg-white text-[#1A1714] placeholder:text-[#A0968A] focus:outline-none focus:border-[#6D5DFB] focus:ring-1 focus:ring-[#6D5DFB] transition-all"
                     />
                   </div>
                 </div>
 
                 {showForgotNotice && (
-                  <div className="p-3 rounded-xl bg-[#F7F7FB] border border-[#E7E8EF] text-xs text-[#667085] animate-in fade-in">
+                  <div className="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFEAE3] text-xs text-[#6B6259] animate-in fade-in">
                     Enter your email address above to check password recovery or contact support.
                   </div>
                 )}
@@ -463,7 +463,7 @@ export const AuthModal: React.FC = () => {
                   {isLoading ? 'Signing in...' : 'Sign in'}
                 </button>
 
-                <div className="pt-2 text-center text-xs text-[#667085]">
+                <div className="pt-2 text-center text-xs text-[#6B6259]">
                   Don&apos;t have an account?{' '}
                   <button
                     type="button"
@@ -478,11 +478,11 @@ export const AuthModal: React.FC = () => {
               /* Sign Up Form */
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">
+                  <label className="block text-xs font-semibold text-[#1A1714] mb-1.5">
                     Full name
                   </label>
                   <div className="relative">
-                    <User className="w-4 h-4 text-[#98A2B3] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <User className="w-4 h-4 text-[#A0968A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="text"
                       required
@@ -490,41 +490,41 @@ export const AuthModal: React.FC = () => {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Your name"
-                      className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#E7E8EF] bg-white text-[#1F2937] placeholder:text-[#98A2B3] focus:outline-none focus:border-[#6D5DFB] focus:ring-1 focus:ring-[#6D5DFB] transition-all"
+                      className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#EFEAE3] bg-white text-[#1A1714] placeholder:text-[#A0968A] focus:outline-none focus:border-[#6D5DFB] focus:ring-1 focus:ring-[#6D5DFB] transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">
+                  <label className="block text-xs font-semibold text-[#1A1714] mb-1.5">
                     Email address
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-[#98A2B3] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Mail className="w-4 h-4 text-[#A0968A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="your@email.com"
-                      className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#E7E8EF] bg-white text-[#1F2937] placeholder:text-[#98A2B3] focus:outline-none focus:border-[#6D5DFB] focus:ring-1 focus:ring-[#6D5DFB] transition-all"
+                      className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#EFEAE3] bg-white text-[#1A1714] placeholder:text-[#A0968A] focus:outline-none focus:border-[#6D5DFB] focus:ring-1 focus:ring-[#6D5DFB] transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">
+                  <label className="block text-xs font-semibold text-[#1A1714] mb-1.5">
                     Password
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-[#98A2B3] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Lock className="w-4 h-4 text-[#A0968A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="•••••••••"
-                      className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#E7E8EF] bg-white text-[#1F2937] placeholder:text-[#98A2B3] focus:outline-none focus:border-[#6D5DFB] focus:ring-1 focus:ring-[#6D5DFB] transition-all"
+                      className="w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-[#EFEAE3] bg-white text-[#1A1714] placeholder:text-[#A0968A] focus:outline-none focus:border-[#6D5DFB] focus:ring-1 focus:ring-[#6D5DFB] transition-all"
                     />
                   </div>
                 </div>
@@ -537,7 +537,7 @@ export const AuthModal: React.FC = () => {
                   {isLoading ? 'Creating account...' : 'Create account'}
                 </button>
 
-                <div className="pt-2 text-center text-xs text-[#667085]">
+                <div className="pt-2 text-center text-xs text-[#6B6259]">
                   Already have an account?{' '}
                   <button
                     type="button"

@@ -120,7 +120,7 @@ function AuthCallbackContent() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-[#F7F7FB] flex flex-col items-center justify-center gap-3 text-[#667085]">
+    <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center gap-3 text-[#6B6259]">
       <div className="w-10 h-10 rounded-2xl bg-[#6D5DFB] flex items-center justify-center text-white font-bold text-lg shadow-sm animate-pulse">
         R
       </div>
@@ -133,7 +133,7 @@ export default function AuthCallbackPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#F7F7FB] flex flex-col items-center justify-center gap-3 text-[#667085]">
+        <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center gap-3 text-[#6B6259]">
           <div className="w-10 h-10 rounded-2xl bg-[#6D5DFB] flex items-center justify-center text-white font-bold text-lg shadow-sm animate-pulse">
             R
           </div>

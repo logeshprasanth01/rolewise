@@ -189,9 +189,9 @@ export default function JobDetailPage() {
   if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto space-y-3">
-        <div className="h-8 w-32 rounded-lg bg-[#E6E5DF] animate-pulse" />
-        <div className="h-36 rounded-[26px] bg-[#FAF9F4] border border-[#D9D8D2] animate-pulse" />
-        <div className="h-48 rounded-[26px] bg-[#FAF9F4] border border-[#D9D8D2] animate-pulse" />
+        <div className="h-8 w-32 rounded-lg bg-[#E6E0D7] animate-pulse" />
+        <div className="h-36 rounded-[26px] bg-[#FFFFFF] border border-[#E6E0D7] animate-pulse" />
+        <div className="h-48 rounded-[26px] bg-[#FFFFFF] border border-[#E6E0D7] animate-pulse" />
       </div>
     );
   }
@@ -199,36 +199,36 @@ export default function JobDetailPage() {
   if (notFound || !role) {
     return (
       <div className="max-w-md mx-auto text-center py-16 space-y-3">
-        <h1 className="text-lg font-bold text-[#252525]">This job isn’t in your tracker</h1>
-        <p className="text-sm text-[#73757A]">It may have been removed.</p>
-        <Link href="/jobs" className="inline-flex items-center gap-1.5 h-11 px-4 rounded-xl bg-[#252525] text-white text-sm font-semibold">
+        <h1 className="text-lg font-bold text-[#1A1714]">This job isn’t in your tracker</h1>
+        <p className="text-sm text-[#6B6259]">It may have been removed.</p>
+        <Link href="/jobs" className="inline-flex items-center gap-1.5 h-11 px-4 rounded-xl bg-[#1A1714] text-white text-sm font-semibold">
           <ArrowLeft className="w-4 h-4" /> Back to Job Tracker
         </Link>
       </div>
     );
   }
 
-  const field = 'w-full h-11 px-3 rounded-xl bg-white border border-[#D9D8D2] text-[15px] text-[#252525] outline-none focus:border-[#252525]';
-  const label = 'text-xs font-semibold text-[#4A4B4F]';
-  const card = 'rounded-[22px] bg-[#FAF9F4] border border-[#D9D8D2] p-4 sm:p-5';
+  const field = 'w-full h-11 px-3 rounded-xl bg-white border border-[#E6E0D7] text-[15px] text-[#1A1714] outline-none focus:border-[#1A1714]';
+  const label = 'text-xs font-semibold text-[#4D453C]';
+  const card = 'rounded-[22px] bg-[#FFFFFF] border border-[#E6E0D7] p-4 sm:p-5';
   const stepIndex = PIPELINE_PATH.indexOf(status);
   const closed = status === 'rejected' || status === 'withdrawn';
 
   return (
     <div className="max-w-3xl mx-auto space-y-4 pb-16 animate-in fade-in duration-300">
-      <Link href="/jobs" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#73757A] hover:text-[#252525]">
+      <Link href="/jobs" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#6B6259] hover:text-[#1A1714]">
         <ArrowLeft className="w-4 h-4" /> Job Tracker
       </Link>
 
       {/* Header */}
       <section className={card}>
         <div className="flex items-start gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-white border border-[#D9D8D2] flex items-center justify-center text-lg font-bold text-[#252525] shrink-0" aria-hidden="true">
+          <div className="w-12 h-12 rounded-2xl bg-white border border-[#E6E0D7] flex items-center justify-center text-lg font-bold text-[#1A1714] shrink-0" aria-hidden="true">
             {role.company.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-[#252525] tracking-tight leading-tight">{role.title}</h1>
-            <p className="text-sm text-[#73757A] mt-0.5">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#1A1714] tracking-tight leading-tight">{role.title}</h1>
+            <p className="text-sm text-[#6B6259] mt-0.5">
               {role.company}
               {role.location ? ` · ${role.location}` : ''}
               {role.work_model && role.work_model !== 'Full-time' ? ` · ${role.work_model}` : ''}
@@ -236,13 +236,13 @@ export default function JobDetailPage() {
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <StatusPill status={status} />
               {role.applied_at && status !== 'saved' && (
-                <span className="text-[13px] text-[#73757A]">Applied {formatDate(role.applied_at)} ({relativeDay(role.applied_at, today)})</span>
+                <span className="text-[13px] text-[#6B6259]">Applied {formatDate(role.applied_at)} ({relativeDay(role.applied_at, today)})</span>
               )}
             </div>
           </div>
         </div>
         {role.job_url && (
-          <a href={role.job_url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#252525] underline underline-offset-2">
+          <a href={role.job_url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#1A1714] underline underline-offset-2">
             View job post <ExternalLink className="w-3.5 h-3.5" />
           </a>
         )}
@@ -260,21 +260,21 @@ export default function JobDetailPage() {
                     disabled={isSaving}
                     onClick={() => setStatus(s)}
                     aria-current={current ? 'step' : undefined}
-                    className={`h-10 px-3.5 rounded-full text-[13px] font-semibold whitespace-nowrap border transition-colors w-full ${current ? 'bg-[#252525] text-white border-[#252525]' : done ? 'bg-[#FFF2B8] text-[#5C4A00] border-[#F0DE8A]' : 'bg-white text-[#73757A] border-[#D9D8D2] hover:border-[#9A9B9E]'}`}
+                    className={`h-10 px-3.5 rounded-full text-[13px] font-semibold whitespace-nowrap border transition-colors w-full ${current ? 'bg-[#1A1714] text-white border-[#1A1714]' : done ? 'bg-[#FFE58A] text-[#5C4A00] border-[#F0DE8A]' : 'bg-white text-[#6B6259] border-[#E6E0D7] hover:border-[#9A9086]'}`}
                   >
                     {STATUS_META[s].label}
                   </button>
-                  {i < PIPELINE_PATH.length - 1 && <span className={`hidden sm:block h-px w-3 ${done ? 'bg-[#E0B400]' : 'bg-[#D9D8D2]'}`} aria-hidden="true" />}
+                  {i < PIPELINE_PATH.length - 1 && <span className={`hidden sm:block h-px w-3 ${done ? 'bg-[#E0B400]' : 'bg-[#E6E0D7]'}`} aria-hidden="true" />}
                 </li>
               );
             })}
           </ol>
         </div>
         <div className="mt-2 flex gap-3 text-[13px]">
-          <button type="button" onClick={() => setStatus('rejected')} className={`font-semibold ${status === 'rejected' ? 'text-[#8F3B2E]' : 'text-[#9A9B9E] hover:text-[#8F3B2E]'}`}>
+          <button type="button" onClick={() => setStatus('rejected')} className={`font-semibold ${status === 'rejected' ? 'text-[#8F3B2E]' : 'text-[#9A9086] hover:text-[#8F3B2E]'}`}>
             {status === 'rejected' ? '● Rejected' : 'Mark rejected'}
           </button>
-          <button type="button" onClick={() => setStatus('withdrawn')} className={`font-semibold ${status === 'withdrawn' ? 'text-[#4A4B4F]' : 'text-[#9A9B9E] hover:text-[#4A4B4F]'}`}>
+          <button type="button" onClick={() => setStatus('withdrawn')} className={`font-semibold ${status === 'withdrawn' ? 'text-[#4D453C]' : 'text-[#9A9086] hover:text-[#4D453C]'}`}>
             {status === 'withdrawn' ? '● Withdrawn' : 'Withdraw'}
           </button>
         </div>
@@ -282,19 +282,19 @@ export default function JobDetailPage() {
 
       {/* Next step */}
       <section className={`${card} ${due ? 'bg-[#FFF5DF] border-[#F0D9A6]' : ''}`} aria-labelledby="next-step">
-        <h2 id="next-step" className="text-xs font-bold uppercase tracking-[0.08em] text-[#73757A]">Next step</h2>
+        <h2 id="next-step" className="text-xs font-bold uppercase tracking-[0.08em] text-[#6B6259]">Next step</h2>
         {status === 'saved' && (
           <div className="mt-2 space-y-3">
-            <p className="text-[15px] text-[#252525]">You haven’t applied yet. When you send it, mark it applied and Rolewise will remind you to follow up in 7 days.</p>
-            <button type="button" onClick={() => setStatus('applied')} className="h-11 px-4 rounded-xl bg-[#252525] text-white text-sm font-semibold inline-flex items-center gap-2">
+            <p className="text-[15px] text-[#1A1714]">You haven’t applied yet. When you send it, mark it applied and Rolewise will remind you to follow up in 7 days.</p>
+            <button type="button" onClick={() => setStatus('applied')} className="h-11 px-4 rounded-xl bg-[#1A1714] text-white text-sm font-semibold inline-flex items-center gap-2">
               <Send className="w-4 h-4" /> I’ve applied today
             </button>
           </div>
         )}
         {(status === 'applied' || status === 'screening') && (
           <div className="mt-2 space-y-3">
-            <p className="text-[15px] text-[#252525] flex items-start gap-2">
-              <BellRing className={`w-4 h-4 mt-0.5 shrink-0 ${due ? 'text-[#8A5A00]' : 'text-[#9A9B9E]'}`} />
+            <p className="text-[15px] text-[#1A1714] flex items-start gap-2">
+              <BellRing className={`w-4 h-4 mt-0.5 shrink-0 ${due ? 'text-[#8A5A00]' : 'text-[#9A9086]'}`} />
               {due
                 ? `Follow-up is due${fu && fu !== today ? ` since ${formatDate(fu)}` : ' today'}. A short, polite nudge keeps you on their radar.`
                 : fu
@@ -303,46 +303,46 @@ export default function JobDetailPage() {
             </p>
             {due && (
               <>
-                <pre className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#252525] bg-white border border-[#E6D3A8] rounded-xl p-3 font-sans select-all">{followUpEmail}</pre>
+                <pre className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#1A1714] bg-white border border-[#E6D3A8] rounded-xl p-3 font-sans select-all">{followUpEmail}</pre>
                 <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={copyFollowUp} className="h-11 px-4 rounded-xl bg-white border border-[#D9D8D2] text-sm font-semibold inline-flex items-center gap-2">
+                  <button type="button" onClick={copyFollowUp} className="h-11 px-4 rounded-xl bg-white border border-[#E6E0D7] text-sm font-semibold inline-flex items-center gap-2">
                     {copied ? <Check className="w-4 h-4 text-[#2F6B42]" /> : <Copy className="w-4 h-4" />} {copied ? 'Copied' : 'Copy follow-up'}
                   </button>
-                  <button type="button" onClick={markFollowedUp} disabled={isSaving} className="h-11 px-4 rounded-xl bg-[#252525] text-white text-sm font-semibold">
+                  <button type="button" onClick={markFollowedUp} disabled={isSaving} className="h-11 px-4 rounded-xl bg-[#1A1714] text-white text-sm font-semibold">
                     I’ve followed up
                   </button>
                 </div>
-                {role.contact_email && <p className="text-[13px] text-[#73757A]">Send to <span className="font-semibold text-[#252525] select-all">{role.contact_email}</span></p>}
+                {role.contact_email && <p className="text-[13px] text-[#6B6259]">Send to <span className="font-semibold text-[#1A1714] select-all">{role.contact_email}</span></p>}
               </>
             )}
           </div>
         )}
         {status === 'interview' && (
           <div className="mt-2 space-y-3">
-            <p className="text-[15px] text-[#252525] flex items-start gap-2">
+            <p className="text-[15px] text-[#1A1714] flex items-start gap-2">
               <CalendarClock className="w-4 h-4 mt-0.5 shrink-0 text-[#1F4E79]" />
               {role.interview_at
                 ? `Interview on ${new Date(role.interview_at).toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}. Run a practice round before it.`
                 : 'Add the interview date below, then run a practice round for this role.'}
             </p>
-            <Link href={isAnalyzed(role) ? `/roles/${role.id}/interview` : `/jobs/new?roleId=${role.id}`} className="h-11 px-4 rounded-xl bg-[#FFD84D] text-[#252525] text-sm font-bold inline-flex items-center gap-2">
+            <Link href={isAnalyzed(role) ? `/roles/${role.id}/interview` : `/jobs/new?roleId=${role.id}`} className="h-11 px-4 rounded-xl bg-[#FFD84D] text-[#1A1714] text-sm font-bold inline-flex items-center gap-2">
               <Bot className="w-4 h-4" /> {isAnalyzed(role) ? 'Practice this interview' : 'Build interview prep first'}
             </Link>
           </div>
         )}
         {status === 'offer' && (
-          <p className="mt-2 text-[15px] text-[#252525] flex items-start gap-2">
+          <p className="mt-2 text-[15px] text-[#1A1714] flex items-start gap-2">
             <PartyPopper className="w-4 h-4 mt-0.5 shrink-0 text-[#2F6B42]" /> You got an offer. Note the deadline and terms below so nothing slips.
           </p>
         )}
         {closed && (
-          <p className="mt-2 text-[15px] text-[#252525]">This one is closed. Add a note on what you learned; it helps the next application.</p>
+          <p className="mt-2 text-[15px] text-[#1A1714]">This one is closed. Add a note on what you learned; it helps the next application.</p>
         )}
       </section>
 
       {/* Prep */}
       <section className={card} aria-labelledby="prep">
-        <h2 id="prep" className="text-xs font-bold uppercase tracking-[0.08em] text-[#73757A]">Interview prep for this role</h2>
+        <h2 id="prep" className="text-xs font-bold uppercase tracking-[0.08em] text-[#6B6259]">Interview prep for this role</h2>
         {isAnalyzed(role) ? (
           <div className="mt-3 grid grid-cols-3 gap-2">
             {[
@@ -350,16 +350,16 @@ export default function JobDetailPage() {
               { href: `/roles/${role.id}/preparation`, label: 'Prep plan', icon: ListChecks },
               { href: `/roles/${role.id}/interview`, label: 'Rowi interview', icon: Bot },
             ].map(({ href, label: l, icon: Icon }) => (
-              <Link key={href} href={href} className="rounded-2xl bg-white border border-[#D9D8D2] hover:border-[#252525] p-3 flex flex-col items-center gap-1.5 text-center transition-colors">
-                <Icon className="w-5 h-5 text-[#252525]" />
-                <span className="text-[13px] font-semibold text-[#252525]">{l}</span>
+              <Link key={href} href={href} className="rounded-2xl bg-white border border-[#E6E0D7] hover:border-[#1A1714] p-3 flex flex-col items-center gap-1.5 text-center transition-colors">
+                <Icon className="w-5 h-5 text-[#1A1714]" />
+                <span className="text-[13px] font-semibold text-[#1A1714]">{l}</span>
               </Link>
             ))}
           </div>
         ) : (
           <div className="mt-2 space-y-3">
-            <p className="text-[15px] text-[#252525]">Paste the job description and your resume. Rolewise maps your experience to each requirement and builds a prep plan and mock interview.</p>
-            <Link href={`/jobs/new?roleId=${role.id}`} className="h-11 px-4 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-bold inline-flex items-center gap-2">
+            <p className="text-[15px] text-[#1A1714]">Paste the job description and your resume. Rolewise maps your experience to each requirement and builds a prep plan and mock interview.</p>
+            <Link href={`/jobs/new?roleId=${role.id}`} className="h-11 px-4 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-sm font-bold inline-flex items-center gap-2">
               <Sparkles className="w-4 h-4" /> Build my prep plan
             </Link>
           </div>
@@ -368,7 +368,7 @@ export default function JobDetailPage() {
 
       {/* Details */}
       <form onSubmit={saveDetails} className={`${card} space-y-4`} aria-labelledby="details">
-        <h2 id="details" className="text-xs font-bold uppercase tracking-[0.08em] text-[#73757A]">Details</h2>
+        <h2 id="details" className="text-xs font-bold uppercase tracking-[0.08em] text-[#6B6259]">Details</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <label htmlFor="d-applied" className={label}>Applied on</label>
@@ -406,37 +406,37 @@ export default function JobDetailPage() {
             <textarea id="d-notes" rows={3} className={`${field} h-auto py-2.5`} value={form.notes || ''} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Salary range, team, what they asked…" />
           </div>
         </div>
-        <button type="submit" disabled={isSaving} className="h-11 px-5 rounded-xl bg-[#252525] text-white text-sm font-semibold inline-flex items-center gap-2 disabled:opacity-60">
+        <button type="submit" disabled={isSaving} className="h-11 px-5 rounded-xl bg-[#1A1714] text-white text-sm font-semibold inline-flex items-center gap-2 disabled:opacity-60">
           {isSaving && <Loader2 className="w-4 h-4 animate-spin" />} Save details
         </button>
       </form>
 
       {/* Timeline */}
       <section className={card} aria-labelledby="timeline">
-        <h2 id="timeline" className="text-xs font-bold uppercase tracking-[0.08em] text-[#73757A]">Timeline</h2>
+        <h2 id="timeline" className="text-xs font-bold uppercase tracking-[0.08em] text-[#6B6259]">Timeline</h2>
         <form onSubmit={submitNote} className="mt-3 flex gap-2">
           <label htmlFor="t-note" className="sr-only">Add a note</label>
           <input id="t-note" className={field} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note, e.g. HR called, asked for portfolio" />
-          <button type="submit" disabled={!note.trim()} className="h-11 px-4 rounded-xl bg-white border border-[#D9D8D2] text-sm font-semibold disabled:opacity-50 shrink-0">Add</button>
+          <button type="submit" disabled={!note.trim()} className="h-11 px-4 rounded-xl bg-white border border-[#E6E0D7] text-sm font-semibold disabled:opacity-50 shrink-0">Add</button>
         </form>
         <ol className="mt-4 space-y-3">
           {events.map((ev) => (
             <li key={ev.id} className="flex gap-3">
-              <span className="mt-1.5 w-2 h-2 rounded-full shrink-0" style={{ background: ev.to_status ? STATUS_META[ev.to_status as ApplicationStatus]?.dot || '#9A9B9E' : '#9A9B9E' }} aria-hidden="true" />
+              <span className="mt-1.5 w-2 h-2 rounded-full shrink-0" style={{ background: ev.to_status ? STATUS_META[ev.to_status as ApplicationStatus]?.dot || '#9A9086' : '#9A9086' }} aria-hidden="true" />
               <div className="min-w-0">
-                <p className="text-[14px] text-[#252525]">
+                <p className="text-[14px] text-[#1A1714]">
                   {ev.event_type === 'created' && `Added as ${STATUS_META[(ev.to_status || 'saved') as ApplicationStatus]?.label || ev.to_status}`}
                   {ev.event_type === 'status' && `Moved to ${STATUS_META[(ev.to_status || 'saved') as ApplicationStatus]?.label || ev.to_status}`}
                   {ev.event_type !== 'created' && ev.event_type !== 'status' && (ev.note || 'Note')}
                   {(ev.event_type === 'created' || ev.event_type === 'status') && ev.note ? ` · ${ev.note}` : ''}
                 </p>
-                <p className="text-[12px] text-[#9A9B9E]">{new Date(ev.created_at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</p>
+                <p className="text-[12px] text-[#9A9086]">{new Date(ev.created_at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</p>
               </div>
             </li>
           ))}
           <li className="flex gap-3">
-            <span className="mt-1.5 w-2 h-2 rounded-full bg-[#D9D8D2] shrink-0" aria-hidden="true" />
-            <p className="text-[13px] text-[#9A9B9E]">Added to Rolewise {formatDate(role.created_at)}</p>
+            <span className="mt-1.5 w-2 h-2 rounded-full bg-[#E6E0D7] shrink-0" aria-hidden="true" />
+            <p className="text-[13px] text-[#9A9086]">Added to Rolewise {formatDate(role.created_at)}</p>
           </li>
         </ol>
       </section>
@@ -447,12 +447,12 @@ export default function JobDetailPage() {
           <div className="rounded-2xl border border-[#FECDCA] bg-[#FFF0ED] p-4 space-y-3">
             <p className="text-sm text-[#8F3B2E] font-medium">Remove {role.title} at {role.company}? Its prep plan is removed too.</p>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setConfirmRemove(false)} className="h-10 px-4 rounded-xl bg-white border border-[#D9D8D2] text-sm font-semibold">Keep it</button>
+              <button type="button" onClick={() => setConfirmRemove(false)} className="h-10 px-4 rounded-xl bg-white border border-[#E6E0D7] text-sm font-semibold">Keep it</button>
               <button type="button" onClick={handleRemove} disabled={isSaving} className="h-10 px-4 rounded-xl bg-[#C85C4D] text-white text-sm font-semibold">Remove job</button>
             </div>
           </div>
         ) : (
-          <button type="button" onClick={() => setConfirmRemove(true)} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#9A9B9E] hover:text-[#C85C4D]">
+          <button type="button" onClick={() => setConfirmRemove(true)} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#9A9086] hover:text-[#C85C4D]">
             <Trash2 className="w-3.5 h-3.5" /> Remove from tracker
           </button>
         )}

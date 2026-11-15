@@ -315,7 +315,7 @@ export default function VideoPracticePage() {
       <div>
         <Link
           href="/communication-practice"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#73757A] hover:text-[#252525] transition-colors touch-target"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#6B6259] hover:text-[#1A1714] transition-colors touch-target"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Communication Practice</span>
@@ -328,19 +328,19 @@ export default function VideoPracticePage() {
           <Video className="w-3.5 h-3.5" />
           <span>Video Practice</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-semibold text-[#252525] tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-[#1A1714] tracking-tight">
           Video Communication Practice
         </h1>
       </section>
 
       {/* Permission Denied Notice */}
       {isPermissionDenied && (
-        <div role="status" aria-live="polite" className="p-4 rounded-xl bg-[#FFFBEF] border border-[#E8E3CE] text-[#252525] text-xs sm:text-sm space-y-2 animate-in fade-in">
+        <div role="status" aria-live="polite" className="p-4 rounded-xl bg-[#FFFFFF] border border-[#E8E3CE] text-[#1A1714] text-xs sm:text-sm space-y-2 animate-in fade-in">
           <div className="flex items-start gap-2.5">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#9A7B25]" />
             <div>
               <p className="font-semibold">Camera and microphone access is required for video practice.</p>
-              <p className="text-xs mt-0.5 text-[#252525]">
+              <p className="text-xs mt-0.5 text-[#1A1714]">
                 {permissionError || 'Please allow camera and microphone permissions in your browser to record your answer.'}
               </p>
             </div>
@@ -355,7 +355,7 @@ export default function VideoPracticePage() {
             </button>
             <Link
               href="/communication-practice/voice"
-              className="touch-target px-3 py-1.5 rounded-lg bg-[#252525] text-white hover:bg-black text-xs font-medium transition-colors"
+              className="touch-target px-3 py-1.5 rounded-lg bg-[#1A1714] text-white hover:bg-black text-xs font-medium transition-colors"
             >
               Switch to Voice Practice
             </Link>
@@ -384,7 +384,7 @@ export default function VideoPracticePage() {
             <button
               type="button"
               onClick={handleReRecord}
-              className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#D9D8D2] text-[#252525] hover:bg-[#F3F2EE] text-xs font-medium transition-colors cursor-pointer"
+              className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#E6E0D7] text-[#1A1714] hover:bg-[#F6F3EE] text-xs font-medium transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Practice again</span>
@@ -402,10 +402,10 @@ export default function VideoPracticePage() {
           </span>
         </div>
 
-        <h2 className="text-base sm:text-lg font-semibold text-[#252525] leading-relaxed">
+        <h2 className="text-base sm:text-lg font-semibold text-[#1A1714] leading-relaxed">
           &ldquo;{question}&rdquo;
         </h2>
-        <p className="text-xs text-[#73757A]">
+        <p className="text-xs text-[#6B6259]">
           Look directly at the camera. Focus on structuring your answer: situation, action taken, and measurable impact.
         </p>
       </section>
@@ -438,7 +438,7 @@ export default function VideoPracticePage() {
                 type="button"
                 onClick={handleStartRecording}
                 disabled={isPermissionDenied}
-                className="touch-target inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-medium transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+                className="touch-target inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-sm font-medium transition-colors shadow-sm cursor-pointer disabled:opacity-50"
               >
                 <Video className="w-5 h-5" />
                 <span>Start recording</span>
@@ -465,8 +465,8 @@ export default function VideoPracticePage() {
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>Video recording captured ({formatTime(durationSeconds)})</span>
             </div>
-            <h3 className="text-sm font-semibold text-[#252525] pt-2">Review your video</h3>
-            <p className="text-xs text-[#73757A]">
+            <h3 className="text-sm font-semibold text-[#1A1714] pt-2">Review your video</h3>
+            <p className="text-xs text-[#6B6259]">
               Play back your response to check delivery, pacing, and clarity.
             </p>
           </div>
@@ -485,16 +485,16 @@ export default function VideoPracticePage() {
             <button
               type="button"
               onClick={handleReRecord}
-              className="touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#F3F2EE] text-[#252525] text-sm font-medium transition-colors cursor-pointer"
+              className="touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-[#E6E0D7] hover:bg-[#F6F3EE] text-[#1A1714] text-sm font-medium transition-colors cursor-pointer"
             >
-              <RotateCcw className="w-4 h-4 text-[#73757A]" />
+              <RotateCcw className="w-4 h-4 text-[#6B6259]" />
               <span>Re-record</span>
             </button>
 
             <button
               type="button"
               onClick={handleSubmitRecording}
-              className="touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-medium transition-colors shadow-sm cursor-pointer"
+              className="touch-target inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-sm font-medium transition-colors shadow-sm cursor-pointer"
             >
               <span>Submit for feedback</span>
               <ArrowRight className="w-4 h-4" />
@@ -529,7 +529,7 @@ export default function VideoPracticePage() {
               <button
                 type="button"
                 onClick={handleReRecord}
-                className="text-xs text-[#252525] font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs text-[#1A1714] font-medium hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Practice another take</span>
@@ -539,10 +539,10 @@ export default function VideoPracticePage() {
             {/* Strengths */}
             {analysis.strengths && analysis.strengths.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#73757A]">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#6B6259]">
                   What you did well
                 </h4>
-                <ul className="space-y-1.5 text-xs sm:text-sm text-[#252525]">
+                <ul className="space-y-1.5 text-xs sm:text-sm text-[#1A1714]">
                   {analysis.strengths.map((s, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#6FA77F] mt-2 flex-shrink-0" />
@@ -555,11 +555,11 @@ export default function VideoPracticePage() {
 
             {/* Improvements */}
             {analysis.improvements && analysis.improvements.length > 0 && (
-              <div className="space-y-2 pt-3 border-t border-[#D9D8D2]">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#73757A]">
+              <div className="space-y-2 pt-3 border-t border-[#E6E0D7]">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#6B6259]">
                   Ways to sharpen delivery
                 </h4>
-                <ul className="space-y-1.5 text-xs sm:text-sm text-[#252525]">
+                <ul className="space-y-1.5 text-xs sm:text-sm text-[#1A1714]">
                   {analysis.improvements.map((imp, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#C58A2B] mt-2 flex-shrink-0" />
@@ -571,28 +571,28 @@ export default function VideoPracticePage() {
             )}
 
             {/* Qualitative Pattern Grid (Observable only, no biometric/facial claims) */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-[#D9D8D2]">
-              <div className="p-3 rounded-xl bg-[#F3F2EE] border border-[#D9D8D2] text-center">
-                <p className="text-xs text-[#73757A]">Clarity</p>
-                <p className="text-xs font-semibold text-[#252525] mt-0.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-[#E6E0D7]">
+              <div className="p-3 rounded-xl bg-[#F6F3EE] border border-[#E6E0D7] text-center">
+                <p className="text-xs text-[#6B6259]">Clarity</p>
+                <p className="text-xs font-semibold text-[#1A1714] mt-0.5">
                   {analysis.communication_feedback?.clarity || 'Observable'}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-[#F3F2EE] border border-[#D9D8D2] text-center">
-                <p className="text-xs text-[#73757A]">Structure</p>
-                <p className="text-xs font-semibold text-[#252525] mt-0.5">
+              <div className="p-3 rounded-xl bg-[#F6F3EE] border border-[#E6E0D7] text-center">
+                <p className="text-xs text-[#6B6259]">Structure</p>
+                <p className="text-xs font-semibold text-[#1A1714] mt-0.5">
                   {analysis.communication_feedback?.structure || 'Observable'}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-[#F3F2EE] border border-[#D9D8D2] text-center">
-                <p className="text-xs text-[#73757A]">Specificity</p>
-                <p className="text-xs font-semibold text-[#252525] mt-0.5">
+              <div className="p-3 rounded-xl bg-[#F6F3EE] border border-[#E6E0D7] text-center">
+                <p className="text-xs text-[#6B6259]">Specificity</p>
+                <p className="text-xs font-semibold text-[#1A1714] mt-0.5">
                   {analysis.communication_feedback?.specificity || 'Observable'}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-[#F3F2EE] border border-[#D9D8D2] text-center">
-                <p className="text-xs text-[#73757A]">Conciseness</p>
-                <p className="text-xs font-semibold text-[#252525] mt-0.5">
+              <div className="p-3 rounded-xl bg-[#F6F3EE] border border-[#E6E0D7] text-center">
+                <p className="text-xs text-[#6B6259]">Conciseness</p>
+                <p className="text-xs font-semibold text-[#1A1714] mt-0.5">
                   {analysis.communication_feedback?.conciseness || 'Observable'}
                 </p>
               </div>
@@ -602,14 +602,14 @@ export default function VideoPracticePage() {
           <div className="flex items-center justify-between">
             <Link
               href="/communication-practice"
-              className="text-xs text-[#73757A] hover:text-[#252525] touch-target"
+              className="text-xs text-[#6B6259] hover:text-[#1A1714] touch-target"
             >
               ← Back to Practice Hub
             </Link>
             <button
               type="button"
               onClick={handleReRecord}
-              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-medium transition-colors shadow-sm cursor-pointer"
+              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-xs sm:text-sm font-medium transition-colors shadow-sm cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Practice again</span>

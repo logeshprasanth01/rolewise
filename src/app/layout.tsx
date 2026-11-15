@@ -38,7 +38,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#F7F7FB] text-[#1F2937]">
+      <body className="min-h-full flex flex-col bg-[#FAF8F5] text-[#1A1714]">
         <AuthProvider>
           <AppShell>{children}</AppShell>
           <MascotAssistant />

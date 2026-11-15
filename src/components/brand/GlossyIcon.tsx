@@ -5,11 +5,11 @@ export type GlossyTone = 'yellow' | 'ink' | 'green' | 'coral' | 'cream' | 'orang
 export type GlossyShape = 'hex' | 'squircle';
 
 const TONES: Record<GlossyTone, { top: string; bottom: string; rim: string; glyph: string }> = {
-  yellow: { top: '#FFEB9C', bottom: '#F6C23E', rim: '#C98E28', glyph: '#252525' },
-  ink: { top: '#5A5A5E', bottom: '#252525', rim: '#0E0E0F', glyph: '#FFD84D' },
+  yellow: { top: '#FFEB9C', bottom: '#F6C23E', rim: '#C98E28', glyph: '#1A1714' },
+  ink: { top: '#5A5A5E', bottom: '#1A1714', rim: '#0E0E0F', glyph: '#FFD84D' },
   green: { top: '#B4DCBE', bottom: '#6FA77F', rim: '#4C8059', glyph: '#FFFFFF' },
   coral: { top: '#F7BCAF', bottom: '#D97968', rim: '#A9503F', glyph: '#FFFFFF' },
-  cream: { top: '#FFFFFF', bottom: '#ECE9DE', rim: '#C8C3B3', glyph: '#252525' },
+  cream: { top: '#FFFFFF', bottom: '#ECE9DE', rim: '#C8C3B3', glyph: '#1A1714' },
   orange: { top: '#FFC48A', bottom: '#F2873A', rim: '#BF5F1C', glyph: '#FFFFFF' },
 };
 
@@ -47,7 +47,7 @@ export function GlossyIcon({
 
   return (
     <span className={`relative inline-block shrink-0 ${className}`} style={{ width: size, height: size }} aria-hidden>
-      <svg viewBox="0 0 100 106" width={size} height={size * 1.06} className="absolute inset-0 overflow-visible drop-shadow-[0_14px_16px_rgba(37,37,37,0.28)]">
+      <svg viewBox="0 0 100 106" width={size} height={size * 1.06} className="absolute inset-0 overflow-visible drop-shadow-[0_14px_16px_rgba(26,23,20,0.28)]">
         <defs>
           <linearGradient id={face} x1="0.15" y1="0" x2="0.85" y2="1">
             <stop offset="0" stopColor={t.top} />

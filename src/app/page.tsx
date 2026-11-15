@@ -99,15 +99,15 @@ export default function DashboardPage() {
   return (
     <div className="space-y-7 animate-in fade-in duration-300">
       {/* 1. HERO GREETING BANNER (Image 3) */}
-      <section className="rw-gradient-hero relative overflow-hidden rounded-[26px] border border-[#D9D8D2] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-[0_8px_28px_rgba(37,37,37,0.06)]">
+      <section className="rw-gradient-hero relative overflow-hidden rounded-[26px] border border-[#E6E0D7] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-[0_8px_28px_rgba(26,23,20,0.06)]">
         <div className="space-y-1.5 z-10">
-          <p className="text-sm font-medium text-[#73757A]">{hello},</p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight flex items-center gap-2">
+          <p className="text-sm font-medium text-[#6B6259]">{hello},</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1714] tracking-tight flex items-center gap-2">
             <span>{userName ? userName.split(' ')[0] : 'there'}</span>
           </h1>
-          <p className="hidden pt-0.5 text-sm text-[#73757A] sm:block">Prepare for the role. Not just the interview.</p>
+          <p className="hidden pt-0.5 text-sm text-[#6B6259] sm:block">Prepare for the role. Not just the interview.</p>
           <div className="pr-24 pt-1 sm:hidden">
-            <p className="text-sm text-[#5E6065]">{nudge.text}</p>
+            <p className="text-sm text-[#5E554B]">{nudge.text}</p>
             <Link data-ui-sound="click" href={nudge.href} className="mt-2 inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-[#8A6A12]">
               {nudge.cta}
               <ArrowRight className="h-3.5 w-3.5" aria-hidden />
@@ -120,9 +120,9 @@ export default function DashboardPage() {
           <Link
             data-ui-sound="click"
             href={nudge.href}
-            className="group relative mb-10 hidden max-w-[230px] rounded-2xl rounded-br-md border border-[#D9D8D2] bg-white/95 px-4 py-3 text-left shadow-[0_10px_30px_-12px_rgba(37,37,37,0.25)] backdrop-blur transition hover:border-[#252525]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] sm:block"
+            className="group relative mb-10 hidden max-w-[230px] rounded-2xl rounded-br-md border border-[#E6E0D7] bg-white/95 px-4 py-3 text-left shadow-[0_10px_30px_-12px_rgba(26,23,20,0.25)] backdrop-blur transition hover:border-[#1A1714]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714] sm:block"
           >
-            <p className="text-[13px] font-medium leading-snug text-[#252525]">{nudge.text}</p>
+            <p className="text-[13px] font-medium leading-snug text-[#1A1714]">{nudge.text}</p>
             <p className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-semibold text-[#8A6A12] group-hover:underline">
               {nudge.cta}
               <ArrowRight className="h-3 w-3" aria-hidden />
@@ -136,66 +136,66 @@ export default function DashboardPage() {
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Link data-ui-sound="click"
           href="/jobs"
-          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#C9C7BE] transition-all group"
+          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#CFC7BC] transition-all group"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#FFE58A] text-[#1A1714] flex items-center justify-center">
               <Briefcase className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-bold text-[#252525]">{activeJobCount}</p>
-              <p className="text-xs text-[#73757A]">Active applications</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#1A1714]">{activeJobCount}</p>
+              <p className="text-xs text-[#6B6259]">Active applications</p>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[#9A9086] group-hover:text-[#1A1714] transition-colors" />
         </Link>
 
         <Link data-ui-sound="click"
           href="/jobs?filter=interview"
-          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#C9C7BE] transition-all group"
+          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#CFC7BC] transition-all group"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#EEF7F0] text-[#6FA77F] flex items-center justify-center">
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-bold text-[#252525]">{interviewStage}</p>
-              <p className="text-xs text-[#73757A]">In interviews</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#1A1714]">{interviewStage}</p>
+              <p className="text-xs text-[#6B6259]">In interviews</p>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[#9A9086] group-hover:text-[#1A1714] transition-colors" />
         </Link>
 
         <Link data-ui-sound="click"
           href="/jobs?filter=due"
-          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#C9C7BE] transition-all group"
+          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#CFC7BC] transition-all group"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#FFE58A] text-[#1A1714] flex items-center justify-center">
               <Activity className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-bold text-[#252525]">{dueRoles.length}</p>
-              <p className="text-xs text-[#73757A]">Follow-ups due</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#1A1714]">{dueRoles.length}</p>
+              <p className="text-xs text-[#6B6259]">Follow-ups due</p>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[#9A9086] group-hover:text-[#1A1714] transition-colors" />
         </Link>
 
         <Link data-ui-sound="click"
           href="/feedback"
-          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#C9C7BE] transition-all group"
+          className="rolewise-card p-4 sm:p-5 flex items-center justify-between hover:border-[#CFC7BC] transition-all group"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#FFF5DF] text-[#D49A35] flex items-center justify-center">
               <Star className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-bold text-[#252525]">{mockInterviews}</p>
-              <p className="text-xs text-[#73757A]">Mock interviews</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#1A1714]">{mockInterviews}</p>
+              <p className="text-xs text-[#6B6259]">Mock interviews</p>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[#9A9086] group-hover:text-[#1A1714] transition-colors" />
         </Link>
       </section>
 
@@ -208,17 +208,17 @@ export default function DashboardPage() {
             <div className="rolewise-card p-5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-base font-semibold text-[#252525]">Today</h2>
-                  <p className="text-[13px] text-[#73757A]">Follow-ups and interviews that need you</p>
+                  <h2 className="text-base font-semibold text-[#1A1714]">Today</h2>
+                  <p className="text-[13px] text-[#6B6259]">Follow-ups and interviews that need you</p>
                 </div>
-                <Link data-ui-sound="click" href="/jobs?add=1" className="touch-target inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-[#252525] text-white text-[13px] font-semibold">
+                <Link data-ui-sound="click" href="/jobs?add=1" className="touch-target inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-[#1A1714] text-white text-[13px] font-semibold">
                   <Plus className="w-4 h-4" /> Log an application
                 </Link>
               </div>
               {todayItems.length === 0 ? (
-                <p className="text-sm text-[#73757A] rounded-xl bg-[#F3F2EE] p-4">Nothing due today. Use the time to prep for your strongest lead.</p>
+                <p className="text-sm text-[#6B6259] rounded-xl bg-[#F6F3EE] p-4">Nothing due today. Use the time to prep for your strongest lead.</p>
               ) : (
-                <ul className="divide-y divide-[#E6E5DF]">
+                <ul className="divide-y divide-[#E6E0D7]">
                   {todayItems.map(({ role, kind }) => (
                     <li key={`${kind}-${role.id}`}>
                       <Link href={`/jobs/${role.id}`} className="flex items-center gap-3 py-3">
@@ -226,37 +226,37 @@ export default function DashboardPage() {
                           {kind === 'interview' ? <Mic className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-semibold text-[#252525] truncate">
+                          <span className="block text-sm font-semibold text-[#1A1714] truncate">
                             {kind === 'interview' ? `Interview · ${role.company}` : `Follow up with ${role.company}`}
                           </span>
-                          <span className="block text-[12px] text-[#73757A] truncate">
+                          <span className="block text-[12px] text-[#6B6259] truncate">
                             {kind === 'interview'
                               ? new Date(role.interview_at as string).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })
                               : `${role.title} · applied ${relativeDay(role.applied_at, today)}${followUpDate(role) ? ` · due ${formatDate(followUpDate(role))}` : ''}`}
                           </span>
                         </span>
-                        <ChevronRight className="w-4 h-4 text-[#9A9B9E] shrink-0" />
+                        <ChevronRight className="w-4 h-4 text-[#9A9086] shrink-0" />
                       </Link>
                     </li>
                   ))}
                 </ul>
               )}
               {dueRoles.length > todayItems.filter((t) => t.kind === 'follow').length && (
-                <Link href="/jobs?filter=due" className="text-[13px] font-semibold text-[#252525] underline underline-offset-2">See all {dueRoles.length} follow-ups</Link>
+                <Link href="/jobs?filter=due" className="text-[13px] font-semibold text-[#1A1714] underline underline-offset-2">See all {dueRoles.length} follow-ups</Link>
               )}
 
               {prepRoles.length > 0 && (
                 <div className="pt-2 space-y-2">
-                  <h3 className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#73757A]">Prep in progress</h3>
+                  <h3 className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#6B6259]">Prep in progress</h3>
                   {prepRoles.map((role) => (
-                    <div key={role.id} className="p-3.5 rounded-xl border border-[#D9D8D2] bg-[#F3F2EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div key={role.id} className="p-3.5 rounded-xl border border-[#E6E0D7] bg-[#F6F3EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <Link href={`/jobs/${role.id}`} className="min-w-0 space-y-1">
-                        <p className="text-sm font-semibold text-[#252525] truncate">{role.title}</p>
-                        <p className="text-[12px] text-[#73757A] truncate flex items-center gap-2">{role.company} <StatusPill status={statusOf(role)} size="sm" /></p>
+                        <p className="text-sm font-semibold text-[#1A1714] truncate">{role.title}</p>
+                        <p className="text-[12px] text-[#6B6259] truncate flex items-center gap-2">{role.company} <StatusPill status={statusOf(role)} size="sm" /></p>
                       </Link>
                       <div className="flex gap-2">
-                        <Link data-ui-sound="click" href={`/roles/${role.id}/preparation`} className="touch-target flex-1 sm:flex-none text-center px-3.5 py-2 rounded-lg bg-white border border-[#D9D8D2] text-[13px] font-semibold text-[#252525]">Prep plan</Link>
-                        <Link data-ui-sound="click" href={`/roles/${role.id}/interview`} className="touch-target flex-1 sm:flex-none text-center px-3.5 py-2 rounded-lg bg-[#FFD84D] text-[#252525] text-[13px] font-semibold">Practise with Rowi</Link>
+                        <Link data-ui-sound="click" href={`/roles/${role.id}/preparation`} className="touch-target flex-1 sm:flex-none text-center px-3.5 py-2 rounded-lg bg-white border border-[#E6E0D7] text-[13px] font-semibold text-[#1A1714]">Prep plan</Link>
+                        <Link data-ui-sound="click" href={`/roles/${role.id}/interview`} className="touch-target flex-1 sm:flex-none text-center px-3.5 py-2 rounded-lg bg-[#FFD84D] text-[#1A1714] text-[13px] font-semibold">Practise with Rowi</Link>
                       </div>
                     </div>
                   ))}
@@ -266,22 +266,22 @@ export default function DashboardPage() {
           ) : (
             <div className="rolewise-card p-6 space-y-4">
               <div>
-                <h2 className="text-base font-semibold text-[#252525]">Get Started</h2>
-                <p className="text-xs text-[#73757A]">
+                <h2 className="text-base font-semibold text-[#1A1714]">Get Started</h2>
+                <p className="text-xs text-[#6B6259]">
                   Add a job and Rowi will build a preparation plan for that role.
                 </p>
               </div>
 
               {/* Single primary action: the plus icon and label share one clickable button */}
-              <div className="border-2 border-dashed border-[#D9D8D2] rounded-2xl p-6 sm:p-8 text-center space-y-4 bg-[#FAF9F4]/50">
-                <p className="text-xs sm:text-sm text-[#73757A] max-w-sm mx-auto">
+              <div className="border-2 border-dashed border-[#E6E0D7] rounded-2xl p-6 sm:p-8 text-center space-y-4 bg-[#FFFFFF]/50">
+                <p className="text-xs sm:text-sm text-[#6B6259] max-w-sm mx-auto">
                   Paste a job description or upload role details to build your requirement fit.
                 </p>
                 <Link
                   data-ui-sound="click"
                   href="/jobs/new"
                   aria-label="Add a job"
-                  className="touch-target inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-semibold transition-all shadow-[0_3px_0_rgba(37,37,37,0.12)] hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
+                  className="touch-target inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-sm font-semibold transition-all shadow-[0_3px_0_rgba(26,23,20,0.12)] hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714] focus-visible:ring-offset-2"
                 >
                   <Plus className="w-5 h-5" strokeWidth={2.5} />
                   <span>Add a job</span>
@@ -297,17 +297,17 @@ export default function DashboardPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-[#73757A]" />
-                    <h2 className="text-sm sm:text-base font-semibold text-[#252525]">Preparation progress</h2>
+                    <Activity className="w-4 h-4 text-[#6B6259]" />
+                    <h2 className="text-sm sm:text-base font-semibold text-[#1A1714]">Preparation progress</h2>
                   </div>
-                  <p className="text-xs text-[#73757A] mt-1">
+                  <p className="text-xs text-[#6B6259] mt-1">
                     Your current preparation items across active roles.
                   </p>
                 </div>
                 <Link
                   data-ui-sound="click"
                   href="/preparation"
-                  className="text-[11px] font-semibold text-[#73757A] hover:text-[#252525] transition-colors shrink-0"
+                  className="text-[11px] font-semibold text-[#6B6259] hover:text-[#1A1714] transition-colors shrink-0"
                 >
                   View preparation →
                 </Link>
@@ -317,8 +317,8 @@ export default function DashboardPage() {
                 <div className="space-y-3">
                   {[
                     { label: 'Completed', value: preparationStats.completed, track: 'bg-[#E7F2EA]', fill: 'bg-[#6FA77F]' },
-                    { label: 'In progress', value: preparationStats.inProgress, track: 'bg-[#FFF2B8]', fill: 'bg-[#D49A35]' },
-                    { label: 'Not started', value: preparationStats.notStarted, track: 'bg-[#ECEDEF]', fill: 'bg-[#9A9B9E]' },
+                    { label: 'In progress', value: preparationStats.inProgress, track: 'bg-[#FFE58A]', fill: 'bg-[#D49A35]' },
+                    { label: 'Not started', value: preparationStats.notStarted, track: 'bg-[#ECEDEF]', fill: 'bg-[#9A9086]' },
                   ].map((item) => {
                     const total =
                       preparationStats.completed +
@@ -329,8 +329,8 @@ export default function DashboardPage() {
                     return (
                       <div key={item.label} className="space-y-1.5">
                         <div className="flex items-center justify-between text-[11px]">
-                          <span className="font-medium text-[#73757A]">{item.label}</span>
-                          <span className="font-semibold text-[#252525]">{item.value}</span>
+                          <span className="font-medium text-[#6B6259]">{item.label}</span>
+                          <span className="font-semibold text-[#1A1714]">{item.value}</span>
                         </div>
                         <div className={`h-2.5 rounded-full ${item.track}`} aria-hidden="true">
                           <div
@@ -343,11 +343,11 @@ export default function DashboardPage() {
                   })}
                 </div>
 
-                <div className="w-full sm:w-[132px] h-[132px] rounded-[22px] bg-[#FFFBEF] border border-[#E8E3CE] flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-[#252525]">
+                <div className="w-full sm:w-[132px] h-[132px] rounded-[22px] bg-[#FFFFFF] border border-[#E8E3CE] flex flex-col items-center justify-center">
+                  <span className="text-2xl font-bold text-[#1A1714]">
                     {preparationStats.completed + preparationStats.inProgress + preparationStats.notStarted}
                   </span>
-                  <span className="text-[10px] font-medium text-[#73757A] text-center leading-tight px-3">
+                  <span className="text-[10px] font-medium text-[#6B6259] text-center leading-tight px-3">
                     preparation items
                   </span>
                 </div>
@@ -358,24 +358,24 @@ export default function DashboardPage() {
           {/* Supporting Communication Practice (PRD: Voice & Video) */}
           <div className="rolewise-card p-6 space-y-4">
             <div>
-              <h2 className="text-base font-semibold text-[#252525]">General drills</h2>
-              <p className="text-xs text-[#73757A]">Build confidence practising with Rowi.</p>
+              <h2 className="text-base font-semibold text-[#1A1714]">General drills</h2>
+              <p className="text-xs text-[#6B6259]">Build confidence practising with Rowi.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <Link data-ui-sound="click"
                 href="/communication-practice/voice"
-                className="p-4 rounded-xl border border-[#D9D8D2] hover:border-[#C8B33E] bg-white transition-all group flex items-start gap-3.5"
+                className="p-4 rounded-xl border border-[#E6E0D7] hover:border-[#C8B33E] bg-white transition-all group flex items-start gap-3.5"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[#FFE58A] text-[#1A1714] flex items-center justify-center shrink-0">
                   <Mic className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-xs sm:text-sm font-semibold text-[#252525] group-hover:text-[#252525] transition-colors flex items-center gap-1">
+                  <h3 className="text-xs sm:text-sm font-semibold text-[#1A1714] group-hover:text-[#1A1714] transition-colors flex items-center gap-1">
                     <span>Voice Practice</span>
                     <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </h3>
-                  <p className="text-xs text-[#73757A] leading-relaxed">
+                  <p className="text-xs text-[#6B6259] leading-relaxed">
                     Record answers and receive observable clarity & conciseness feedback.
                   </p>
                 </div>
@@ -383,17 +383,17 @@ export default function DashboardPage() {
 
               <Link data-ui-sound="click"
                 href="/communication-practice/video"
-                className="p-4 rounded-xl border border-[#D9D8D2] hover:border-[#C8B33E] bg-white transition-all group flex items-start gap-3.5"
+                className="p-4 rounded-xl border border-[#E6E0D7] hover:border-[#C8B33E] bg-white transition-all group flex items-start gap-3.5"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[#FFE58A] text-[#1A1714] flex items-center justify-center shrink-0">
                   <Video className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-xs sm:text-sm font-semibold text-[#252525] group-hover:text-[#252525] transition-colors flex items-center gap-1">
+                  <h3 className="text-xs sm:text-sm font-semibold text-[#1A1714] group-hover:text-[#1A1714] transition-colors flex items-center gap-1">
                     <span>Video Practice</span>
                     <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </h3>
-                  <p className="text-xs text-[#73757A] leading-relaxed">
+                  <p className="text-xs text-[#6B6259] leading-relaxed">
                     Practice with camera & microphone recording with structured content review.
                   </p>
                 </div>
@@ -417,17 +417,17 @@ export default function DashboardPage() {
             <div className="space-y-2 text-xs">
               <Link data-ui-sound="click"
                 href="/communication-practice"
-                className="p-2.5 rounded-lg border border-[#D9D8D2] hover:border-[#C8B33E] bg-[#FAF9F4] flex items-center justify-between text-[#252525] transition-all"
+                className="p-2.5 rounded-lg border border-[#E6E0D7] hover:border-[#C8B33E] bg-[#FFFFFF] flex items-center justify-between text-[#1A1714] transition-all"
               >
                 <span>Practice communication regularly</span>
-                <ChevronRight className="w-3.5 h-3.5 text-[#9A9B9E]" />
+                <ChevronRight className="w-3.5 h-3.5 text-[#9A9086]" />
               </Link>
               <Link data-ui-sound="click"
                 href="/feedback"
-                className="p-2.5 rounded-lg border border-[#D9D8D2] hover:border-[#C8B33E] bg-[#FAF9F4] flex items-center justify-between text-[#252525] transition-all"
+                className="p-2.5 rounded-lg border border-[#E6E0D7] hover:border-[#C8B33E] bg-[#FFFFFF] flex items-center justify-between text-[#1A1714] transition-all"
               >
                 <span>Review feedback and improve</span>
-                <ChevronRight className="w-3.5 h-3.5 text-[#9A9B9E]" />
+                <ChevronRight className="w-3.5 h-3.5 text-[#9A9086]" />
               </Link>
             </div>
           </div>
@@ -442,16 +442,16 @@ export default function DashboardPage() {
         {roles.length > 0 && (() => {
           const r = roles[0];
           const steps = [
-            { href: `/roles/${r.id}/fit`, title: 'Review your role fit', note: 'See which requirements you meet', icon: Compass, tint: 'bg-[#FFF2B8] text-[#252525]' },
+            { href: `/roles/${r.id}/fit`, title: 'Review your role fit', note: 'See which requirements you meet', icon: Compass, tint: 'bg-[#FFE58A] text-[#1A1714]' },
             { href: `/roles/${r.id}/preparation`, title: 'Work through your prep plan', note: 'Built from your gaps', icon: Layers, tint: 'bg-[#FFF5DF] text-[#D49A35]' },
             { href: `/roles/${r.id}/interview`, title: 'Mock interview with Rowi', note: 'Questions written for this role', icon: MessageSquare, tint: 'bg-[#EAF6F0] text-[#6FA77F]' },
-            { href: '/communication-practice', title: 'General drills', note: 'Voice and video practice', icon: FileText, tint: 'bg-[#F3F2EE] text-[#252525]' },
+            { href: '/communication-practice', title: 'General drills', note: 'Voice and video practice', icon: FileText, tint: 'bg-[#F6F3EE] text-[#1A1714]' },
           ];
           return (
             <section className="lg:col-span-2 space-y-3">
               <div className="space-y-0.5">
-                <h2 className="text-sm sm:text-base font-semibold text-[#252525]">Next steps for {r.title}</h2>
-                <p className="text-xs text-[#73757A]">Pick up where you left off on your most recent job.</p>
+                <h2 className="text-sm sm:text-base font-semibold text-[#1A1714]">Next steps for {r.title}</h2>
+                <p className="text-xs text-[#6B6259]">Pick up where you left off on your most recent job.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {steps.map((st) => (
@@ -461,11 +461,11 @@ export default function DashboardPage() {
                         <st.icon className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-semibold text-[#252525]">{st.title}</p>
-                        <p className="text-[11px] text-[#73757A]">{st.note}</p>
+                        <p className="text-xs font-semibold text-[#1A1714]">{st.title}</p>
+                        <p className="text-[11px] text-[#6B6259]">{st.note}</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-[#9A9086] group-hover:text-[#1A1714] transition-colors shrink-0" />
                   </Link>
                 ))}
               </div>
@@ -477,20 +477,20 @@ export default function DashboardPage() {
         <section className={roles.length > 0 ? 'lg:col-span-1' : 'lg:col-span-3'}>
           <div className="rolewise-card p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#252525] flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-[#73757A]" />
+              <span className="text-xs font-semibold text-[#1A1714] flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-[#6B6259]" />
                 <span>Recent Activity</span>
               </span>
-              <span className="text-[11px] text-[#9A9B9E]">View all</span>
+              <span className="text-[11px] text-[#9A9086]">View all</span>
             </div>
 
-            <div className="py-6 text-center space-y-2 border border-dashed border-[#D9D8D2] rounded-xl bg-[#FAF9F4]/50">
-              <div className="w-8 h-8 rounded-full bg-[#F2F4F7] text-[#9A9B9E] flex items-center justify-center mx-auto">
+            <div className="py-6 text-center space-y-2 border border-dashed border-[#E6E0D7] rounded-xl bg-[#FFFFFF]/50">
+              <div className="w-8 h-8 rounded-full bg-[#F2F4F7] text-[#9A9086] flex items-center justify-center mx-auto">
                 <FileText className="w-4 h-4" />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-semibold text-[#252525]">No activity yet</p>
-                <p className="text-[11px] text-[#73757A] max-w-[200px] mx-auto">
+                <p className="text-xs font-semibold text-[#1A1714]">No activity yet</p>
+                <p className="text-[11px] text-[#6B6259] max-w-[200px] mx-auto">
                   Your practice sessions, interviews and feedback will appear here.
                 </p>
               </div>

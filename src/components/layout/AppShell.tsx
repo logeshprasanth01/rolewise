@@ -117,14 +117,14 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F3F2EE] text-[#252525] font-sans">
-      <div className="min-h-screen w-full bg-[#F3F2EE] flex min-w-0">
+    <div className="min-h-screen bg-[#F6F3EE] text-[#1A1714] font-sans">
+      <div className="min-h-screen w-full bg-[#F6F3EE] flex min-w-0">
 
         <aside
-          className={`hidden lg:flex shrink-0 bg-[#FAF9F4] border-r border-[#D9D8D2] flex-col z-40 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-[68px]' : 'w-[280px]'}`}
+          className={`hidden lg:flex shrink-0 bg-[#FFFFFF] border-r border-[#E6E0D7] flex-col z-40 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-[68px]' : 'w-[280px]'}`}
           aria-label="Sidebar navigation"
         >
-          <div className={`relative h-[60px] shrink-0 border-b border-[#D9D8D2]/70 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+          <div className={`relative h-[60px] shrink-0 border-b border-[#E6E0D7]/70 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
             {isSidebarCollapsed ? (
               <button
                 type="button"
@@ -153,7 +153,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   aria-label="Close sidebar"
                   title="Close sidebar"
                   data-ui-sound="click"
-                  className="mr-4 flex items-center justify-center shrink-0 w-7 h-7 text-[#73757A] hover:text-[#252525] transition-colors duration-200"
+                  className="mr-4 flex items-center justify-center shrink-0 w-7 h-7 text-[#6B6259] hover:text-[#1A1714] transition-colors duration-200"
                 >
                   <PanelLeftClose className="w-[18px] h-[18px]" />
                 </button>
@@ -171,9 +171,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   href={item.href}
                   title={isSidebarCollapsed ? item.label : undefined}
                   data-ui-sound="click"
-                  className={`group flex items-center min-h-11 text-xs font-semibold transition-all duration-300 ease-out ${isSidebarCollapsed ? 'w-full h-10 min-h-10 p-0 justify-center' : 'w-full h-12 min-h-12 gap-3 rounded-[14px] px-3.5'} ${!isSidebarCollapsed && (active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]')}`}
+                  className={`group flex items-center min-h-11 text-xs font-semibold transition-all duration-300 ease-out ${isSidebarCollapsed ? 'w-full h-10 min-h-10 p-0 justify-center' : 'w-full h-12 min-h-12 gap-3 rounded-[14px] px-3.5'} ${!isSidebarCollapsed && (active ? 'bg-[#1A1714] text-[#FFFFFF] border border-[#1A1714] shadow-[0_4px_12px_rgba(26,23,20,0.12)]' : 'text-[#6B6259] hover:bg-[#F6F3EE] hover:text-[#1A1714]')}`}
                 >
-                  <span className={`flex items-center justify-center shrink-0 transition-all duration-200 ${isSidebarCollapsed ? `w-10 h-10 rounded-xl ${active ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525] shadow-[0_4px_12px_rgba(37,37,37,0.12)]' : 'text-[#73757A]'}` : ''}`}>
+                  <span className={`flex items-center justify-center shrink-0 transition-all duration-200 ${isSidebarCollapsed ? `w-10 h-10 rounded-xl ${active ? 'bg-[#1A1714] text-[#FFFFFF] border border-[#1A1714] shadow-[0_4px_12px_rgba(26,23,20,0.12)]' : 'text-[#6B6259]'}` : ''}`}>
                     <Icon className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105" />
                   </span>
                   <span
@@ -186,12 +186,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             })}
           </nav>
 
-          <div className={`p-2 lg:p-3 space-y-2 border-t border-[#D9D8D2] shrink-0 ${isSidebarCollapsed ? 'px-0' : ''}`}>
+          <div className={`p-2 lg:p-3 space-y-2 border-t border-[#E6E0D7] shrink-0 ${isSidebarCollapsed ? 'px-0' : ''}`}>
             <Link
               href="/settings"
               title={isSidebarCollapsed ? 'Settings' : undefined}
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] text-xs font-semibold transition-all duration-300 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 gap-0 justify-center rounded-xl' : 'w-full px-3 lg:px-3.5'} ${isNavActive('/settings') ? 'bg-[#252525] text-[#FFFFFF] border border-[#252525]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
+              className={`flex items-center gap-3 min-h-11 rounded-[14px] text-xs font-semibold transition-all duration-300 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 gap-0 justify-center rounded-xl' : 'w-full px-3 lg:px-3.5'} ${isNavActive('/settings') ? 'bg-[#1A1714] text-[#FFFFFF] border border-[#1A1714]' : 'text-[#6B6259] hover:bg-[#F6F3EE] hover:text-[#1A1714]'}`}
             >
               <Settings className="w-4 h-4 shrink-0" />
               <span className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}>Settings</span>
@@ -206,17 +206,17 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               aria-label="My profile"
               aria-current={isNavActive('/profile') ? 'page' : undefined}
               className={`flex items-center gap-3 min-h-12 rounded-[15px] border transition-all duration-300 ${
-                isNavActive('/profile') ? 'bg-[#FFFFFF] border-[#252525]' : 'bg-[#F3F2EE] border-[#D9D8D2] hover:border-[#C9C7BE] hover:bg-[#EFEEE9]'
+                isNavActive('/profile') ? 'bg-[#FFFFFF] border-[#1A1714]' : 'bg-[#F6F3EE] border-[#E6E0D7] hover:border-[#CFC7BC] hover:bg-[#EFEEE9]'
               } ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 justify-center rounded-full' : 'w-full px-2.5 lg:px-3'}`}
             >
-              <div className="w-8 h-8 rounded-full bg-[#252525] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[#1A1714] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
                 {userName ? userName[0].toUpperCase() : 'U'}
               </div>
               <div className={`min-w-0 text-left flex-1 overflow-hidden ${isSidebarCollapsed ? 'hidden' : ''}`}>
-                <p className="text-xs font-bold text-[#252525] truncate">{userName || 'Candidate'}</p>
-                <p className="text-[10px] text-[#73757A] truncate">{session.user?.email || 'Profile'}</p>
+                <p className="text-xs font-bold text-[#1A1714] truncate">{userName || 'Candidate'}</p>
+                <p className="text-[10px] text-[#6B6259] truncate">{session.user?.email || 'Profile'}</p>
               </div>
-              <ChevronRight className={`w-3.5 h-3.5 text-[#73757A] shrink-0 ${isSidebarCollapsed ? 'hidden' : ''}`} aria-hidden="true" />
+              <ChevronRight className={`w-3.5 h-3.5 text-[#6B6259] shrink-0 ${isSidebarCollapsed ? 'hidden' : ''}`} aria-hidden="true" />
             </Link>
 
             <button
@@ -224,7 +224,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               data-ui-sound="click"
               onClick={() => signOut()}
               title="Sign out"
-              className={`flex items-center gap-3 min-h-10 rounded-[13px] text-xs font-semibold text-[#73757A] hover:bg-[#FFF0ED] hover:text-[#D97968] transition-all duration-200 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 justify-center rounded-xl' : 'w-full px-3.5'}`}
+              className={`flex items-center gap-3 min-h-10 rounded-[13px] text-xs font-semibold text-[#6B6259] hover:bg-[#FFF0ED] hover:text-[#D97968] transition-all duration-200 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 justify-center rounded-xl' : 'w-full px-3.5'}`}
             >
               <LogOut className="w-4 h-4 shrink-0" />
               <span className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}>Sign out</span>
@@ -237,17 +237,17 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             type="button"
             aria-label="Close navigation"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="absolute inset-0 bg-[#252525]/25 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-[#1A1714]/25 backdrop-blur-[2px]"
           />
           <aside
-            className={`absolute left-0 top-0 bottom-0 w-[min(86vw,320px)] bg-[#FAF9F4] border-r border-[#D9D8D2] shadow-[12px_0_35px_rgba(37,37,37,0.14)] flex flex-col transition-transform duration-200 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+            className={`absolute left-0 top-0 bottom-0 w-[min(86vw,320px)] bg-[#FFFFFF] border-r border-[#E6E0D7] shadow-[12px_0_35px_rgba(26,23,20,0.14)] flex flex-col transition-transform duration-200 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
             aria-label="Responsive navigation"
           >
-            <div className="p-4 border-b border-[#D9D8D2] flex items-center justify-between">
+            <div className="p-4 border-b border-[#E6E0D7] flex items-center justify-between">
               <Link href="/" data-ui-sound="click" title="ROLEWISE" className="flex items-center min-w-0 w-[180px] h-10">
                 <RolewiseLogo className="block w-[180px] h-10 object-contain" />
               </Link>
-              <button type="button" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close navigation" className="w-10 h-10 rounded-full border border-[#D9D8D2] flex items-center justify-center text-[#73757A] hover:text-[#252525]">
+              <button type="button" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close navigation" className="w-10 h-10 rounded-full border border-[#E6E0D7] flex items-center justify-center text-[#6B6259] hover:text-[#1A1714]">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -261,7 +261,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                     key={item.label}
                     href={item.href}
                     data-ui-sound="click"
-                    className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3.5 text-sm font-semibold transition-all ${active ? 'bg-[#252525] text-[#FFFFFF]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
+                    className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3.5 text-sm font-semibold transition-all ${active ? 'bg-[#1A1714] text-[#FFFFFF]' : 'text-[#6B6259] hover:bg-[#F6F3EE] hover:text-[#1A1714]'}`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
                     <span>{item.label}</span>
@@ -271,25 +271,25 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               <Link
                 href="/settings"
                 data-ui-sound="click"
-                className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3.5 text-sm font-semibold transition-all ${isNavActive('/settings') ? 'bg-[#252525] text-[#FFFFFF]' : 'text-[#73757A] hover:bg-[#F3F2EE] hover:text-[#252525]'}`}
+                className={`flex items-center gap-3 min-h-11 rounded-[14px] px-3.5 text-sm font-semibold transition-all ${isNavActive('/settings') ? 'bg-[#1A1714] text-[#FFFFFF]' : 'text-[#6B6259] hover:bg-[#F6F3EE] hover:text-[#1A1714]'}`}
               >
                 <Settings className="w-4 h-4 shrink-0" />
                 <span>Settings</span>
               </Link>
             </nav>
 
-            <div className="p-3 border-t border-[#D9D8D2]">
-              <Link href="/profile" data-ui-sound="click" className="flex items-center gap-3 px-2 py-2 mb-2 rounded-[14px] hover:bg-[#F3F2EE]">
-                <div className="w-9 h-9 rounded-full bg-[#252525] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
+            <div className="p-3 border-t border-[#E6E0D7]">
+              <Link href="/profile" data-ui-sound="click" className="flex items-center gap-3 px-2 py-2 mb-2 rounded-[14px] hover:bg-[#F6F3EE]">
+                <div className="w-9 h-9 rounded-full bg-[#1A1714] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
                   {userName ? userName[0].toUpperCase() : 'U'}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-[#252525] truncate">{userName || 'Candidate'}</p>
-                  <p className="text-[10px] text-[#73757A] truncate">{session.user?.email || 'Profile'}</p>
+                  <p className="text-xs font-bold text-[#1A1714] truncate">{userName || 'Candidate'}</p>
+                  <p className="text-[10px] text-[#6B6259] truncate">{session.user?.email || 'Profile'}</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-[#73757A] shrink-0" aria-hidden="true" />
+                <ChevronRight className="w-4 h-4 text-[#6B6259] shrink-0" aria-hidden="true" />
               </Link>
-              <button type="button" data-ui-sound="click" onClick={() => signOut()} className="w-full flex items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-sm font-semibold text-[#73757A] hover:bg-[#FFF0ED] hover:text-[#D97968]">
+              <button type="button" data-ui-sound="click" onClick={() => signOut()} className="w-full flex items-center gap-3 min-h-10 rounded-[13px] px-3.5 text-sm font-semibold text-[#6B6259] hover:bg-[#FFF0ED] hover:text-[#D97968]">
                 <LogOut className="w-4 h-4 shrink-0" />
                 <span>Sign out</span>
               </button>
@@ -298,7 +298,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         </div>
 
         <div className="flex-1 min-w-0 flex flex-col min-h-screen">
-          <header className="sticky top-0 z-30 bg-[#F3F2EE]/95 backdrop-blur-xl border-b border-[#D9D8D2]/75">
+          <header className="sticky top-0 z-30 bg-[#F6F3EE]/95 backdrop-blur-xl border-b border-[#E6E0D7]/75">
             <div className="px-4 sm:px-6 lg:px-7 py-3 flex items-center gap-3">
               <button
                 type="button"
@@ -306,12 +306,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 aria-label="Open navigation"
                 title="Open navigation"
                 data-ui-sound="click"
-                className="lg:hidden inline-flex w-10 h-10 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] items-center justify-center text-[#73757A] hover:text-[#252525] transition-all duration-200 shrink-0"
+                className="lg:hidden inline-flex w-10 h-10 rounded-full border border-[#E6E0D7] bg-[#FFFFFF] items-center justify-center text-[#6B6259] hover:text-[#1A1714] transition-all duration-200 shrink-0"
               >
                 <Menu className="w-4 h-4" />
               </button>
 
-              <div className={`${pathname === '/jobs' ? 'hidden' : 'flex'} items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FAF9F4] border border-[#D9D8D2] text-[#73757A] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all`}>
+              <div className={`${pathname === '/jobs' ? 'hidden' : 'flex'} items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FFFFFF] border border-[#E6E0D7] text-[#6B6259] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all`}>
                 <Search className="w-3.5 h-3.5 shrink-0" />
                 <form
                   role="search"
@@ -330,14 +330,14 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                     value={headerQuery}
                     onChange={(e) => setHeaderQuery(e.target.value)}
                     placeholder="Search jobs"
-                    className="bg-transparent border-none outline-none w-full text-sm text-[#252525] placeholder:text-[#9A9B9E]"
+                    className="bg-transparent border-none outline-none w-full text-sm text-[#1A1714] placeholder:text-[#9A9086]"
                   />
                 </form>
               </div>
 
               <div className="ml-auto flex items-center gap-2">
                 {pathname !== '/' && pathname !== '/dashboard' && !pathname?.startsWith('/jobs') && (
-                  <Link href="/jobs/new" data-ui-sound="click" aria-label="Add a job" className="touch-target inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0">
+                  <Link href="/jobs/new" data-ui-sound="click" aria-label="Add a job" className="touch-target inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0">
                     <Plus className="w-4 h-4" /><span className="hidden sm:inline">Add a job</span>
                   </Link>
                 )}
@@ -346,11 +346,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   onClick={() => openRowi()}
                   aria-label="Chat with Rowi"
                   title="Chat with Rowi"
-                  className="lg:hidden w-10 h-10 rounded-full border border-[#D9D8D2] bg-white flex items-center justify-center overflow-hidden hover:bg-[#FFFBEF] transition-colors"
+                  className="lg:hidden w-10 h-10 rounded-full border border-[#E6E0D7] bg-white flex items-center justify-center overflow-hidden hover:bg-[#FFFFFF] transition-colors"
                 >
                   <Mascot size={30} track={false} animated={false} sound={false} interactive={false} />
                 </button>
-                <Link href="/jobs?filter=due" title="Follow-ups due" aria-label="Follow-ups due" data-ui-sound="click" className="w-10 h-10 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 hover:-translate-y-0.5 relative">
+                <Link href="/jobs?filter=due" title="Follow-ups due" aria-label="Follow-ups due" data-ui-sound="click" className="w-10 h-10 rounded-full border border-[#E6E0D7] bg-[#FFFFFF] flex items-center justify-center text-[#6B6259] hover:text-[#1A1714] hover:bg-[#FFFFFF] transition-all duration-200 hover:-translate-y-0.5 relative">
                   <Bell className="w-4 h-4" />
                 </Link>
               </div>
@@ -362,7 +362,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           </main>
         </div>
 
-        <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-[#FAF9F4]/95 backdrop-blur border-t border-[#D9D8D2] z-40 px-1 pt-1 pb-[max(4px,env(safe-area-inset-bottom))] flex items-center justify-around shadow-[0_-4px_18px_rgba(37,37,37,0.06)]" aria-label="Mobile bottom navigation">
+        <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-[#FFFFFF]/95 backdrop-blur border-t border-[#E6E0D7] z-40 px-1 pt-1 pb-[max(4px,env(safe-area-inset-bottom))] flex items-center justify-around shadow-[0_-4px_18px_rgba(26,23,20,0.06)]" aria-label="Mobile bottom navigation">
           {[
             { ...navItems[0], label: 'Home' },
             { ...navItems[1], label: 'Jobs' },
@@ -373,7 +373,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             const Icon = item.icon;
             const active = isNavActive(item.href);
             return (
-              <Link key={item.label} href={item.href} data-ui-sound="click" className={`touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors ${active ? 'text-[#252525]' : 'text-[#73757A]'}`}>
+              <Link key={item.label} href={item.href} data-ui-sound="click" className={`touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors ${active ? 'text-[#1A1714]' : 'text-[#6B6259]'}`}>
                 <div className={`w-8 h-6 rounded-full flex items-center justify-center transition-all ${active ? 'bg-[#FFD84D]' : ''}`}>
                   <Icon className="w-4 h-4" />
                 </div>

@@ -178,14 +178,14 @@ function SearchableDropdown({
   return (
     <div ref={dropdownRef} className="space-y-1 relative">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-semibold text-[#252525]">
+        <label className="text-xs font-semibold text-[#1A1714]">
           {label} {required && <span className="text-[#D97968]">*</span>}
         </label>
         {isCustomMode && (
           <button
             type="button"
             onClick={handleRevertToList}
-            className="text-[11px] text-[#252525] hover:underline cursor-pointer"
+            className="text-[11px] text-[#1A1714] hover:underline cursor-pointer"
           >
             ← Choose from list
           </button>
@@ -200,13 +200,13 @@ function SearchableDropdown({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={customInputPlaceholder}
-            className="w-full px-3 py-2 rounded-xl border border-[#D9D8D2] text-xs text-[#252525] placeholder:text-[#9A9B9E] focus:outline-none focus:border-[#252525] focus:ring-2 focus:ring-[#252525]/20 bg-white"
+            className="w-full px-3 py-2 rounded-xl border border-[#E6E0D7] text-xs text-[#1A1714] placeholder:text-[#9A9086] focus:outline-none focus:border-[#1A1714] focus:ring-2 focus:ring-[#1A1714]/20 bg-white"
           />
           {value && (
             <button
               type="button"
               onClick={() => onChange('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9A9B9E] hover:text-[#252525] p-1 cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9A9086] hover:text-[#1A1714] p-1 cursor-pointer"
             >
               <X className="w-3 h-3" />
             </button>
@@ -219,32 +219,32 @@ function SearchableDropdown({
             onClick={() => setIsOpen(!isOpen)}
             className={`w-full touch-target px-3.5 py-2.5 rounded-xl border text-xs text-left flex items-center justify-between transition-colors bg-white cursor-pointer ${
               isOpen
-                ? 'border-[#252525] ring-2 ring-[#252525]/20'
+                ? 'border-[#1A1714] ring-2 ring-[#1A1714]/20'
                 : value
-                ? 'border-[#D9D8D2] text-[#252525]'
-                : 'border-[#D9D8D2] text-[#9A9B9E] hover:border-[#252525]/40'
+                ? 'border-[#E6E0D7] text-[#1A1714]'
+                : 'border-[#E6E0D7] text-[#9A9086] hover:border-[#1A1714]/40'
             }`}
           >
             <span className="truncate">{value || placeholder}</span>
             <ChevronDown
-              className={`w-3.5 h-3.5 text-[#73757A] transition-transform duration-200 shrink-0 ml-2 ${
-                isOpen ? 'rotate-180 text-[#252525]' : ''
+              className={`w-3.5 h-3.5 text-[#6B6259] transition-transform duration-200 shrink-0 ml-2 ${
+                isOpen ? 'rotate-180 text-[#1A1714]' : ''
               }`}
             />
           </button>
 
           {isOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#D9D8D2] rounded-xl shadow-lg z-50 p-2 space-y-1 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E6E0D7] rounded-xl shadow-lg z-50 p-2 space-y-1 animate-in fade-in zoom-in-95 duration-150">
               {/* Search Bar */}
               <div className="relative mb-1">
-                <Search className="w-3.5 h-3.5 text-[#9A9B9E] absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-[#9A9086] absolute left-2.5 top-1/2 -translate-y-1/2" />
                 <input
                   ref={searchInputRef}
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-[#D9D8D2] text-xs text-[#252525] placeholder:text-[#9A9B9E] focus:outline-none focus:border-[#252525] bg-[#FAF9F4]"
+                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-[#E6E0D7] text-xs text-[#1A1714] placeholder:text-[#9A9086] focus:outline-none focus:border-[#1A1714] bg-[#FFFFFF]"
                 />
               </div>
 
@@ -261,25 +261,25 @@ function SearchableDropdown({
                         onClick={() => handleSelectOption(opt)}
                         className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors cursor-pointer ${
                           isSelected
-                            ? 'bg-[#FFF2B8] text-[#252525] font-semibold'
+                            ? 'bg-[#FFE58A] text-[#1A1714] font-semibold'
                             : isOther
-                            ? 'text-[#73757A] hover:bg-[#FAF9F4] hover:text-[#252525] border-t border-[#D9D8D2]/60 mt-1 font-medium'
-                            : 'text-[#252525] hover:bg-[#FAF9F4]'
+                            ? 'text-[#6B6259] hover:bg-[#FFFFFF] hover:text-[#1A1714] border-t border-[#E6E0D7]/60 mt-1 font-medium'
+                            : 'text-[#1A1714] hover:bg-[#FFFFFF]'
                         }`}
                       >
                         <span className="truncate">{opt}</span>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-[#252525] shrink-0" />}
+                        {isSelected && <Check className="w-3.5 h-3.5 text-[#1A1714] shrink-0" />}
                       </button>
                     );
                   })
                 ) : (
-                  <div className="p-3 text-center text-xs text-[#73757A] space-y-2">
+                  <div className="p-3 text-center text-xs text-[#6B6259] space-y-2">
                     <p>No matching result</p>
                     {search.trim().length > 0 && (
                       <button
                         type="button"
                         onClick={() => handleAddCustom(search)}
-                        className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FFF2B8] text-[#252525] hover:bg-[#FFF2B8] text-xs font-semibold transition-colors cursor-pointer w-full justify-center"
+                        className="touch-target inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FFE58A] text-[#1A1714] hover:bg-[#FFE58A] text-xs font-semibold transition-colors cursor-pointer w-full justify-center"
                       >
                         <Plus className="w-3 h-3" />
                         <span>Add &ldquo;{search.trim()}&rdquo; as custom</span>
@@ -290,11 +290,11 @@ function SearchableDropdown({
 
                 {/* If user typed something not matching any option exactly and there are results, offer custom add button */}
                 {trimmedSearch.length > 0 && !hasMatchingPreset && filteredOptions.length > 0 && (
-                  <div className="pt-1 border-t border-[#D9D8D2]">
+                  <div className="pt-1 border-t border-[#E6E0D7]">
                     <button
                       type="button"
                       onClick={() => handleAddCustom(search)}
-                      className="w-full text-left px-3 py-2 rounded-lg text-xs text-[#252525] hover:bg-[#FFF2B8]/40 font-medium flex items-center gap-1.5 cursor-pointer"
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs text-[#1A1714] hover:bg-[#FFE58A]/40 font-medium flex items-center gap-1.5 cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
                       <span>Add &ldquo;{search.trim()}&rdquo; as custom</span>
@@ -663,7 +663,7 @@ export default function AddJobPage() {
       {/* Breadcrumb Back */}
       <Link
         href="/jobs"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#73757A] hover:text-[#252525] transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6B6259] hover:text-[#1A1714] transition-colors"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
         <span>Back to My Jobs</span>
@@ -671,8 +671,8 @@ export default function AddJobPage() {
 
       {/* Header */}
       <section className="space-y-1.5">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">Add a job</h1>
-        <p className="text-sm sm:text-base text-[#73757A]">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1714] tracking-tight">Add a job</h1>
+        <p className="text-sm sm:text-base text-[#6B6259]">
           Give Rolewise the role and your experience. We&apos;ll connect the two to build your preparation plan.
         </p>
       </section>
@@ -691,12 +691,12 @@ export default function AddJobPage() {
         <div className="rolewise-card p-6 space-y-5 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#FFF2B8] text-[#252525] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-[#FFE58A] text-[#1A1714] flex items-center justify-center">
                 <FileText className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-sm sm:text-base font-semibold text-[#252525]">Job description</h2>
-                <p className="text-xs text-[#73757A]">Paste the job description or upload the role details.</p>
+                <h2 className="text-sm sm:text-base font-semibold text-[#1A1714]">Job description</h2>
+                <p className="text-xs text-[#6B6259]">Paste the job description or upload the role details.</p>
               </div>
             </div>
 
@@ -708,9 +708,9 @@ export default function AddJobPage() {
                 placeholder="Paste the job description here..."
                 maxLength={5000}
                 rows={7}
-                className="w-full p-3.5 rounded-xl border border-[#D9D8D2] text-xs sm:text-sm text-[#252525] placeholder:text-[#9A9B9E] focus:outline-none focus:ring-2 focus:ring-[#252525]/20 focus:border-[#252525] transition-all bg-white resize-y"
+                className="w-full p-3.5 rounded-xl border border-[#E6E0D7] text-xs sm:text-sm text-[#1A1714] placeholder:text-[#9A9086] focus:outline-none focus:ring-2 focus:ring-[#1A1714]/20 focus:border-[#1A1714] transition-all bg-white resize-y"
               />
-              <div className="flex items-center justify-between text-[11px] text-[#9A9B9E]">
+              <div className="flex items-center justify-between text-[11px] text-[#9A9086]">
                 <span>Minimum 20 characters required</span>
                 <span>{jobDescription.length}/5000</span>
               </div>
@@ -733,7 +733,7 @@ export default function AddJobPage() {
                       setJdUploadState('idle');
                       setJdFileName('');
                     }}
-                    className="p-1 hover:text-[#252525] cursor-pointer"
+                    className="p-1 hover:text-[#1A1714] cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -742,11 +742,11 @@ export default function AddJobPage() {
                 <button
                   type="button"
                   onClick={() => jdInputRef.current?.click()}
-                  className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs font-semibold text-[#252525] transition-all cursor-pointer"
+                  className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E6E0D7] hover:bg-[#FFFFFF] text-xs font-semibold text-[#1A1714] transition-all cursor-pointer"
                 >
-                  <Upload className="w-3.5 h-3.5 text-[#73757A]" />
+                  <Upload className="w-3.5 h-3.5 text-[#6B6259]" />
                   <span>Upload JD</span>
-                  <span className="text-[11px] font-normal text-[#9A9B9E]">PDF, DOCX or TXT · Max 10 MB</span>
+                  <span className="text-[11px] font-normal text-[#9A9086]">PDF, DOCX or TXT · Max 10 MB</span>
                 </button>
               )}
               {jdError && <p className="text-xs text-[#D97968]">{jdError}</p>}
@@ -781,7 +781,7 @@ export default function AddJobPage() {
               />
 
               {(autoFilled.title || autoFilled.company) && (
-                <p className="sm:col-span-2 -mt-1 text-[11px] text-[#73757A]">
+                <p className="sm:col-span-2 -mt-1 text-[11px] text-[#6B6259]">
                   {autoFilled.title && autoFilled.company ? 'Job title and company' : autoFilled.title ? 'Job title' : 'Company'} filled in from the job description. Check and change if needed.
                 </p>
               )}
@@ -817,12 +817,12 @@ export default function AddJobPage() {
         <div className="rolewise-card p-6 space-y-5 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#FFF2B8] text-[#252525] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-[#FFE58A] text-[#1A1714] flex items-center justify-center">
                 <User className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-sm sm:text-base font-semibold text-[#252525]">Your experience</h2>
-                <p className="text-xs text-[#73757A]">
+                <h2 className="text-sm sm:text-base font-semibold text-[#1A1714]">Your experience</h2>
+                <p className="text-xs text-[#6B6259]">
                   Rolewise needs your experience to understand how your background connects to this role.
                 </p>
               </div>
@@ -844,7 +844,7 @@ export default function AddJobPage() {
                     <div className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-5 h-5 text-[#6FA77F]" />
                       <div>
-                        <p className="text-xs font-semibold text-[#252525]">{resumeFileName}</p>
+                        <p className="text-xs font-semibold text-[#1A1714]">{resumeFileName}</p>
                         <p className="text-[11px] text-[#6FA77F]">Resume read · {resumeWordCount.toLocaleString()} words ready to match with this role</p>
                       </div>
                     </div>
@@ -855,7 +855,7 @@ export default function AddJobPage() {
                         setResumeFileName('');
                         setResumeText('');
                       }}
-                      className="p-1 text-[#73757A] hover:text-[#D97968] cursor-pointer"
+                      className="p-1 text-[#6B6259] hover:text-[#D97968] cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -865,24 +865,24 @@ export default function AddJobPage() {
                     onClick={() => resumeInputRef.current?.click()}
                     className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
                       resumeUploadState === 'uploading'
-                        ? 'border-[#252525] bg-[#FFF2B8]/30'
+                        ? 'border-[#1A1714] bg-[#FFE58A]/30'
                         : resumeUploadState === 'error'
                         ? 'border-[#F6D8D1] bg-[#FFF0ED]/40'
-                        : 'border-[#D9D8D2] hover:border-[#252525] bg-[#FAF9F4]/40'
+                        : 'border-[#E6E0D7] hover:border-[#1A1714] bg-[#FFFFFF]/40'
                     }`}
                   >
                     {resumeUploadState === 'uploading' ? (
                       <div className="flex flex-col items-center gap-2">
-                        <p className="text-xs font-semibold text-[#252525]">Reading {resumeFileName}…</p>
+                        <p className="text-xs font-semibold text-[#1A1714]">Reading {resumeFileName}…</p>
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <div className="w-10 h-10 rounded-full bg-[#FFF2B8] text-[#252525] flex items-center justify-center mx-auto">
+                        <div className="w-10 h-10 rounded-full bg-[#FFE58A] text-[#1A1714] flex items-center justify-center mx-auto">
                           <Upload className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className="text-xs sm:text-sm font-semibold text-[#252525]">Upload your resume</p>
-                          <p className="text-[11px] text-[#73757A]">PDF or DOCX · Max 10 MB</p>
+                          <p className="text-xs sm:text-sm font-semibold text-[#1A1714]">Upload your resume</p>
+                          <p className="text-[11px] text-[#6B6259]">PDF or DOCX · Max 10 MB</p>
                         </div>
                       </div>
                     )}
@@ -896,7 +896,7 @@ export default function AddJobPage() {
                   <button
                     type="button"
                     onClick={() => setIsManualExperience(true)}
-                    className="text-xs text-[#252525] font-medium hover:underline inline-flex items-center gap-1 cursor-pointer"
+                    className="text-xs text-[#1A1714] font-medium hover:underline inline-flex items-center gap-1 cursor-pointer"
                   >
                     <span>Don&apos;t have a resume? Add your experience manually</span>
                     <ArrowRight className="w-3 h-3" />
@@ -907,11 +907,11 @@ export default function AddJobPage() {
               /* Manual Experience Input (PRD: past roles, key skills, notable projects) */
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[#252525]">Manual Experience</label>
+                  <label className="text-xs font-semibold text-[#1A1714]">Manual Experience</label>
                   <button
                     type="button"
                     onClick={() => setIsManualExperience(false)}
-                    className="text-xs text-[#252525] font-medium hover:underline cursor-pointer"
+                    className="text-xs text-[#1A1714] font-medium hover:underline cursor-pointer"
                   >
                     ← Switch back to Resume upload
                   </button>
@@ -923,9 +923,9 @@ export default function AddJobPage() {
                   placeholder="Tell us about your past roles, key skills, and notable projects..."
                   maxLength={3000}
                   rows={8}
-                  className="w-full p-3.5 rounded-xl border border-[#D9D8D2] text-xs sm:text-sm text-[#252525] placeholder:text-[#9A9B9E] focus:outline-none focus:ring-2 focus:ring-[#252525]/20 focus:border-[#252525] transition-all bg-white resize-y"
+                  className="w-full p-3.5 rounded-xl border border-[#E6E0D7] text-xs sm:text-sm text-[#1A1714] placeholder:text-[#9A9086] focus:outline-none focus:ring-2 focus:ring-[#1A1714]/20 focus:border-[#1A1714] transition-all bg-white resize-y"
                 />
-                <div className="flex items-center justify-between text-[11px] text-[#9A9B9E]">
+                <div className="flex items-center justify-between text-[11px] text-[#9A9086]">
                   <span>Include roles, key skills, and notable project achievements</span>
                   <span>{manualExperienceText.length}/3000</span>
                 </div>
@@ -976,8 +976,8 @@ export default function AddJobPage() {
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-[#252525]">Analysis complete</h3>
-                <p className="text-xs text-[#55565A]">
+                <h3 className="text-sm sm:text-base font-bold text-[#1A1714]">Analysis complete</h3>
+                <p className="text-xs text-[#574F46]">
                   Role requirements, fit analysis, and preparation roadmap have been generated.
                 </p>
               </div>
@@ -985,7 +985,7 @@ export default function AddJobPage() {
             {createdRoleId && (
               <Link
                 href={`/roles/${createdRoleId}/fit`}
-                className="touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
+                className="touch-target inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
               >
                 <span>View role fit</span>
                 <ArrowRight className="w-4 h-4" />
@@ -1004,8 +1004,8 @@ export default function AddJobPage() {
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-[#252525]">Role analysis couldn&apos;t be completed.</h3>
-                <p className="text-xs text-[#73757A]">
+                <h3 className="text-sm sm:text-base font-bold text-[#1A1714]">Role analysis couldn&apos;t be completed.</h3>
+                <p className="text-xs text-[#6B6259]">
                   Your job and resume are saved. You can safely try again.{globalError ? ` (${globalError})` : ''}
                 </p>
               </div>
@@ -1025,13 +1025,13 @@ export default function AddJobPage() {
       {/* BOTTOM ACTION BAR */}
       <div className="rolewise-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         {/* Info callout */}
-        <div className="flex items-center gap-2.5 text-xs text-[#73757A]">
-          <div className="w-7 h-7 rounded-lg bg-[#FFF2B8] text-[#252525] flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-2.5 text-xs text-[#6B6259]">
+          <div className="w-7 h-7 rounded-lg bg-[#FFE58A] text-[#1A1714] flex items-center justify-center shrink-0">
             <Info className="w-4 h-4" />
           </div>
           <div>
-            <p className="font-semibold text-[#252525]">Why Rolewise needs this</p>
-            <p className="text-[11px] text-[#73757A]">
+            <p className="font-semibold text-[#1A1714]">Why Rolewise needs this</p>
+            <p className="text-[11px] text-[#6B6259]">
               Your job description tells us what the role requires. Your experience tells us where your background connects.
             </p>
           </div>
@@ -1040,14 +1040,14 @@ export default function AddJobPage() {
         {/* Buttons */}
         <div className="flex flex-col items-stretch sm:items-end gap-2 shrink-0">
         {!isFormValid && !isAnalyzing && analysisStatus !== 'completed' && (
-          <p id="analyze-missing" role="status" className="text-[12px] text-[#73757A] sm:text-right">
+          <p id="analyze-missing" role="status" className="text-[12px] text-[#6B6259] sm:text-right">
             {4 - missingSteps.length} of 4 done. To continue, {missingSteps.join(', ')}.
           </p>
         )}
         <div className="flex items-center gap-3 justify-end">
           <Link
             href="/jobs"
-            className="touch-target px-4 py-2.5 rounded-xl border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs sm:text-sm font-semibold text-[#73757A] transition-colors"
+            className="touch-target px-4 py-2.5 rounded-xl border border-[#E6E0D7] hover:bg-[#FFFFFF] text-xs sm:text-sm font-semibold text-[#6B6259] transition-colors"
           >
             Cancel
           </Link>
@@ -1055,7 +1055,7 @@ export default function AddJobPage() {
           {analysisStatus === 'completed' && createdRoleId ? (
             <Link
               href={`/roles/${createdRoleId}/fit`}
-              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
+              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
             >
               <span>View role fit</span>
               <ArrowRight className="w-4 h-4" />
@@ -1076,7 +1076,7 @@ export default function AddJobPage() {
               onClick={handleAnalyze}
               disabled={!isFormValid || isAnalyzing}
               aria-describedby={!isFormValid ? "analyze-missing" : undefined}
-              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isAnalyzing ? (
                 <>

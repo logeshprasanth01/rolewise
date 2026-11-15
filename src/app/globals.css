@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #EEF0F1;
-  --color-surface: #FAF9F4;
-  --color-surface-warm: #FFFBEF;
-  --color-text-primary: #252525;
-  --color-text-secondary: #73757A;
+  --color-canvas: #F2EFEA;
+  --color-surface: #FFFFFF;
+  --color-surface-warm: #FFFFFF;
+  --color-text-primary: #1A1714;
+  --color-text-secondary: #6B6259;
   --color-brand: #FFD84D;
-  --color-brand-soft: #FFF2B8;
+  --color-brand-soft: #FFE58A;
   --color-brand-hover: #E7C43E;
   --color-status-success: #6FA77F;
   --color-status-success-light: #EEF7F0;
@@ -15,20 +15,20 @@
   --color-status-warning-light: #FFF5DF;
   --color-status-attention: #D97968;
   --color-status-attention-light: #FFF0ED;
-  --color-border-subtle: #D9D8D2;
-  --color-secondary-lavender: #E7E7EE;
+  --color-border-subtle: #E6E0D7;
+  --color-secondary-lavender: #EFEAE3;
   --radius-card: 26px;
   --font-inter: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
-  --background: #EEF0F1;
-  --foreground: #252525;
+  --background: #F2EFEA;
+  --foreground: #1A1714;
 }
 
 body {
-  background-color: #EEF0F1;
-  color: #252525;
+  background-color: #F2EFEA;
+  color: #1A1714;
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -47,7 +47,7 @@ body {
 .rw-app-frame {
   position: relative;
   isolation: isolate;
-  background: #EEF0F1;
+  background: #F2EFEA;
 }
 
 /* Soft, low-opacity background glow — intentionally behind the interface surfaces. */
@@ -59,8 +59,8 @@ body {
   pointer-events: none;
   background:
     radial-gradient(circle at 88% 10%, rgba(255,216,77,.16) 0%, rgba(255,216,77,0) 28%),
-    radial-gradient(circle at 14% 84%, rgba(196,205,214,.24) 0%, rgba(196,205,214,0) 34%),
-    linear-gradient(120deg, rgba(238,240,241,.82) 0%, rgba(243,242,238,.78) 58%, rgba(231,233,235,.72) 100%);
+    radial-gradient(circle at 14% 84%, rgba(232,170,120,.16) 0%, rgba(232,170,120,0) 34%),
+    linear-gradient(120deg, rgba(242,239,234,.85) 0%, rgba(246,243,238,.8) 58%, rgba(238,233,226,.75) 100%);
   filter: blur(46px);
   transform: scale(1.04);
 }
@@ -72,20 +72,20 @@ body {
 
 .rw-gradient-hero {
   background:
-    radial-gradient(circle at 90% 20%, rgba(214,216,219,.30) 0%, rgba(214,216,219,0) 34%),
-    linear-gradient(115deg, #EEF0F1 0%, #F4F3EF 68%, #E9EAEC 100%);
+    radial-gradient(circle at 90% 20%, rgba(255,216,77,.18) 0%, rgba(255,216,77,0) 34%),
+    linear-gradient(115deg, #F2EFEA 0%, #F6F3EE 68%, #EEE8E0 100%);
 }
 
 .rw-gradient-surface {
-  background: linear-gradient(135deg, #F7F7F4 0%, #FFFFFF 100%);
+  background: linear-gradient(135deg, #FAF8F5 0%, #FFFFFF 100%);
 }
 
 /* ROLEWISE editorial SaaS card system */
 .rolewise-card {
-  background: #FAFAF8;
-  border: 1px solid #D9D8D2;
+  background: #FFFFFF;
+  border: 1px solid #E6E0D7;
   border-radius: 26px;
-  box-shadow: 0 1px 3px 0 rgba(37, 37, 37, 0.04);
+  box-shadow: 0 1px 3px 0 rgba(26,23,20, 0.04);
 }
 
 /* Custom scrollbars */
@@ -97,11 +97,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D9D8D2;
+  background: #E6E0D7;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #BFC0BA;
+  background: #CFC7BC;
 }
 
 
@@ -170,7 +170,7 @@ body {
 .rw-input:focus {
   transform: translateY(-1px);
   border-color: #9EA2A6 !important;
-  box-shadow: 0 0 0 3px rgba(37,37,37,.10);
+  box-shadow: 0 0 0 3px rgba(26,23,20,.10);
   background: #FFFFFF;
 }
 
@@ -190,12 +190,12 @@ body {
 
 
 /* Legacy palette guard: no violet/indigo accents anywhere in the interface. */
-[class*="bg-[#6D5DFB]"], [class*="bg-[#5A48F5]"], [class*="bg-[#8B5CF6]"] { background-color: #E7E9EB !important; }
-[class*="bg-[#EEECFF]"], [class*="bg-[#F5F3FF]"], [class*="bg-[#DDD8FE]"], [class*="bg-[#D8D4FD]"], [class*="bg-[#E0DCFE]"] { background-color: #E7E9EB !important; }
-[class*="text-[#6D5DFB]"], [class*="text-[#5A48F5]"], [class*="text-[#8B5CF6]"] { color: #252525 !important; }
-[class*="border-[#6D5DFB]"], [class*="border-[#5A48F5]"], [class*="border-[#8B5CF6]"] { border-color: #D9D8D2 !important; }
-[class*="bg-[#FFF2B8]"], [class*="bg-[#FFF5C9]"], [class*="bg-[#FFF7D8]"], [class*="bg-[#FFFBEF]"] { background-color: #F0F1F1 !important; }
-[class*="border-[#E8D77D]"] { border-color: #D9D8D2 !important; }
+[class*="bg-[#6D5DFB]"], [class*="bg-[#5A48F5]"], [class*="bg-[#8B5CF6]"] { background-color: #EFEAE3 !important; }
+[class*="bg-[#EEECFF]"], [class*="bg-[#F5F3FF]"], [class*="bg-[#DDD8FE]"], [class*="bg-[#D8D4FD]"], [class*="bg-[#E0DCFE]"] { background-color: #EFEAE3 !important; }
+[class*="text-[#6D5DFB]"], [class*="text-[#5A48F5]"], [class*="text-[#8B5CF6]"] { color: #1A1714 !important; }
+[class*="border-[#6D5DFB]"], [class*="border-[#5A48F5]"], [class*="border-[#8B5CF6]"] { border-color: #E6E0D7 !important; }
+[class*="bg-[#FFF5C9]"], [class*="bg-[#FFF7D8]"] { background-color: #F6F3EE !important; }
+[class*="border-[#E8D77D]"] { border-color: #E6E0D7 !important; }
 
 @media (max-width: 767px) {
   .rw-app-frame { border-radius: 0; }
@@ -219,12 +219,12 @@ html[data-accessibility="enhanced"] {
 }
 
 html[data-accessibility="enhanced"] :focus-visible {
-  outline: 3px solid #252525;
+  outline: 3px solid #1A1714;
   outline-offset: 3px;
 }
 
 html[data-accessibility="enhanced"] ::selection {
-  background: #252525;
+  background: #1A1714;
   color: #FFFFFF;
 }
 
@@ -247,7 +247,7 @@ html[data-accessibility="enhanced"] {
 }
 
 html[data-accessibility="enhanced"] :focus-visible {
-  outline: var(--rw-focus-width) solid #252525;
+  outline: var(--rw-focus-width) solid #1A1714;
   outline-offset: 3px;
 }
 
@@ -281,7 +281,7 @@ html[data-accessibility="enhanced"] :focus-visible {
   top: 16px;
   z-index: 9999;
   transform: translateY(-160%);
-  background: #252525;
+  background: #1A1714;
   color: #FFFFFF;
   border: 2px solid #FFFFFF;
   border-radius: 10px;
@@ -297,9 +297,9 @@ html[data-accessibility="enhanced"] :focus-visible {
 
 
 /* Contrast guard for legacy muted text utilities */
-[class*="text-[#8A8B8F]"] { color: #5F6368 !important; }
-[class*="text-[#9A9B9E]"] { color: #73757A !important; }
-[class*="placeholder:text-[#9A9B9E]"]::placeholder { color: #73757A !important; opacity: 1; }
+[class*="text-[#9A9086]"] { color: #5E554B !important; }
+[class*="text-[#9A9086]"] { color: #6B6259 !important; }
+[class*="placeholder:text-[#9A9086]"]::placeholder { color: #6B6259 !important; opacity: 1; }
 
 
 /* User-controlled accessibility preferences */
@@ -308,14 +308,14 @@ html[data-accessibility="enhanced"] {
 }
 
 html[data-accessibility="enhanced"] :focus-visible {
-  outline: var(--rw-focus-width) solid #252525;
+  outline: var(--rw-focus-width) solid #1A1714;
   outline-offset: 4px;
 }
 
-html[data-accessibility="enhanced"] .text-\[\#73757A\],
-html[data-accessibility="enhanced"] .text-\[\#8A8B8F\],
-html[data-accessibility="enhanced"] .text-\[\#9A9B9E\] {
-  color: #5F6368 !important;
+html[data-accessibility="enhanced"] .text-\[\#6B6259\],
+html[data-accessibility="enhanced"] .text-\[\#9A9086\],
+html[data-accessibility="enhanced"] .text-\[\#9A9086\] {
+  color: #5E554B !important;
 }
 
 html[data-reduced-motion="true"] *,
@@ -340,12 +340,12 @@ html[data-reduced-motion="true"] *::after {
 }
 
 html[data-accessibility="enhanced"] .rw-search-shell:focus-within {
-  border-color: #252525;
-  box-shadow: 0 0 0 3px rgba(37,37,37,.16);
+  border-color: #1A1714;
+  box-shadow: 0 0 0 3px rgba(26,23,20,.16);
 }
 
 html[data-accessibility="enhanced"] .rw-search-input:focus-visible {
-  outline: 3px solid #252525 !important;
+  outline: 3px solid #1A1714 !important;
   outline-offset: 2px;
 }
 
@@ -353,23 +353,23 @@ html[data-accessibility="enhanced"] .rw-search-input:focus-visible {
 
 /* Sidebar: neutral-first navigation. Yellow is reserved for primary actions and small highlights. */
 .rw-sidebar-nav {
-  color: #6B6F73;
+  color: #6B6259;
 }
 .rw-sidebar-nav a,
 .rw-sidebar-nav button {
-  color: #6B6F73;
+  color: #6B6259;
 }
 .rw-sidebar-nav a:hover,
 .rw-sidebar-nav button:hover {
   color: #303234;
 }
 .rw-sidebar-nav a[aria-current="page"] {
-  color: #F5F5F3;
+  color: #F6F3EE;
 }
 
 .rw-accent-yellow {
   background: #FFD84D;
-  color: #252525;
+  color: #1A1714;
 }
 
 @media (min-width: 768px) {
@@ -436,7 +436,7 @@ html, body {
 }
 
 .rw-processing-backdrop {
-  background: rgba(37, 37, 37, .38);
+  background: rgba(26,23,20, .38);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   animation: rw-backdrop-in 220ms ease-out both;
@@ -504,7 +504,7 @@ html, body {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: linear-gradient(160deg, #F7F6F1 0%, #EEF0F1 55%, #E7E9EB 100%);
+  background: linear-gradient(160deg, #FAF8F5 0%, #F2EFEA 55%, #EEE8E0 100%);
 }
 .rw-boot::before {
   content: "";
@@ -525,8 +525,8 @@ html, body {
   width: 76px;
   height: 76px;
   border-radius: 24px;
-  background: #252525;
-  box-shadow: 0 24px 50px -18px rgba(37,37,37,.55), inset 0 1px 0 rgba(255,255,255,.12);
+  background: #1A1714;
+  box-shadow: 0 24px 50px -18px rgba(26,23,20,.55), inset 0 1px 0 rgba(255,255,255,.12);
 }
 .rw-boot-orbit {
   position: absolute;
@@ -545,7 +545,7 @@ html, body {
   top: 0;
   bottom: 0;
   border-radius: 9999px;
-  background: linear-gradient(90deg, rgba(37,37,37,0), #252525 40%, #FFD84D 100%);
+  background: linear-gradient(90deg, rgba(26,23,20,0), #1A1714 40%, #FFD84D 100%);
   animation: rw-boot-track 1.5s cubic-bezier(.65,0,.35,1) infinite;
 }
 .rw-boot-word { animation: rw-boot-word 1.8s ease-in-out both; }
@@ -560,10 +560,10 @@ html, body {
 }
 
 /* ---------- Landing page (/welcome) ---------- */
-.rwl ::selection { background: #FFD84D; color: #252525; }
+.rwl ::selection { background: #FFD84D; color: #1A1714; }
 .rwl-hero-bg {
   /* Flat ink base; the warm glow comes from the cursor-following .rwl-glow layer. */
-  background: linear-gradient(135deg, #1B1A17 0%, #252525 55%, #2A2724 100%);
+  background: linear-gradient(135deg, #1B1A17 0%, #1A1714 55%, #2A2724 100%);
 }
 .rwl-grid-lines {
   background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
@@ -669,7 +669,7 @@ html, body {
 @keyframes rwl-hy-drift { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(60px, 40px) scale(1.12); } }
 .rwl-hy-grid {
   position: absolute; inset: 0;
-  background-image: linear-gradient(rgba(37,37,37,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(37,37,37,.08) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(26,23,20,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(26,23,20,.08) 1px, transparent 1px);
   background-size: 52px 52px;
   /* Visible by default; the pointer clears a soft circle out of it. */
   -webkit-mask-image: radial-gradient(var(--hr, 0px) circle at var(--hx) var(--hy), transparent 0%, transparent 35%, #000 100%);

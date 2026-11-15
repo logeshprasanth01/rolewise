@@ -156,9 +156,9 @@ export function MascotAssistant() {
         <section
           role="dialog"
           aria-label="Chat with Rowi"
-          className={`rw-assistant-panel absolute right-0 ${isPublic ? 'bottom-[84px]' : 'bottom-0 lg:bottom-[84px]'} flex h-[min(560px,calc(100dvh-140px))] w-[min(380px,calc(100vw-32px))] flex-col overflow-hidden rounded-[24px] border border-[#E4E2DA] bg-[#FAF9F4] text-[#252525] shadow-[0_30px_80px_-20px_rgba(37,37,37,0.45)]`}
+          className={`rw-assistant-panel absolute right-0 ${isPublic ? 'bottom-[84px]' : 'bottom-0 lg:bottom-[84px]'} flex h-[min(560px,calc(100dvh-140px))] w-[min(380px,calc(100vw-32px))] flex-col overflow-hidden rounded-[24px] border border-[#E6E0D7] bg-[#FFFFFF] text-[#1A1714] shadow-[0_30px_80px_-20px_rgba(26,23,20,0.45)]`}
         >
-          <header className="flex items-center gap-3 bg-[#252525] px-4 py-3 text-white">
+          <header className="flex items-center gap-3 bg-[#1A1714] px-4 py-3 text-white">
             <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
               <Mascot size={34} track={false} animated={false} interactive={false} />
             </span>
@@ -192,13 +192,13 @@ export function MascotAssistant() {
                   <span className="mb-0.5 shrink-0">
                     <Mascot size={26} track={false} animated={false} interactive={false} />
                   </span>
-                  <div className="max-w-[82%] rounded-2xl rounded-bl-md border border-[#E4E2DA] bg-white px-3.5 py-2.5 text-[14px] leading-relaxed">
+                  <div className="max-w-[82%] rounded-2xl rounded-bl-md border border-[#E6E0D7] bg-white px-3.5 py-2.5 text-[14px] leading-relaxed">
                     <p className="whitespace-pre-wrap">{m.content}</p>
                     {m.link && (
                       <Link
                         href={m.link.href}
                         onClick={() => setOpen(false)}
-                        className="mt-2 inline-flex min-h-[32px] items-center rounded-full bg-[#FFD84D] px-3 text-[13px] font-semibold text-[#252525] hover:bg-[#FFE27A]"
+                        className="mt-2 inline-flex min-h-[32px] items-center rounded-full bg-[#FFD84D] px-3 text-[13px] font-semibold text-[#1A1714] hover:bg-[#FFE27A]"
                       >
                         {m.link.label}
                       </Link>
@@ -207,7 +207,7 @@ export function MascotAssistant() {
                 </div>
               ) : (
                 <div key={i} className="flex justify-end">
-                  <p className="max-w-[82%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-[#252525] px-3.5 py-2.5 text-[14px] leading-relaxed text-white">
+                  <p className="max-w-[82%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-[#1A1714] px-3.5 py-2.5 text-[14px] leading-relaxed text-white">
                     {m.content}
                   </p>
                 </div>
@@ -216,7 +216,7 @@ export function MascotAssistant() {
             {busy && (
               <div className="flex items-end gap-2" aria-label="Rowi is typing">
                 <Mascot size={26} track={false} animated={false} interactive={false} />
-                <div className="flex gap-1 rounded-2xl rounded-bl-md border border-[#E4E2DA] bg-white px-3.5 py-3">
+                <div className="flex gap-1 rounded-2xl rounded-bl-md border border-[#E6E0D7] bg-white px-3.5 py-3">
                   {[0, 1, 2].map((d) => (
                     <span key={d} className="rw-typing-dot h-2 w-2 rounded-full bg-[#D49A35]" style={{ animationDelay: `${d * 150}ms` }} />
                   ))}
@@ -230,7 +230,7 @@ export function MascotAssistant() {
                     key={s}
                     type="button"
                     onClick={() => ask(s)}
-                    className="min-h-[36px] rounded-full border border-[#D9D8D2] bg-white px-3 text-[13px] font-medium text-[#3A3C40] hover:border-[#252525]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+                    className="min-h-[36px] rounded-full border border-[#E6E0D7] bg-white px-3 text-[13px] font-medium text-[#3B342D] hover:border-[#1A1714]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
                   >
                     {s}
                   </button>
@@ -244,7 +244,7 @@ export function MascotAssistant() {
               e.preventDefault();
               void ask(input);
             }}
-            className="flex items-center gap-2 border-t border-[#E4E2DA] bg-white p-3"
+            className="flex items-center gap-2 border-t border-[#E6E0D7] bg-white p-3"
           >
             <label htmlFor="rw-assistant-input" className="sr-only">
               Ask Rowi
@@ -257,13 +257,13 @@ export function MascotAssistant() {
               maxLength={600}
               placeholder="Ask Rowi anything…"
               autoComplete="off"
-              className="h-11 min-w-0 flex-1 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] px-4 text-[14px] outline-none placeholder:text-[#8A8C91] focus:border-[#252525]/50 focus:ring-2 focus:ring-[#FFD84D]/40"
+              className="h-11 min-w-0 flex-1 rounded-full border border-[#E6E0D7] bg-[#FFFFFF] px-4 text-[14px] outline-none placeholder:text-[#8A8C91] focus:border-[#1A1714]/50 focus:ring-2 focus:ring-[#FFD84D]/40"
             />
             <button
               type="submit"
               disabled={!input.trim() || busy}
               aria-label="Send"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FFD84D] text-[#252525] transition hover:bg-[#FFE27A] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FFD84D] text-[#1A1714] transition hover:bg-[#FFE27A] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
             >
               <ArrowUp className="h-5 w-5" />
             </button>
@@ -272,11 +272,11 @@ export function MascotAssistant() {
       )}
 
       {hint && !open && (
-        <div className={`rw-assistant-hint absolute bottom-[78px] ${appMobileHidden} right-0 flex w-max max-w-[240px] items-start gap-1 rounded-2xl rounded-br-md border border-[#E4E2DA] bg-white py-1 pl-1 pr-1 shadow-[0_14px_30px_-14px_rgba(37,37,37,0.4)]`}>
+        <div className={`rw-assistant-hint absolute bottom-[78px] ${appMobileHidden} right-0 flex w-max max-w-[240px] items-start gap-1 rounded-2xl rounded-br-md border border-[#E6E0D7] bg-white py-1 pl-1 pr-1 shadow-[0_14px_30px_-14px_rgba(26,23,20,0.4)]`}>
           <button
             type="button"
             onClick={toggle}
-            className="rounded-xl px-2.5 py-1.5 text-left text-[13px] font-medium text-[#252525] hover:bg-[#F3F2EE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+            className="rounded-xl px-2.5 py-1.5 text-left text-[13px] font-medium text-[#1A1714] hover:bg-[#F6F3EE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
           >
             Hi, I&apos;m Rowi! Need a hand?
           </button>
@@ -284,7 +284,7 @@ export function MascotAssistant() {
             type="button"
             onClick={dismissHint}
             aria-label="Dismiss"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#73757A] hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6B6259] hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]"
           >
             <X className="h-3.5 w-3.5" aria-hidden />
           </button>
@@ -301,7 +301,7 @@ export function MascotAssistant() {
         }}
         aria-expanded={open}
         aria-label={open ? 'Close chat with Rowi' : 'Chat with Rowi'}
-        className={`relative flex h-[68px] w-[68px] ${appMobileHidden} items-center justify-center rounded-full border border-[#E4E2DA] bg-white shadow-[0_14px_34px_-12px_rgba(37,37,37,0.45)] transition-shadow hover:shadow-[0_18px_40px_-12px_rgba(37,37,37,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2`}
+        className={`relative flex h-[68px] w-[68px] ${appMobileHidden} items-center justify-center rounded-full border border-[#E6E0D7] bg-white shadow-[0_14px_34px_-12px_rgba(26,23,20,0.45)] transition-shadow hover:shadow-[0_18px_40px_-12px_rgba(26,23,20,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714] focus-visible:ring-offset-2`}
       >
         <Mascot size={52} animated={false} sound={false} />
         {!open && <span className="absolute right-1 top-1 h-3 w-3 rounded-full border-2 border-white bg-[#6FA77F]" aria-hidden />}

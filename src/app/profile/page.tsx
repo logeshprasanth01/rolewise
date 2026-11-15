@@ -56,7 +56,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-3xl mx-auto pb-16 animate-in fade-in duration-300">
       {/* Identity */}
-      <section className="relative overflow-hidden rounded-[28px] bg-[#252525] text-white p-6 sm:p-8">
+      <section className="relative overflow-hidden rounded-[28px] bg-[#1A1714] text-white p-6 sm:p-8">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full"
@@ -72,7 +72,7 @@ export default function ProfilePage() {
               className="h-20 w-20 rounded-[22px] object-cover ring-4 ring-white/10"
             />
           ) : (
-            <div className="h-20 w-20 rounded-[22px] bg-[#FFD84D] text-[#252525] flex items-center justify-center text-3xl font-bold ring-4 ring-white/10">
+            <div className="h-20 w-20 rounded-[22px] bg-[#FFD84D] text-[#1A1714] flex items-center justify-center text-3xl font-bold ring-4 ring-white/10">
               {initial}
             </div>
           )}
@@ -96,7 +96,7 @@ export default function ProfilePage() {
 
       {/* Activity */}
       <section className="mt-6" aria-labelledby="activity-heading">
-        <h2 id="activity-heading" className="text-sm font-semibold text-[#252525]">
+        <h2 id="activity-heading" className="text-sm font-semibold text-[#1A1714]">
           Your activity
         </h2>
         <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -104,31 +104,31 @@ export default function ProfilePage() {
             <Link
               key={label}
               href={href}
-              className="group rounded-[20px] bg-white border border-[#E4E2DA] p-4 hover:border-[#252525] transition-colors"
+              className="group rounded-[20px] bg-white border border-[#E6E0D7] p-4 hover:border-[#1A1714] transition-colors"
             >
-              <Icon className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors" />
-              <p className="mt-3 text-2xl font-bold tabular-nums text-[#252525]">
+              <Icon className="w-4 h-4 text-[#9A9086] group-hover:text-[#1A1714] transition-colors" />
+              <p className="mt-3 text-2xl font-bold tabular-nums text-[#1A1714]">
                 {value === null ? <span className="inline-block h-7 w-8 rounded-md bg-[#F1EFE8] animate-pulse align-middle" /> : value}
               </p>
-              <p className="mt-0.5 text-xs text-[#73757A]">{label}</p>
+              <p className="mt-0.5 text-xs text-[#6B6259]">{label}</p>
             </Link>
           ))}
         </div>
       </section>
 
       {/* Account */}
-      <section className="mt-6 rounded-[20px] bg-white border border-[#E4E2DA] divide-y divide-[#EEECE6]" aria-label="Account">
-        <Link href="/settings" className="flex items-center gap-3 px-5 py-4 hover:bg-[#FAF9F6] transition-colors rounded-t-[20px]">
-          <Settings className="w-4 h-4 text-[#73757A]" />
+      <section className="mt-6 rounded-[20px] bg-white border border-[#E6E0D7] divide-y divide-[#EEECE6]" aria-label="Account">
+        <Link href="/settings" className="flex items-center gap-3 px-5 py-4 hover:bg-[#FFFFFF] transition-colors rounded-t-[20px]">
+          <Settings className="w-4 h-4 text-[#6B6259]" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[#252525]">Settings</p>
-            <p className="text-xs text-[#73757A]">Name, photo, email, accessibility, mic and camera check</p>
+            <p className="text-sm font-semibold text-[#1A1714]">Settings</p>
+            <p className="text-xs text-[#6B6259]">Name, photo, email, accessibility, mic and camera check</p>
           </div>
-          <ArrowRight className="w-4 h-4 text-[#9A9B9E]" />
+          <ArrowRight className="w-4 h-4 text-[#9A9086]" />
         </Link>
         <div className="px-5 py-4">
-          <p className="text-sm font-semibold text-[#252525]">Your data</p>
-          <p className="mt-1 text-xs text-[#73757A] leading-relaxed">
+          <p className="text-sm font-semibold text-[#1A1714]">Your data</p>
+          <p className="mt-1 text-xs text-[#6B6259] leading-relaxed">
             Your jobs, resume text, role analysis and saved mock-interview feedback are tied to your account and only
             visible to you. Voice and video recordings are only used to create your transcript and aren&apos;t saved.
           </p>

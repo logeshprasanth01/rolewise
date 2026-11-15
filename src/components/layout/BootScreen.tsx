@@ -31,17 +31,17 @@ export function BootScreen() {
           </span>
         </div>
 
-        <p className="mt-8 text-[15px] font-bold tracking-[0.32em] text-[#252525] pl-[0.32em]">ROLEWISE</p>
+        <p className="mt-8 text-[15px] font-bold tracking-[0.32em] text-[#1A1714] pl-[0.32em]">ROLEWISE</p>
 
-        <p className="mt-2 text-[13px] text-[#73757A] tracking-[0.01em]">
+        <p className="mt-2 text-[13px] text-[#6B6259] tracking-[0.01em]">
           Prepare for the role. Not just the interview.
         </p>
 
-        <div className="rw-boot-track mt-9 h-[3px] w-44 rounded-full bg-[#252525]/10" aria-hidden="true">
+        <div className="rw-boot-track mt-9 h-[3px] w-44 rounded-full bg-[#1A1714]/10" aria-hidden="true">
           <span />
         </div>
 
-        <p key={line} className="rw-boot-word mt-4 h-4 text-[11px] font-medium uppercase tracking-[0.14em] text-[#55565A]">
+        <p key={line} className="rw-boot-word mt-4 h-4 text-[11px] font-medium uppercase tracking-[0.14em] text-[#574F46]">
           {STATUS_LINES[line]}
         </p>
       </div>
