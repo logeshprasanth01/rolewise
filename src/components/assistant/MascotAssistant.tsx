@@ -33,7 +33,10 @@ export function MascotAssistant() {
 
   // Public pages have no bottom nav; inside the app on small screens, sit above it.
   const isPublic = ['/welcome', '/auth', '/privacy', '/terms'].some((p) => pathname.startsWith(p));
-  const offset = isPublic ? 'bottom-5' : 'bottom-[88px] lg:bottom-6';
+  const offset = isPublic ? 'bottom-5' : 'bottom-[80px] lg:bottom-6';
+  // Inside the app on phones, Rowi lives in the top bar (see AppShell) so the floating
+  // launcher never covers buttons or fields; the chat panel still opens from here.
+  const appMobileHidden = isPublic ? '' : 'max-lg:hidden';
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setSoundOn(isMascotSoundOn()));
@@ -153,7 +156,7 @@ export function MascotAssistant() {
         <section
           role="dialog"
           aria-label="Chat with Rowi"
-          className="rw-assistant-panel absolute bottom-[84px] right-0 flex h-[min(560px,calc(100dvh-140px))] w-[min(380px,calc(100vw-32px))] flex-col overflow-hidden rounded-[24px] border border-[#E4E2DA] bg-[#FAF9F4] text-[#252525] shadow-[0_30px_80px_-20px_rgba(37,37,37,0.45)]"
+          className={`rw-assistant-panel absolute right-0 ${isPublic ? 'bottom-[84px]' : 'bottom-0 lg:bottom-[84px]'} flex h-[min(560px,calc(100dvh-140px))] w-[min(380px,calc(100vw-32px))] flex-col overflow-hidden rounded-[24px] border border-[#E4E2DA] bg-[#FAF9F4] text-[#252525] shadow-[0_30px_80px_-20px_rgba(37,37,37,0.45)]`}
         >
           <header className="flex items-center gap-3 bg-[#252525] px-4 py-3 text-white">
             <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
@@ -269,7 +272,7 @@ export function MascotAssistant() {
       )}
 
       {hint && !open && (
-        <div className="rw-assistant-hint absolute bottom-[78px] right-0 flex w-max max-w-[240px] items-start gap-1 rounded-2xl rounded-br-md border border-[#E4E2DA] bg-white py-1 pl-1 pr-1 shadow-[0_14px_30px_-14px_rgba(37,37,37,0.4)]">
+        <div className={`rw-assistant-hint absolute bottom-[78px] ${appMobileHidden} right-0 flex w-max max-w-[240px] items-start gap-1 rounded-2xl rounded-br-md border border-[#E4E2DA] bg-white py-1 pl-1 pr-1 shadow-[0_14px_30px_-14px_rgba(37,37,37,0.4)]`}>
           <button
             type="button"
             onClick={toggle}
@@ -298,7 +301,7 @@ export function MascotAssistant() {
         }}
         aria-expanded={open}
         aria-label={open ? 'Close chat with Rowi' : 'Chat with Rowi'}
-        className="relative flex h-[68px] w-[68px] items-center justify-center rounded-full border border-[#E4E2DA] bg-white shadow-[0_14px_34px_-12px_rgba(37,37,37,0.45)] transition-shadow hover:shadow-[0_18px_40px_-12px_rgba(37,37,37,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
+        className={`relative flex h-[68px] w-[68px] ${appMobileHidden} items-center justify-center rounded-full border border-[#E4E2DA] bg-white shadow-[0_14px_34px_-12px_rgba(37,37,37,0.45)] transition-shadow hover:shadow-[0_18px_40px_-12px_rgba(37,37,37,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2`}
       >
         <Mascot size={52} animated={false} sound={false} />
         {!open && <span className="absolute right-1 top-1 h-3 w-3 rounded-full border-2 border-white bg-[#6FA77F]" aria-hidden />}

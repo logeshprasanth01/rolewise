@@ -10,7 +10,6 @@ import {
   Briefcase,
   Layers,
   Bot,
-  MessageSquare,
   Clock,
   FileText,
   Settings,
@@ -28,6 +27,8 @@ import { AuthView } from '@/components/auth/AuthView';
 import { playUiSound } from '@/lib/ui-sound';
 import { RolewiseLogo } from '@/components/brand/RolewiseLogo';
 import { BootScreen } from '@/components/layout/BootScreen';
+import { Mascot } from '@/components/brand/Mascot';
+import { openRowi } from '@/lib/rowi-events';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -46,8 +47,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
     { label: 'Job Tracker', href: '/jobs', icon: Briefcase },
     { label: 'Preparation', href: '/preparation', icon: Layers },
-    { label: 'Rowi Interview', href: '/roles', icon: Bot },
-    { label: 'Communication', href: '/communication-practice', icon: MessageSquare },
+    { label: 'Practice', href: '/roles', icon: Bot },
     { label: 'Feedback', href: '/feedback', icon: Clock },
     { label: 'Resume', href: '/resume', icon: FileText },
   ];
@@ -61,7 +61,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     if (href === '/') return pathname === '/' || pathname === '/dashboard';
     if (href === '/jobs') return pathname === '/jobs' || pathname.startsWith('/jobs/');
     if (href === '/preparation') return isPreparationRoute;
-    if (href === '/roles') return pathname.startsWith('/roles') && !isPreparationRoute;
+    if (href === '/roles') return (pathname.startsWith('/roles') && !isPreparationRoute) || pathname.startsWith('/communication-practice');
     return pathname?.startsWith(href);
   };
 
@@ -329,7 +329,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                     type="search"
                     value={headerQuery}
                     onChange={(e) => setHeaderQuery(e.target.value)}
-                    placeholder="Search your jobs by company or role"
+                    placeholder="Search jobs"
                     className="bg-transparent border-none outline-none w-full text-sm text-[#252525] placeholder:text-[#9A9B9E]"
                   />
                 </form>
@@ -337,10 +337,19 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
               <div className="ml-auto flex items-center gap-2">
                 {pathname !== '/' && pathname !== '/dashboard' && !pathname?.startsWith('/jobs') && (
-                  <Link href="/jobs?add=1" data-ui-sound="click" aria-label="Log application" className="touch-target inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0">
-                    <Plus className="w-4 h-4" /><span className="hidden sm:inline">Log application</span>
+                  <Link href="/jobs/new" data-ui-sound="click" aria-label="Add a job" className="touch-target inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0">
+                    <Plus className="w-4 h-4" /><span className="hidden sm:inline">Add a job</span>
                   </Link>
                 )}
+                <button
+                  type="button"
+                  onClick={() => openRowi()}
+                  aria-label="Chat with Rowi"
+                  title="Chat with Rowi"
+                  className="lg:hidden w-10 h-10 rounded-full border border-[#D9D8D2] bg-white flex items-center justify-center overflow-hidden hover:bg-[#FFFBEF] transition-colors"
+                >
+                  <Mascot size={30} track={false} animated={false} sound={false} interactive={false} />
+                </button>
                 <Link href="/jobs?filter=due" title="Follow-ups due" aria-label="Follow-ups due" data-ui-sound="click" className="w-10 h-10 rounded-full border border-[#D9D8D2] bg-[#FAF9F4] flex items-center justify-center text-[#73757A] hover:text-[#252525] hover:bg-[#FFFBEF] transition-all duration-200 hover:-translate-y-0.5 relative">
                   <Bell className="w-4 h-4" />
                 </Link>
@@ -348,7 +357,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             </div>
           </header>
 
-          <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 pb-24 lg:pb-12">
+          <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 pb-24 lg:pb-32">
             {children}
           </main>
         </div>
@@ -358,8 +367,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             { ...navItems[0], label: 'Home' },
             { ...navItems[1], label: 'Jobs' },
             { ...navItems[2], label: 'Prep' },
-            { ...navItems[3], label: 'Interview' },
-            { ...navItems[5], label: 'Feedback' },
+            { ...navItems[3], label: 'Practice' },
+            { ...navItems[4], label: 'Feedback' },
           ].map((item) => {
             const Icon = item.icon;
             const active = isNavActive(item.href);

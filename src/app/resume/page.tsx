@@ -30,7 +30,7 @@ export default function ResumePage() {
           Resume & Candidate Experience
         </h1>
         <p className="text-xs sm:text-sm text-[#73757A]">
-          Your background is used by ROLEWISE to connect with role requirements and generate authentic interview follow-up questions.
+          Your background is used by Rolewise to connect with role requirements and generate authentic interview follow-up questions.
         </p>
       </section>
 

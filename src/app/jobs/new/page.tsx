@@ -22,6 +22,7 @@ import {
 import { extractResumeText } from '@/lib/extractor';
 import { ProcessingDialog } from '@/components/ui/ProcessingDialog';
 import { invokeAnalyzeRole, getSupabaseClient, getRole } from '@/services/api';
+import { extractJobMeta } from '@/lib/job-meta';
 
 // Common job roles (Requirement 1)
 const JOB_TITLE_OPTIONS = [
@@ -316,6 +317,8 @@ export default function AddJobPage() {
   const [jobDescription, setJobDescription] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [company, setCompany] = useState('');
+  // Which of title / company were filled from the pasted description (so we can say so).
+  const [autoFilled, setAutoFilled] = useState<{ title: boolean; company: boolean }>({ title: false, company: false });
   const [location, setLocation] = useState('');
   const [workModel, setWorkModel] = useState('');
 
@@ -372,6 +375,25 @@ export default function AddJobPage() {
     company.trim().length > 0 &&
     jobDescription.trim().length >= 20 &&
     activeExperienceText.trim().length >= 20;
+
+  // Say exactly what is still missing, instead of a silent disabled button.
+  const missingSteps = [
+    jobDescription.trim().length < 20 && 'paste the job description',
+    !jobTitle.trim() && 'add the job title',
+    !company.trim() && 'add the company',
+    activeExperienceText.trim().length < 20 && (isManualExperience ? 'describe your experience' : 'upload your resume or add your experience'),
+  ].filter(Boolean) as string[];
+
+  // Pre-fill title and company from the description; never overwrite what the person chose.
+  useEffect(() => {
+    if (jobDescription.trim().length < 40) return;
+    const t = setTimeout(() => {
+      const meta = extractJobMeta(jobDescription, JOB_TITLE_OPTIONS, COMPANY_OPTIONS);
+      if (meta.title) setJobTitle((v) => { if (v) return v; setAutoFilled((a) => ({ ...a, title: true })); return meta.title as string; });
+      if (meta.company) setCompany((v) => { if (v) return v; setAutoFilled((a) => ({ ...a, company: true })); return meta.company as string; });
+    }, 400);
+    return () => clearTimeout(t);
+  }, [jobDescription]);
 
   // Handle Resume Upload
   const handleResumeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -651,7 +673,7 @@ export default function AddJobPage() {
       <section className="space-y-1.5">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">Add a job</h1>
         <p className="text-sm sm:text-base text-[#73757A]">
-          Give ROLEWISE the role and your experience. We&apos;ll connect the two to build your preparation plan.
+          Give Rolewise the role and your experience. We&apos;ll connect the two to build your preparation plan.
         </p>
       </section>
 
@@ -739,7 +761,7 @@ export default function AddJobPage() {
                 value={jobTitle}
                 onChange={setJobTitle}
                 options={JOB_TITLE_OPTIONS}
-                placeholder="Select a job title"
+                placeholder="Choose or type a job title"
                 searchPlaceholder="Search job titles..."
                 otherOptionLabel="Other"
                 customInputPlaceholder="Enter your job title..."
@@ -757,6 +779,12 @@ export default function AddJobPage() {
                 otherOptionLabel="Other company"
                 customInputPlaceholder="Enter company name..."
               />
+
+              {(autoFilled.title || autoFilled.company) && (
+                <p className="sm:col-span-2 -mt-1 text-[11px] text-[#73757A]">
+                  {autoFilled.title && autoFilled.company ? 'Job title and company' : autoFilled.title ? 'Job title' : 'Company'} filled in from the job description. Check and change if needed.
+                </p>
+              )}
 
               {/* Location */}
               <SearchableDropdown
@@ -795,7 +823,7 @@ export default function AddJobPage() {
               <div>
                 <h2 className="text-sm sm:text-base font-semibold text-[#252525]">Your experience</h2>
                 <p className="text-xs text-[#73757A]">
-                  ROLEWISE needs your experience to understand how your background connects to this role.
+                  Rolewise needs your experience to understand how your background connects to this role.
                 </p>
               </div>
             </div>
@@ -1002,7 +1030,7 @@ export default function AddJobPage() {
             <Info className="w-4 h-4" />
           </div>
           <div>
-            <p className="font-semibold text-[#252525]">Why ROLEWISE needs this</p>
+            <p className="font-semibold text-[#252525]">Why Rolewise needs this</p>
             <p className="text-[11px] text-[#73757A]">
               Your job description tells us what the role requires. Your experience tells us where your background connects.
             </p>
@@ -1010,7 +1038,13 @@ export default function AddJobPage() {
         </div>
 
         {/* Buttons */}
-        <div className="flex items-center gap-3 justify-end shrink-0">
+        <div className="flex flex-col items-stretch sm:items-end gap-2 shrink-0">
+        {!isFormValid && !isAnalyzing && analysisStatus !== 'completed' && (
+          <p id="analyze-missing" role="status" className="text-[12px] text-[#73757A] sm:text-right">
+            {4 - missingSteps.length} of 4 done. To continue, {missingSteps.join(', ')}.
+          </p>
+        )}
+        <div className="flex items-center gap-3 justify-end">
           <Link
             href="/jobs"
             className="touch-target px-4 py-2.5 rounded-xl border border-[#D9D8D2] hover:bg-[#FAF9F4] text-xs sm:text-sm font-semibold text-[#73757A] transition-colors"
@@ -1041,6 +1075,7 @@ export default function AddJobPage() {
               type="button"
               onClick={handleAnalyze}
               disabled={!isFormValid || isAnalyzing}
+              aria-describedby={!isFormValid ? "analyze-missing" : undefined}
               className="touch-target inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isAnalyzing ? (
@@ -1056,6 +1091,7 @@ export default function AddJobPage() {
               )}
             </button>
           )}
+        </div>
         </div>
       </div>
     </div>

@@ -451,7 +451,7 @@ export function CalendarWidget({ roles = [] }: CalendarWidgetProps) {
                 className="font-semibold text-[#4A4A4A] hover:text-[#252525] hover:underline flex items-center gap-0.5"
               >
                 <Plus className="w-3 h-3" />
-                <span>Add job</span>
+                <span>Add a job</span>
               </Link>
               <span className="text-[#D0D5DD]">·</span>
               <Link

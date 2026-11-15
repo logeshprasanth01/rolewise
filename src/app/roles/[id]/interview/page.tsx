@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { PracticeTabs } from '@/components/practice/PracticeTabs';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -1066,6 +1067,8 @@ export default function InterviewPage() {
         </span>
       </div>
 
+      {questionNumber === 1 && <PracticeTabs active="job" />}
+
       {/* Role Header */}
       <section className="space-y-1">
         <div className="flex items-center gap-2 text-xs font-medium text-[#73757A]">
@@ -1251,7 +1254,7 @@ export default function InterviewPage() {
         )}
 
         <p className="text-xs text-[#73757A] pt-1">
-          Answer naturally. ROLEWISE will evaluate both your response and how you communicate it.
+          Answer naturally. Rowi will evaluate both your response and how you communicate it.
         </p>
       </section>
 

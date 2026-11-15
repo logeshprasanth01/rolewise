@@ -198,7 +198,7 @@ export const AuthModal: React.FC = () => {
       } else {
         if (data?.session) {
           // Instant session (email confirmation off)
-          setSuccessMsg('Welcome to ROLEWISE! Account created.');
+          setSuccessMsg('Welcome to Rolewise! Account created.');
           setTimeout(() => {
             closeAuthModal();
           }, 800);
@@ -258,7 +258,7 @@ export const AuthModal: React.FC = () => {
           {session ? (
             <div>
               <h2 className="text-xl font-bold text-[#1F2937] tracking-tight">Your Account</h2>
-              <p className="text-sm text-[#667085] mt-1">Manage your active ROLEWISE session.</p>
+              <p className="text-sm text-[#667085] mt-1">Manage your active Rolewise session.</p>
             </div>
           ) : isRateLimited ? (
             <div>

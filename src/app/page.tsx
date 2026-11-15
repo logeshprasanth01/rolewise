@@ -212,7 +212,7 @@ export default function DashboardPage() {
                   <p className="text-[13px] text-[#73757A]">Follow-ups and interviews that need you</p>
                 </div>
                 <Link data-ui-sound="click" href="/jobs?add=1" className="touch-target inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-[#252525] text-white text-[13px] font-semibold">
-                  <Plus className="w-4 h-4" /> Log application
+                  <Plus className="w-4 h-4" /> Log an application
                 </Link>
               </div>
               {todayItems.length === 0 ? (
@@ -268,7 +268,7 @@ export default function DashboardPage() {
               <div>
                 <h2 className="text-base font-semibold text-[#252525]">Get Started</h2>
                 <p className="text-xs text-[#73757A]">
-                  Add a job role and let AI create a personalized preparation plan for you.
+                  Add a job and Rowi will build a preparation plan for that role.
                 </p>
               </div>
 
@@ -284,7 +284,7 @@ export default function DashboardPage() {
                   className="touch-target inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#252525] text-sm font-semibold transition-all shadow-[0_3px_0_rgba(37,37,37,0.12)] hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#252525] focus-visible:ring-offset-2"
                 >
                   <Plus className="w-5 h-5" strokeWidth={2.5} />
-                  <span>Add Job</span>
+                  <span>Add a job</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -358,7 +358,7 @@ export default function DashboardPage() {
           {/* Supporting Communication Practice (PRD: Voice & Video) */}
           <div className="rolewise-card p-6 space-y-4">
             <div>
-              <h2 className="text-base font-semibold text-[#252525]">Communication Practice</h2>
+              <h2 className="text-base font-semibold text-[#252525]">General drills</h2>
               <p className="text-xs text-[#73757A]">Build confidence practising with Rowi.</p>
             </div>
 
@@ -437,92 +437,44 @@ export default function DashboardPage() {
 
       {/* 4. LOWER DASHBOARD: RECOMMENDED FOR YOU (2x2 GRID) & RECENT ACTIVITY */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left Column: Recommended for you (2 x 2 Card Grid) */}
-        <section className="lg:col-span-2 space-y-3">
-          <div className="space-y-0.5">
-            <h2 className="text-sm sm:text-base font-semibold text-[#252525]">Recommended for you</h2>
-            <p className="text-xs text-[#73757A]">
-              Start with these key areas to improve your interview readiness.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link data-ui-sound="click"
-              href="/communication-practice"
-              className="rolewise-card p-4 hover:border-[#C8B33E] transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center shrink-0">
-                  <Layers className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-[#252525] group-hover:text-[#252525] transition-colors">
-                    System Design
-                  </p>
-                  <p className="text-[11px] text-[#73757A]">High impact</p>
-                </div>
+        {/* Left Column: next steps for the person's own job. Hidden until a job exists,
+            so a new account never sees generic, made-up recommendations. */}
+        {roles.length > 0 && (() => {
+          const r = roles[0];
+          const steps = [
+            { href: `/roles/${r.id}/fit`, title: 'Review your role fit', note: 'See which requirements you meet', icon: Compass, tint: 'bg-[#FFF2B8] text-[#252525]' },
+            { href: `/roles/${r.id}/preparation`, title: 'Work through your prep plan', note: 'Built from your gaps', icon: Layers, tint: 'bg-[#FFF5DF] text-[#D49A35]' },
+            { href: `/roles/${r.id}/interview`, title: 'Mock interview with Rowi', note: 'Questions written for this role', icon: MessageSquare, tint: 'bg-[#EAF6F0] text-[#6FA77F]' },
+            { href: '/communication-practice', title: 'General drills', note: 'Voice and video practice', icon: FileText, tint: 'bg-[#F3F2EE] text-[#252525]' },
+          ];
+          return (
+            <section className="lg:col-span-2 space-y-3">
+              <div className="space-y-0.5">
+                <h2 className="text-sm sm:text-base font-semibold text-[#252525]">Next steps for {r.title}</h2>
+                <p className="text-xs text-[#73757A]">Pick up where you left off on your most recent job.</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors shrink-0" />
-            </Link>
-
-            <Link data-ui-sound="click"
-              href="/communication-practice/voice"
-              className="rolewise-card p-4 hover:border-[#C8B33E] transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#EAF6F0] text-[#6FA77F] flex items-center justify-center shrink-0">
-                  <MessageSquare className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-[#252525] group-hover:text-[#252525] transition-colors">
-                    Behavioral
-                  </p>
-                  <p className="text-[11px] text-[#73757A]">Commonly asked</p>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {steps.map((st) => (
+                  <Link key={st.href} data-ui-sound="click" href={st.href} className="rolewise-card p-4 hover:border-[#C8B33E] transition-all flex items-center justify-between group">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-xl ${st.tint} flex items-center justify-center shrink-0`}>
+                        <st.icon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-[#252525]">{st.title}</p>
+                        <p className="text-[11px] text-[#73757A]">{st.note}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors shrink-0" />
+                  </Link>
+                ))}
               </div>
-              <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors shrink-0" />
-            </Link>
-
-            <Link data-ui-sound="click"
-              href="/communication-practice"
-              className="rolewise-card p-4 hover:border-[#C8B33E] transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF2B8] text-[#252525] flex items-center justify-center shrink-0">
-                  <Compass className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-[#252525] group-hover:text-[#252525] transition-colors">
-                    Product Sense
-                  </p>
-                  <p className="text-[11px] text-[#73757A]">Role specific</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors shrink-0" />
-            </Link>
-
-            <Link data-ui-sound="click"
-              href="/communication-practice"
-              className="rolewise-card p-4 hover:border-[#C8B33E] transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF5DF] text-[#D49A35] flex items-center justify-center shrink-0">
-                  <FileText className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-[#252525] group-hover:text-[#252525] transition-colors">
-                    Case Studies
-                  </p>
-                  <p className="text-[11px] text-[#73757A]">Improve problem solving</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-[#9A9B9E] group-hover:text-[#252525] transition-colors shrink-0" />
-            </Link>
-          </div>
-        </section>
+            </section>
+          );
+        })()}
 
         {/* Right Column: Recent Activity (Truthful empty state per PRD) */}
-        <section className="lg:col-span-1">
+        <section className={roles.length > 0 ? 'lg:col-span-1' : 'lg:col-span-3'}>
           <div className="rolewise-card p-5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#252525] flex items-center gap-1.5">

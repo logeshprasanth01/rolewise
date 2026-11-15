@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Sparkles, ChevronRight, BellRing, Briefcase, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Search, Sparkles, ClipboardList, ChevronRight, BellRing, Briefcase, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { getUserRoles, updateApplication } from '@/services/api';
 import type { ApplicationStatus, Role } from '@/types/database';
 import {
@@ -81,6 +81,7 @@ export default function JobTrackerPage() {
       active: roles.filter(isActive).length,
       thisWeek: applied.filter((r) => r.applied_at && r.applied_at >= weekAgo).length,
       responseRate: applied.length ? Math.round((responded.length / applied.length) * 100) : 0,
+      hasApplied: applied.length > 0,
       due: roles.filter((r) => isFollowUpDue(r, today)).length,
       interviews: roles.filter((r) => statusOf(r) === 'interview').length,
     };
@@ -131,21 +132,25 @@ export default function JobTrackerPage() {
             {isLoading ? 'Loading your applications…' : `${stats.active} active · ${stats.interviews} in interviews`}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Link
-            href="/jobs/new"
-            className="touch-target flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-11 px-4 rounded-xl bg-white border border-[#D9D8D2] hover:border-[#252525] text-sm font-semibold text-[#252525] transition-colors"
-          >
-            <Sparkles className="w-4 h-4" /> Analyze a job
-          </Link>
-          <button
-            type="button"
-            onClick={() => setSheetOpen(true)}
-            data-ui-sound="click"
-            className="touch-target flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-11 px-4 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-sm font-bold text-[#252525] transition-colors"
-          >
-            <Plus className="w-4 h-4" /> Log application
-          </button>
+        <div className="flex flex-col items-stretch sm:items-end gap-1.5">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setSheetOpen(true)}
+              data-ui-sound="click"
+              title="Already applied somewhere? Log it to track follow-ups."
+              className="touch-target flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-11 px-3 sm:px-4 rounded-xl bg-white border border-[#D9D8D2] hover:border-[#252525] text-[13px] sm:text-sm font-semibold text-[#252525] whitespace-nowrap transition-colors"
+            >
+              <ClipboardList className="hidden sm:block w-4 h-4" /> Log an application
+            </button>
+            <Link
+              href="/jobs/new"
+              className="touch-target flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-11 px-4 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-sm font-bold text-[#252525] transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Add a job
+            </Link>
+          </div>
+          <p className="text-[11px] text-[#73757A]">Add a job to get a fit score and prep plan. Already applied? Log it to track follow-ups.</p>
         </div>
       </header>
 
@@ -154,7 +159,7 @@ export default function JobTrackerPage() {
         {[
           { label: 'Active', value: stats.active, sub: 'not closed' },
           { label: 'This week', value: stats.thisWeek, sub: 'applications sent' },
-          { label: 'Response rate', value: `${stats.responseRate}%`, sub: 'heard back' },
+          { label: 'Response rate', value: stats.hasApplied ? `${stats.responseRate}%` : '–', sub: stats.hasApplied ? 'heard back' : 'after your first application' },
           { label: 'Follow-ups due', value: stats.due, sub: 'tap to see', due: stats.due > 0, onClick: () => setFilter('due') },
         ].map((s) => {
           const body = (
@@ -231,9 +236,14 @@ export default function JobTrackerPage() {
               Log every application here. Rolewise reminds you when to follow up and builds an interview plan for the ones that move forward.
             </p>
           </div>
-          <button type="button" onClick={() => setSheetOpen(true)} className="touch-target inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-sm font-bold text-[#252525]">
-            <Plus className="w-4 h-4" /> Log your first application
-          </button>
+          <div className="flex flex-col items-center gap-2">
+            <Link href="/jobs/new" className="touch-target inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-sm font-bold text-[#252525]">
+              <Plus className="w-4 h-4" /> Add a job
+            </Link>
+            <button type="button" onClick={() => setSheetOpen(true)} className="text-xs font-semibold text-[#73757A] underline underline-offset-2 hover:text-[#252525]">
+              Already applied? Log an application
+            </button>
+          </div>
         </div>
       ) : visible.length === 0 ? (
         <div className="rounded-2xl bg-[#FAF9F4] border border-dashed border-[#D9D8D2] p-8 text-center">
@@ -307,14 +317,13 @@ export default function JobTrackerPage() {
       )}
 
       {/* Mobile floating action */}
-      <button
-        type="button"
-        onClick={() => setSheetOpen(true)}
-        aria-label="Log application"
+      <Link
+        href="/jobs/new"
+        aria-label="Add a job"
         className="lg:hidden fixed right-4 bottom-[calc(76px+env(safe-area-inset-bottom))] z-40 w-14 h-14 rounded-2xl bg-[#252525] text-white shadow-[0_10px_24px_rgba(37,37,37,0.28)] flex items-center justify-center"
       >
         <Plus className="w-6 h-6" />
-      </button>
+      </Link>
 
       <QuickAddSheet
         open={sheetOpen}

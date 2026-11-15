@@ -220,7 +220,7 @@ export default function SettingsPage() {
           <User className="w-4 h-4 text-[#5F6368]" />
           <div>
             <h2 className="text-sm font-semibold text-[#252525]">Profile</h2>
-            <p className="text-xs text-[#73757A]">Edit the information shown across your ROLEWISE workspace.</p>
+            <p className="text-xs text-[#73757A]">Edit the information shown across your Rolewise workspace.</p>
           </div>
         </div>
 
@@ -324,14 +324,14 @@ export default function SettingsPage() {
           <Bell className="w-4 h-4 text-[#5F6368]" />
           <div>
             <h2 className="text-sm font-semibold text-[#252525]">Notifications</h2>
-            <p className="text-xs text-[#73757A]">Control non-critical browser notifications from ROLEWISE.</p>
+            <p className="text-xs text-[#73757A]">Control non-critical browser notifications from Rolewise.</p>
           </div>
         </div>
         <Toggle
           checked={notificationsEnabled}
           onChange={setNotificationsEnabled}
           label="Workspace notifications"
-          description="Allow ROLEWISE to show non-critical notification prompts and updates."
+          description="Allow Rolewise to show non-critical notification prompts and updates."
         />
       </section>
 
@@ -371,7 +371,7 @@ export default function SettingsPage() {
           <h2 className="text-sm font-semibold text-[#252525]">Privacy & Security</h2>
         </div>
         <p className="text-xs text-[#73757A] leading-relaxed">
-          Your job descriptions, resume details, and practice recordings are tied to your authenticated account. ROLEWISE does not expose workspace data to other users.
+          Your job descriptions, resume details, and practice recordings are tied to your authenticated account. Rolewise does not expose workspace data to other users.
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#4F7F5B]">

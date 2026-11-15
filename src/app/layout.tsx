@@ -14,7 +14,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'ROLEWISE — Prepare for the role. Not just the interview.',
+  title: 'Rolewise — Prepare for the role. Not just the interview.',
   description:
     'Production-style AI interview preparation. Connect your real candidate experience with role requirements to build focused preparation plans.',
   openGraph: {

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { PracticeTabs } from '@/components/practice/PracticeTabs';
 import Link from 'next/link';
 import {
   Mic,
@@ -40,12 +41,9 @@ export default function CommunicationPracticePage() {
     <div className="space-y-8 max-w-5xl mx-auto animate-in fade-in duration-300 pb-16">
       {/* Header */}
       <section className="space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFF2B8] text-[#252525] text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Independent Practice Hub</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight">
-          Communication Practice
+        <PracticeTabs active="drills" />
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#252525] tracking-tight pt-2">
+          General drills
         </h1>
         <p className="text-xs sm:text-base text-[#73757A] leading-relaxed max-w-2xl">
           Build fluency and clarity by practicing how you communicate, independent of any specific job application.
