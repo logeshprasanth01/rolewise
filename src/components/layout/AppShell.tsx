@@ -59,9 +59,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       pathname?.includes('/preparation');
 
     if (href === '/') return pathname === '/' || pathname === '/dashboard';
-    if (href === '/jobs') return pathname === '/jobs' || pathname.startsWith('/jobs/');
+    const isRoleFitRoute = /^\/roles\/[^/]+\/fit/.test(pathname ?? '');
+    if (href === '/jobs') return pathname === '/jobs' || pathname.startsWith('/jobs/') || isRoleFitRoute;
     if (href === '/preparation') return isPreparationRoute;
-    if (href === '/roles') return (pathname.startsWith('/roles') && !isPreparationRoute) || pathname.startsWith('/communication-practice');
+    if (href === '/roles') return (pathname.startsWith('/roles') && !isPreparationRoute && !isRoleFitRoute) || pathname.startsWith('/communication-practice');
     return pathname?.startsWith(href);
   };
 
