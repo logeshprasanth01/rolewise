@@ -7,29 +7,34 @@ interface RolewiseLogoProps {
   className?: string;
 }
 
+/**
+ * Open sidebar → "ROLEWISE" wordmark only.
+ * Collapsed sidebar → the R mark only.
+ */
 export const RolewiseLogo: React.FC<RolewiseLogoProps> = ({ collapsed = false, className = '' }) => {
   if (collapsed) {
     return (
-      <span
-        role="img"
-        aria-label="ROLEWISE"
-        className={`relative block shrink-0 overflow-hidden ${className}`}
-      >
-        <img
-          src="/rolewise-logo.svg"
-          alt="ROLEWISE"
-          className="absolute left-0 top-1/2 h-full w-auto max-w-none -translate-y-1/2 object-contain object-left"
-        />
-      </span>
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src="/rolewise-mark.png"
+        alt="ROLEWISE"
+        width={112}
+        height={125}
+        draggable={false}
+        className={`block h-full w-auto object-contain select-none ${className}`}
+      />
     );
   }
 
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/rolewise-logo.svg"
+      src="/rolewise-wordmark.png"
       alt="ROLEWISE"
-      role="img"
-      className={`block h-auto w-full object-contain object-left ${className}`}
+      width={459}
+      height={72}
+      draggable={false}
+      className={`block h-auto w-full object-contain object-left select-none ${className}`}
     />
   );
 };

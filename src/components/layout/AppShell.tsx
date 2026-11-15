@@ -134,7 +134,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 data-ui-sound="click"
                 className="w-9 h-9 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer"
               >
-                <RolewiseLogo collapsed className="w-9 h-9" />
+                <RolewiseLogo collapsed className="h-8" />
               </button>
             ) : (
               <>
@@ -142,9 +142,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   href="/"
                   data-ui-sound="click"
                   title="ROLEWISE"
-                  className="ml-4 flex items-center overflow-hidden shrink-0 w-[172px] h-9"
+                  className="ml-5 flex items-center overflow-hidden shrink-0 w-[140px] h-9"
                 >
-                  <RolewiseLogo className="w-[172px] h-auto" />
+                  <RolewiseLogo className="w-[140px]" />
                 </Link>
 
                 <button
