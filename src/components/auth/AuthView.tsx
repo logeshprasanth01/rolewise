@@ -24,6 +24,15 @@ import Link from 'next/link';
 import { RolewiseLogo } from '@/components/brand/RolewiseLogo';
 import { GlossyIcon } from '@/components/brand/GlossyIcon';
 
+const RETURNING_KEY = 'rw-has-account';
+const rememberReturning = () => {
+  try {
+    window.localStorage.setItem(RETURNING_KEY, '1');
+  } catch {
+    // storage unavailable
+  }
+};
+
 export const AuthView: React.FC = () => {
   const { signIn, signUp } = useAuth();
 
@@ -60,7 +69,19 @@ export const AuthView: React.FC = () => {
   // Read ?mode=signup after hydration so server and client render the same first frame.
   useEffect(() => {
     const id = requestAnimationFrame(() => {
-      if (new URLSearchParams(window.location.search).get('mode') === 'signup') setMode('signup');
+      const asked = new URLSearchParams(window.location.search).get('mode');
+      if (asked === 'signup' || asked === 'signin') {
+        setMode(asked);
+        return;
+      }
+      // First-time visitors start on sign up; people who have signed in on this browser before start on sign in.
+      let returning = false;
+      try {
+        returning = window.localStorage.getItem(RETURNING_KEY) === '1';
+      } catch {
+        // storage unavailable
+      }
+      setMode(returning ? 'signin' : 'signup');
     });
     return () => cancelAnimationFrame(id);
   }, []);
@@ -121,6 +142,7 @@ export const AuthView: React.FC = () => {
         if (error) {
           setErrorMessage(error.message || 'Invalid login credentials. Please check your email and password.');
         } else {
+          rememberReturning();
           setSuccessMessage('Signed in successfully! Entering workspace...');
           playUiSound('success');
         }
@@ -129,6 +151,7 @@ export const AuthView: React.FC = () => {
         if (error) {
           setErrorMessage(error.message || 'Could not create account. Please try again.');
         } else if (data?.session) {
+          rememberReturning();
           setSuccessMessage('Account created! Entering workspace...');
           playUiSound('success');
         } else {
@@ -138,6 +161,7 @@ export const AuthView: React.FC = () => {
             setSuccessMessage('Account created! Please check your email to verify your account, or sign in.');
             playUiSound('success');
           } else {
+            rememberReturning();
             setSuccessMessage('Account created! Entering workspace...');
           }
         }
@@ -153,6 +177,7 @@ export const AuthView: React.FC = () => {
   const [socialLoading, setSocialLoading] = useState<'Google' | 'LinkedIn' | null>(null);
 
   const handleSocialAuth = async (provider: 'Google' | 'LinkedIn') => {
+    rememberReturning();
     if (socialLoading || isLoading) return;
     setSocialLoading(provider);
     setErrorMessage(null);
@@ -286,7 +311,7 @@ export const AuthView: React.FC = () => {
             <p className="text-sm text-[#6B6259]">
               {mode === 'signin'
                 ? 'Sign in to continue preparing.'
-                : 'Free during early access.'}
+                : 'Paste a job description and see what to prepare, then practise the interview out loud. Free during early access.'}
             </p>
           </div>
 

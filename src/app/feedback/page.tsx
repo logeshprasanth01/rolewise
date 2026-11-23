@@ -110,7 +110,7 @@ export default function FeedbackPage() {
                 return (
                   <>
                     <section className="rounded-[22px] bg-[#FFFFFF] border border-[#E6E0D7] p-4 sm:p-5">
-                      <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#6B6259]">Mock interview</p>
+                      <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#6B6259]">{selected.status === 'completed' ? 'Mock interview' : 'Mock interview · not finished'}</p>
                       <h2 className="text-lg sm:text-xl font-bold text-[#1A1714] mt-1">{role ? `${role.title} · ${role.company}` : 'Interview session'}</h2>
                       {role && (
                         <div className="flex flex-wrap gap-2 mt-3">

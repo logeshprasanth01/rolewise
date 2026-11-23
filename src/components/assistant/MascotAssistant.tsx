@@ -42,14 +42,27 @@ export function MascotAssistant() {
     const id = requestAnimationFrame(() => setSoundOn(isMascotSoundOn()));
     let seen = false;
     try {
-      seen = window.sessionStorage.getItem('rolewise-helper-hint') === '1';
+      seen = window.localStorage.getItem('rolewise-helper-hint') === '1';
     } catch {
       /* ignore */
     }
-    const t = seen ? undefined : window.setTimeout(() => setHint(true), 4000);
+    // Show the greeting once per browser, and let it fade away on its own after a few seconds.
+    let hideTimer: number | undefined;
+    const t = seen
+      ? undefined
+      : window.setTimeout(() => {
+          setHint(true);
+          try {
+            window.localStorage.setItem('rolewise-helper-hint', '1');
+          } catch {
+            /* ignore */
+          }
+          hideTimer = window.setTimeout(() => setHint(false), 9000);
+        }, 4000);
     return () => {
       cancelAnimationFrame(id);
       if (t) window.clearTimeout(t);
+      if (hideTimer) window.clearTimeout(hideTimer);
     };
   }, []);
 
@@ -84,7 +97,7 @@ export function MascotAssistant() {
   const dismissHint = () => {
     setHint(false);
     try {
-      window.sessionStorage.setItem('rolewise-helper-hint', '1');
+      window.localStorage.setItem('rolewise-helper-hint', '1');
     } catch {
       /* ignore */
     }

@@ -958,15 +958,6 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
     }
   }
 
-  // 3. Log session diagnostics (TASK 4 - NEVER log the access token itself)
-  console.log('[Rolewise] interview-ai session:', {
-    hasSession: Boolean(session),
-    hasAccessToken: Boolean(session?.access_token),
-    userId: session?.user?.id ?? null,
-    expiresAt: session?.expires_at ?? null,
-    sessionError: sessionError?.message ?? null,
-  });
-
   // 4. Verify session access token exists before making request (TASK 4)
   if (!session?.access_token) {
     throw new RolewiseApiError(
@@ -1004,21 +995,6 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
     return data;
   }
 
-  // 6. Log the actual Supabase function error (TASK 2)
-  console.error('[Rolewise] interview-ai raw result:', {
-    hasData: Boolean(data),
-    data,
-    hasError: Boolean(error),
-    errorName: error?.name,
-    errorMessage: error?.message,
-    error,
-  });
-
-  console.error('[Rolewise] interview-ai error context:', {
-    context: error?.context,
-    contextType: error?.context?.constructor?.name,
-  });
-
   // 7. Read error.context when available (TASK 3 - read body only once)
   let errorBody: unknown = null;
   let status = 500;
@@ -1037,20 +1013,7 @@ export async function invokeInterviewAI<T = unknown>(payload: Record<string, unk
     }
   }
 
-  console.error('[Rolewise] interview-ai HTTP response:', {
-    status: error?.context?.status ?? status,
-    statusText: error?.context?.statusText,
-    errorBody,
-  });
-
-  console.error('[Rolewise] interview-ai failure details:', {
-    httpStatus: status,
-    responseBody: errorBody,
-    errorName: error?.name,
-    errorMessage: error?.message,
-    requestAction: payload.action,
-    roleId: payload.roleId,
-  });
+  console.error('[Rolewise] interview-ai failed', { status, action: payload.action });
 
   // Intercept 5xx and 429 errors for interview actions to guarantee uninterrupted practice
   const action = typeof payload.action === 'string' ? payload.action : '';
@@ -1446,29 +1409,53 @@ export async function getApplicationEvents(roleId: string): Promise<ApplicationE
 // Interview history
 // ---------------------------------------------------------------------------
 
+/**
+ * Saves a mock interview as it happens: the first reviewed answer creates the record,
+ * each later answer updates it, and the final call marks it completed. Returns the record id.
+ */
+export async function saveInterviewProgress(params: {
+  roleId: string;
+  interviewId?: string | null;
+  rounds: { question: string; transcript: string; analysis?: unknown }[];
+  status: 'in_progress' | 'completed';
+  finalFeedback?: FinalFeedbackOutput | null;
+}): Promise<string | null> {
+  try {
+    const supabase = getSupabaseClient();
+    const userId = await requireUserId();
+    const now = new Date().toISOString();
+    const fields = {
+      status: params.status,
+      questions_answered: params.rounds.length,
+      rounds: params.rounds,
+      ...(params.status === 'completed' ? { completed_at: now, final_feedback: params.finalFeedback ?? null } : {}),
+    };
+    if (params.interviewId) {
+      const { error } = await supabase.from('interviews').update(fields).eq('id', params.interviewId).eq('user_id', userId);
+      if (error) throw error;
+      return params.interviewId;
+    }
+    const { data, error } = await supabase
+      .from('interviews')
+      .insert({ role_id: params.roleId, user_id: userId, started_at: now, ...fields })
+      .select('id')
+      .single();
+    if (error) throw error;
+    return (data as { id: string }).id;
+  } catch (err) {
+    // Saving history must never break the interview experience.
+    if (process.env.NODE_ENV !== 'production') console.warn('[Rolewise] saveInterviewProgress notice:', err);
+    return params.interviewId ?? null;
+  }
+}
+
+/** Kept for older callers: saves a finished interview in one go. */
 export async function saveCompletedInterview(params: {
   roleId: string;
   rounds: { question: string; transcript: string; analysis?: unknown }[];
   finalFeedback: FinalFeedbackOutput | null;
 }): Promise<void> {
-  try {
-    const supabase = getSupabaseClient();
-    const userId = await requireUserId();
-    const startedAt = new Date().toISOString();
-    await supabase.from('interviews').insert({
-      role_id: params.roleId,
-      user_id: userId,
-      status: 'completed',
-      started_at: startedAt,
-      completed_at: startedAt,
-      questions_answered: params.rounds.length,
-      rounds: params.rounds,
-      final_feedback: params.finalFeedback,
-    });
-  } catch (err) {
-    // Saving history must never break the interview experience.
-    console.warn('[Rolewise] saveCompletedInterview notice:', err);
-  }
+  await saveInterviewProgress({ ...params, status: 'completed' });
 }
 
 export async function getInterviewHistory(): Promise<InterviewHistoryRecord[]> {
@@ -1480,8 +1467,8 @@ export async function getInterviewHistory(): Promise<InterviewHistoryRecord[]> {
     .from('interviews')
     .select('id, role_id, status, started_at, completed_at, questions_answered, rounds, final_feedback')
     .eq('user_id', userId)
-    .eq('status', 'completed')
-    .order('completed_at', { ascending: false });
+    .gt('questions_answered', 0)
+    .order('started_at', { ascending: false });
   if (error) {
     console.warn('[Rolewise] getInterviewHistory notice:', error.message);
     return [];

@@ -75,6 +75,16 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }, [isLoading, session, pathname, router, isPublicPage]);
 
   useEffect(() => {
+    // Remember that this browser has an account, so the auth screen opens on "Sign in" next time.
+    if (!session) return;
+    try {
+      window.localStorage.setItem('rw-has-account', '1');
+    } catch {
+      // storage unavailable
+    }
+  }, [session]);
+
+  useEffect(() => {
     const saved = window.localStorage.getItem('rolewise-sidebar-collapsed');
     if (saved === 'true') setIsSidebarCollapsed(true);
   }, []);
@@ -122,7 +132,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       <div className="min-h-screen w-full bg-[#FAF8F4] flex min-w-0">
 
         <aside
-          className={`hidden lg:flex shrink-0 bg-[#FFFFFF] border-r border-[#E6E0D7] flex-col z-40 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-[68px]' : 'w-[248px]'}`}
+          className={`hidden lg:flex shrink-0 sticky top-0 h-dvh self-start bg-[#FFFFFF] border-r border-[#E6E0D7] flex-col z-40 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isSidebarCollapsed ? 'w-[68px]' : 'w-[248px]'}`}
           aria-label="Sidebar navigation"
         >
           <div className={`relative h-[60px] shrink-0 border-b border-[#E6E0D7]/70 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>

@@ -28,7 +28,7 @@ import {
   generateInterviewQuestion,
   analyzeInterviewAnswer,
   getFinalInterviewFeedback,
-  saveCompletedInterview,
+  saveInterviewProgress,
   RolewiseApiError,
 } from '@/services/api';
 import { Role, CommunicationAnalysisResponse, FinalFeedbackOutput } from '@/types/database';
@@ -63,6 +63,7 @@ interface StoredInterviewSession {
   currentAnalysis: CommunicationAnalysisResponse | null;
   pendingNext: { question: string; competency: string } | null;
   aiFinalFeedback: FinalFeedbackOutput | null;
+  interviewId?: string | null;
 }
 
 const getStorageKey = (id: string) => `rolewise:interview:${id}`;
@@ -206,6 +207,7 @@ export default function InterviewPage() {
 
   // Lifecycle guards to prevent duplicate execution (Requirements 1, 2, 3, 13, 14)
   const initializedRef = useRef<boolean>(false);
+  const interviewIdRef = useRef<string | null>(null);
   const isGeneratingRef = useRef<boolean>(false);
   const activeRequestIdRef = useRef<string>('');
   const questionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -671,6 +673,17 @@ export default function InterviewPage() {
       setPendingNext(nextStaged);
       setFlowState('REVIEWED');
 
+      // Save progress after every reviewed answer so a session that stops early is not lost.
+      if (!interviewIdRef.current) interviewIdRef.current = loadStoredSession(roleId)?.interviewId ?? null;
+      void saveInterviewProgress({
+        roleId,
+        interviewId: interviewIdRef.current,
+        status: 'in_progress',
+        rounds: nextCompleted.map((r) => ({ question: r.question, transcript: r.transcript, analysis: r.analysis })),
+      }).then((id) => {
+        if (id) { interviewIdRef.current = id; saveStoredSession(roleId, { interviewId: id }); }
+      });
+
       saveStoredSession(roleId, {
         flowState: 'REVIEWED',
         currentAnalysis: analysisResult,
@@ -715,7 +728,14 @@ export default function InterviewPage() {
         console.warn('[InterviewPage] Final feedback synthesis notice:', err);
       }
       if (roundsForHistory.length > 0) {
-        void saveCompletedInterview({ roleId, rounds: roundsForHistory, finalFeedback: finalForHistory });
+        if (!interviewIdRef.current) interviewIdRef.current = loadStoredSession(roleId)?.interviewId ?? null;
+        void saveInterviewProgress({
+          roleId,
+          interviewId: interviewIdRef.current,
+          status: 'completed',
+          rounds: roundsForHistory,
+          finalFeedback: finalForHistory,
+        });
       }
       return;
     }
@@ -753,6 +773,7 @@ export default function InterviewPage() {
   // Practice again (restart session)
   const handlePracticeAgain = () => {
     clearStoredSession(roleId);
+    interviewIdRef.current = null;
     initializedRef.current = false;
     isGeneratingRef.current = false;
     activeRequestIdRef.current = '';
@@ -1145,12 +1166,15 @@ export default function InterviewPage() {
 
       {/* QUESTION CARD (Requirements 8, 9, 10, 12, 20) */}
       <section className="rolewise-card p-6 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFE58A] text-[#1A1714] border border-[#FFE58A]">
-            <Sparkles className="w-3.5 h-3.5" />
-            {currentCompetency || 'Role Competency'}
+        <div className="flex items-center justify-between gap-3">
+          <span
+            title={currentCompetency || 'Role Competency'}
+            className="inline-flex min-w-0 max-w-[70%] items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFE58A] text-[#1A1714] border border-[#FFE58A]"
+          >
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">{currentCompetency || 'Role Competency'}</span>
           </span>
-          <span className="text-xs text-[#6B6259]">
+          <span className="shrink-0 text-xs text-[#6B6259]">
             Question {questionNumber} of {totalQuestions}
           </span>
         </div>
@@ -1167,7 +1191,7 @@ export default function InterviewPage() {
                     : 'Generating next question'}
                 </span>
               </div>
-              <p className="text-xs text-[#6B6259]">Based on this role and your experience...</p>
+              <QuestionLoadingTip />
             </div>
             {/* Animated Skeleton Placeholder */}
             <div className="space-y-2 pt-1 animate-pulse">
@@ -1561,5 +1585,26 @@ export default function InterviewPage() {
         </div>
       )}
     </div>
+  );
+}
+
+const LOADING_TIPS = [
+  'Reading the role requirements and your resume…',
+  'Tip: answer in three beats: the situation, what you did, and what changed.',
+  'Tip: say "I", not "we", so the interviewer hears your part.',
+  'Tip: end with a result, even a small one, like time saved or fewer support tickets.',
+  'Tip: 60 to 90 seconds is a good length for most answers.',
+];
+
+function QuestionLoadingTip() {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setIndex((i) => (i + 1) % LOADING_TIPS.length), 3500);
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <p className="text-xs text-[#6B6259]" aria-live="polite">
+      {LOADING_TIPS[index]}
+    </p>
   );
 }
