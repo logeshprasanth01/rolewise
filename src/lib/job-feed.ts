@@ -150,7 +150,8 @@ export function domainOf(title: string, department = ''): Domain {
   const d = `${department}`.toLowerCase();
   const test = (re: RegExp) => re.test(t) || (!!d && re.test(d));
   if (/\b(sales engineer|solutions? engineer|solutions? consultant|pre-?sales|account executive|account manager|business development)/i.test(t)) return 'Sales';
-  if (/\b(designer|design lead|ux|ui\b|ui\/|user research|visual|graphic|illustrat|motion|creative director)/i.test(t)) return 'Design';
+  const isEngineerTitle = /\b(engineer|developer|sde)\b/i.test(t) && !/\bdesign(er)?\b/i.test(t);
+  if (!isEngineerTitle && /\b(designer|design lead|ux|ui\b|ui\/|user research|visual|graphic|illustrat|motion|creative director)/i.test(t)) return 'Design';
   if (/\b(product manager|product owner|product lead|head of product|program manager|technical program|tpm\b|product ops)/i.test(t)) return 'Product';
   if (/\b(data scien|data analy|analytics|machine learning|\bml\b|\bai\b|research scientist|applied scientist|data engineer|business intelligence|\bbi\b|statistic|decision science|llm)/i.test(t)) return 'Data & AI';
   if (/\b(sap|abap|salesforce developer|servicenow|oracle|erp)\b/i.test(t)) return 'Engineering';
