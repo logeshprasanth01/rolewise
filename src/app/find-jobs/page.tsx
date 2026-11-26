@@ -17,7 +17,7 @@ export default function FindJobsPage() {
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto animate-in fade-in duration-300 pb-16">
+    <div className="max-w-[1160px] mx-auto animate-in fade-in duration-300 pb-16">
       <JobOpenings
         as="h1"
         title="Find jobs"

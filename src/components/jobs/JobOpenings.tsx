@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   Bookmark,
+  BookmarkCheck,
   Briefcase,
   CalendarClock,
   Check,
@@ -95,7 +96,7 @@ const WORK: { value: Filters['work']; label: string }[] = [
 const CITIES = ['Bengaluru', 'Chennai', 'Hyderabad', 'Pune', 'Mumbai', 'Delhi NCR', 'Kolkata', 'Ahmedabad', 'Coimbatore', 'Kochi'];
 const DOMAINS = ['Engineering', 'Design', 'Product', 'Data & AI', 'Marketing', 'Sales', 'Customer Success', 'Operations', 'Finance & Legal', 'People & HR', 'Other'];
 /** Top tabs, like UXHack's All / Design / Product. Every other field is in the Field section. */
-const FIELD_TABS = ['', 'Design', 'Product', 'Engineering'];
+const FIELD_TABS = ['', 'Design', 'Product'];
 const CITY_KEY = 'rw-job-city';
 const PAGE_SIZE = 20;
 
@@ -241,29 +242,29 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
   const allCount = Object.values(counts.domainCounts).reduce((a, b) => a + b, 0);
 
   return (
-    <section aria-labelledby="job-openings-heading" className="space-y-5">
+    <section aria-labelledby="job-openings-heading" className="space-y-4 sm:space-y-5">
       <div>
         <Heading
           id="job-openings-heading"
-          className={as === 'h1' ? 'text-2xl sm:text-[32px] font-bold text-[#1A1714] tracking-[-0.02em] leading-tight' : 'text-lg sm:text-xl font-bold text-[#1A1714] tracking-[-0.01em]'}
+          className={as === 'h1' ? 'text-2xl sm:text-[28px] font-bold text-[#1A1714] tracking-[-0.02em] leading-tight' : 'text-lg sm:text-xl font-bold text-[#1A1714] tracking-[-0.01em]'}
         >
           {title}
         </Heading>
         {subtitle !== '' && (
-          <p className="mt-1 text-xs sm:text-sm text-[#6B6259] max-w-2xl">
+          <p className="mt-0.5 text-xs sm:text-sm text-[#6B6259] max-w-2xl">
             {subtitle ?? 'Real openings from company career pages and remote job boards. Apply opens the original posting.'}
           </p>
         )}
       </div>
 
-      <div className="lg:grid lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-6 lg:items-start">
+      <div className="lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:gap-5 lg:items-start">
         {/* LEFT: search + filters (desktop) */}
-        <aside aria-label="Search and filters" className="hidden lg:block sticky top-24 rolewise-card p-4 max-h-[calc(100dvh-7.5rem)] overflow-y-auto">
+        <aside aria-label="Search and filters" className="hidden lg:block sticky top-24 rolewise-card p-3.5 max-h-[calc(100dvh-7.5rem)] overflow-y-auto">
           <FieldTabs value={filters.domain} counts={counts.domainCounts} allCount={allCount} onChange={(d) => patch({ domain: d })} />
-          <div className="mt-3">
+          <div className="mt-2.5">
             <SearchBox initial={query} onSearch={search} suggestions={quickQueries} />
           </div>
-          <div className="mt-2">
+          <div className="mt-1">
             <FilterSections filters={filters} counts={counts} onChange={patch} />
           </div>
           {chips.length > 0 && (
@@ -311,7 +312,7 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
                   type="button"
                   aria-pressed={on}
                   onClick={() => patch(on ? Object.fromEntries(Object.keys(p.patch).map((k) => [k, DEFAULT_FILTERS[k as keyof Filters]])) : p.patch)}
-                  className={`shrink-0 h-10 px-3.5 rounded-full border text-xs font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${
+                  className={`shrink-0 h-9 px-3 rounded-full border text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer ${
                     on ? 'bg-[#1A1714] border-[#1A1714] text-white' : 'bg-white border-[#E6E0D7] text-[#1A1714] hover:border-[#1A1714]/50'
                   }`}
                 >
@@ -345,7 +346,7 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
           )}
 
           {/* Count + sort */}
-          <div className="mt-3 mb-2.5 flex items-center justify-between gap-3 min-h-9">
+          <div className="mt-3 mb-2 flex items-center justify-between gap-3 min-h-9">
             <p className="text-sm text-[#6B6259]" aria-live="polite">
               {current ? (
                 <>
@@ -374,11 +375,11 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
             <p className="mb-2.5 text-xs text-[#8A5A12]">No openings titled “{query}” right now, so these are other {current.relaxedDomain} roles.</p>
           )}
 
-          <ul className="space-y-2.5" aria-busy={loading}>
+          <ul className="space-y-2" aria-busy={loading}>
             {loading &&
               [0, 1, 2, 3].map((i) => (
                 <li key={i} className="rolewise-card p-4 flex items-center gap-3 animate-pulse" aria-hidden="true">
-                  <div className="w-12 h-12 rounded-xl bg-[#F3EFE9]" />
+                  <div className="w-11 h-11 rounded-xl bg-[#F3EFE9]" />
                   <div className="flex-1 space-y-2">
                     <div className="h-3 w-1/2 rounded bg-[#F3EFE9]" />
                     <div className="h-2.5 w-1/3 rounded bg-[#F3EFE9]" />
@@ -390,10 +391,10 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
               const state = track[job.id] || 'idle';
               const href = `/find-jobs/job?id=${encodeURIComponent(job.id)}${query ? `&q=${encodeURIComponent(query)}` : ''}`;
               return (
-                <li key={job.id} className="relative rolewise-card p-4 sm:p-5 hover:border-[#CFC7BC] hover:shadow-[0_6px_24px_rgba(26,23,20,0.06)] transition-[border-color,box-shadow]">
-                  <div className="flex items-start gap-3 sm:gap-4">
+                <li key={job.id} className="group relative rolewise-card px-4 py-3.5 sm:px-5 sm:py-4 hover:border-[#CFC7BC] hover:shadow-[0_4px_18px_rgba(26,23,20,0.06)] transition-[border-color,box-shadow]">
+                  <div className="flex items-start gap-3.5">
                     <div
-                      className="w-12 h-12 rounded-xl border border-[#E6E0D7] flex items-center justify-center overflow-hidden shrink-0 text-base font-bold text-[#1A1714]"
+                      className="w-11 h-11 rounded-xl border border-[#E6E0D7] flex items-center justify-center overflow-hidden shrink-0 text-[15px] font-bold text-[#1A1714]"
                       style={{ background: job.logo ? '#FFFFFF' : tintFor(job.company) }}
                       aria-hidden="true"
                     >
@@ -406,44 +407,49 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-sm sm:text-[15px] font-semibold text-[#1A1714] leading-snug pr-14">
+                      <h3 className="text-sm sm:text-[15px] font-semibold text-[#1A1714] leading-snug">
                         {/* The whole card opens the job page (stretched link). */}
-                        <Link href={href} className="after:absolute after:inset-0 after:rounded-[inherit] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#1A1714]/30">
+                        <Link href={href} className="after:absolute after:inset-0 after:rounded-[inherit] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#1A1714]/30 group-hover:underline underline-offset-2 decoration-[#CFC7BC]">
                           {job.title}
                         </Link>
                       </h3>
-                      <p className="text-xs mt-0.5">
+                      <p className="mt-0.5 text-xs leading-snug">
                         <span className="font-semibold text-[#1A1714]">{job.company}</span>
                         <span className="text-[#9A9086]"> · {job.domain}</span>
                       </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#6B6259]">
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#6B6259]">
                         <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" aria-hidden="true" />{job.location}</span>
                         {job.type && <span className="inline-flex items-center gap-1"><Briefcase className="w-3 h-3" aria-hidden="true" />{job.type}</span>}
                         {job.salary && <span className="inline-flex items-center gap-1"><Wallet className="w-3 h-3" aria-hidden="true" />{job.salary}</span>}
+                        {state === 'saved' && (
+                          <span className="relative z-10 inline-flex items-center gap-1 text-[#2F6B42]">
+                            <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Saved ·
+                            <Link href="/jobs" className="font-semibold underline underline-offset-2">Tracker</Link>
+                          </span>
+                        )}
+                        {state === 'error' && <span className="relative z-10 text-[#A4493A]">Couldn’t save. Try again.</span>}
                       </div>
-                      {state === 'saved' && (
-                        <p className="relative z-10 mt-2 text-[11px] text-[#2F6B42] flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Saved ·{' '}
-                          <Link href="/jobs" className="font-semibold underline underline-offset-2">Open tracker</Link>
-                        </p>
-                      )}
-                      {state === 'error' && <p className="relative z-10 mt-2 text-[11px] text-[#A4493A]">Couldn’t save. Try again.</p>}
                     </div>
 
-                    <div className="absolute top-4 right-4 sm:top-5 sm:right-5 flex flex-col items-end gap-2">
-                      {job.postedAt && <span className="text-[11px] text-[#9A9086] tabular-nums">{timeAgo(job.postedAt).replace(' ago', '')}</span>}
-                    </div>
-                    {state !== 'saved' && (
+                    <div className="relative z-10 flex items-center gap-1 shrink-0 -mt-1 -mr-1.5">
+                      {job.postedAt && <span className="text-[11px] text-[#9A9086] tabular-nums pr-0.5">{timeAgo(job.postedAt).replace(' ago', '')}</span>}
                       <button
                         type="button"
-                        onClick={() => saveToTracker(job, 'saved')}
+                        onClick={() => state !== 'saved' && saveToTracker(job, 'saved')}
                         disabled={state === 'saving'}
-                        aria-label={`Save ${job.title} at ${job.company}`}
-                        className="relative z-10 self-end shrink-0 w-10 h-10 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#1A1714] text-[#1A1714] inline-flex items-center justify-center disabled:opacity-60 cursor-pointer"
+                        aria-label={state === 'saved' ? `Saved ${job.title}` : `Save ${job.title} at ${job.company}`}
+                        aria-pressed={state === 'saved'}
+                        className="w-9 h-9 rounded-lg text-[#6B6259] hover:text-[#1A1714] hover:bg-[#FAF8F4] inline-flex items-center justify-center disabled:opacity-60 cursor-pointer"
                       >
-                        {state === 'saving' ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Bookmark className="w-4 h-4" aria-hidden="true" />}
+                        {state === 'saving' ? (
+                          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                        ) : state === 'saved' ? (
+                          <BookmarkCheck className="w-4 h-4 text-[#1A1714]" aria-hidden="true" />
+                        ) : (
+                          <Bookmark className="w-4 h-4" aria-hidden="true" />
+                        )}
                       </button>
-                    )}
+                    </div>
                   </div>
                 </li>
               );
@@ -509,7 +515,7 @@ function SearchBox({ initial, onSearch, suggestions }: { initial: string; onSear
           onChange={(e) => setDraft(e.target.value)}
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
-          placeholder="Search role, skill or company"
+          placeholder="Role, skill or company"
           autoComplete="off"
           enterKeyHint="search"
           className="w-full min-w-0 bg-transparent outline-none text-sm text-[#1A1714] placeholder:text-[#9A9086] [&::-webkit-search-cancel-button]:hidden"
@@ -558,7 +564,7 @@ function SearchBox({ initial, onSearch, suggestions }: { initial: string; onSear
 
 function FieldTabs({ value, counts, allCount, onChange }: { value: string; counts: Counts; allCount: number; onChange: (d: string) => void }) {
   return (
-    <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Field">
+    <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-[#F3EFE9]" role="radiogroup" aria-label="Field">
       {FIELD_TABS.map((d) => {
         const active = value === d;
         const n = d ? counts[d] : allCount;
@@ -569,8 +575,8 @@ function FieldTabs({ value, counts, allCount, onChange }: { value: string; count
             role="radio"
             aria-checked={active}
             onClick={() => onChange(d)}
-            className={`h-9 px-3.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
-              active ? 'bg-[#1A1714] text-white border-[#1A1714]' : 'bg-white text-[#574F46] border-[#E6E0D7] hover:border-[#1A1714]/50'
+            className={`h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              active ? 'bg-white text-[#1A1714] shadow-[0_1px_2px_rgba(26,23,20,0.12)]' : 'text-[#6B6259] hover:text-[#1A1714]'
             }`}
             title={typeof n === 'number' ? `${n} jobs` : undefined}
           >
@@ -629,22 +635,22 @@ function Section({ title, value, children }: { title: string; value: string; chi
   const [open, setOpen] = useState(false);
   const id = `filter-${title.toLowerCase().replace(/\s+/g, '-')}`;
   return (
-    <div className="py-1">
+    <div>
       <button
         type="button"
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-3 py-2.5 text-left cursor-pointer group"
+        className="w-full flex items-center justify-between gap-3 py-3 text-left cursor-pointer group"
       >
         <span className="min-w-0">
-          <span className="block text-sm font-semibold text-[#1A1714]">{title}</span>
-          <span className="block text-xs text-[#6B6259] truncate">{value}</span>
+          <span className="block text-[13px] font-semibold text-[#1A1714] leading-tight">{title}</span>
+          <span className="block text-xs text-[#6B6259] truncate mt-0.5">{value}</span>
         </span>
         <ChevronDown className={`w-4 h-4 text-[#6B6259] group-hover:text-[#1A1714] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
       {open && (
-        <div id={id} role="radiogroup" aria-label={title} className="pb-2 space-y-0.5">
+        <div id={id} role="radiogroup" aria-label={title} className="pb-2.5 -mt-0.5 space-y-0.5">
           {children}
         </div>
       )}
@@ -660,7 +666,7 @@ function Option({ label, hint, count, active, onClick, hideIfZero }: { label: st
       role="radio"
       aria-checked={active}
       onClick={onClick}
-      className={`w-full min-h-9 px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-[13px] cursor-pointer transition-colors ${
+      className={`w-full min-h-8 px-2 py-1.5 rounded-lg flex items-center gap-2 text-left text-[13px] cursor-pointer transition-colors ${
         active ? 'bg-[#FFF4CC] text-[#1A1714] font-semibold' : 'text-[#574F46] hover:bg-[#FAF8F4]'
       }`}
     >
