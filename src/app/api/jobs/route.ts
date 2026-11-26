@@ -124,6 +124,24 @@ export async function GET(req: NextRequest) {
 
   const filtered = matched.filter(({ j }) => passes(j));
 
+  // For the dashboard infographic: openings posted per day over the last 14 days (oldest first),
+  // and the companies with the most openings.
+  const DAY = 86_400_000;
+  const startOfToday = new Date(new Date().toISOString().slice(0, 10)).getTime();
+  const dailyCounts = Array.from({ length: 14 }, () => 0);
+  const byCompany: Record<string, number> = {};
+  for (const { j } of filtered) {
+    byCompany[j.company] = (byCompany[j.company] || 0) + 1;
+    const t = Date.parse(j.postedAt || '');
+    if (!t) continue;
+    const daysAgo = Math.floor((startOfToday + DAY - t) / DAY);
+    if (daysAgo >= 0 && daysAgo < 14) dailyCounts[13 - daysAgo] += 1;
+  }
+  const topCompanies = Object.entries(byCompany)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, count]) => ({ name, count }));
+
   // Most relevant: best match first, then newest. Most recent: newest only.
   const time = (x: { j: OpenJob }) => Date.parse(x.j.postedAt || '') || 0;
   filtered.sort((a, b) => (sort === 'recent' ? time(b) - time(a) : b.s - a.s || time(b) - time(a)));
@@ -165,6 +183,8 @@ export async function GET(req: NextRequest) {
       levelCounts,
       workCounts,
       postedCounts,
+      dailyCounts,
+      topCompanies,
     },
     { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600' } }
   );

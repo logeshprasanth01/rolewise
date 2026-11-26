@@ -1,11 +1,22 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { getUserRoles } from '@/services/api';
 import { JobOpenings } from '@/components/jobs/JobOpenings';
 
 /** Find Jobs: every open role across fields, with one-tap shortcuts to the roles in the tracker. */
 export default function FindJobsPage() {
+  return (
+    <Suspense fallback={null}>
+      <FindJobs />
+    </Suspense>
+  );
+}
+
+/** ?q= and ?city= (from dashboard links) set the starting search. */
+function FindJobs() {
+  const params = useSearchParams();
   const [targets, setTargets] = useState<string[]>([]);
 
   useEffect(() => {
@@ -23,6 +34,8 @@ export default function FindJobsPage() {
         title="Find jobs"
         subtitle="Real openings in every field, updated hourly. Apply opens the original posting."
         quickQueries={targets}
+        defaultQuery={params.get('q') || ''}
+        initialCity={params.get('city') || undefined}
       />
     </div>
   );

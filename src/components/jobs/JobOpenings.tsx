@@ -149,11 +149,15 @@ interface JobOpeningsProps {
   as?: 'h1' | 'h2';
   /** Suggested searches shown when the search box is focused, e.g. roles in the tracker. */
   quickQueries?: string[];
+  /** Start with this city selected (e.g. from a dashboard link). */
+  initialCity?: string;
 }
 
-export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', subtitle, as = 'h2', quickQueries = [] }: JobOpeningsProps) {
+export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', subtitle, as = 'h2', quickQueries = [], initialCity }: JobOpeningsProps) {
   const [query, setQuery] = useState(defaultQuery);
   const [filters, setFilters] = useState<Filters>(() => {
+    if (initialCity === 'Remote') return { ...DEFAULT_FILTERS, work: 'remote' };
+    if (initialCity && CITIES.includes(initialCity)) return { ...DEFAULT_FILTERS, city: initialCity };
     try {
       const city = typeof window !== 'undefined' ? window.localStorage.getItem(CITY_KEY) || '' : '';
       return { ...DEFAULT_FILTERS, city: CITIES.includes(city) ? city : '' };

@@ -24,10 +24,12 @@ import { StatusPill } from '@/components/tracker/StatusPill';
 import { Role } from '@/types/database';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 import { Mascot } from '@/components/brand/Mascot';
+import { JobsInfographic } from '@/components/dashboard/JobsInfographic';
 
 export default function DashboardPage() {
   const { userName } = useAuth();
   const [roles, setRoles] = useState<Role[]>([]);
+  const [rolesLoaded, setRolesLoaded] = useState(false);
   const [mockInterviews, setMockInterviews] = useState(0);
   const [hello, setHello] = useState('Hello');
   const [preparationStats, setPreparationStats] = useState({
@@ -42,6 +44,7 @@ export default function DashboardPage() {
         setHello(greeting());
         const [userRoles, history] = await Promise.all([getUserRoles(), getInterviewHistory()]);
         setRoles(userRoles);
+        setRolesLoaded(true);
         setMockInterviews(history.length);
 
         // Only roles with an AI prep plan have preparation items.
@@ -70,6 +73,7 @@ export default function DashboardPage() {
         setPreparationStats(nextStats);
       } catch (err) {
         console.error('Error fetching dashboard preparation analytics:', err);
+        setRolesLoaded(true);
       }
     }
     loadDashboardData();
@@ -197,6 +201,9 @@ export default function DashboardPage() {
           <ChevronRight className="w-4 h-4 text-[#9A9086] group-hover:text-[#1A1714] transition-colors" />
         </Link>
       </section>
+
+      {/* 2b. JOBS TO APPLY — live openings for the person's target role */}
+      {rolesLoaded && <JobsInfographic targetRole={roles.find(isActive)?.title || roles[0]?.title || undefined} />}
 
       {/* 3. MAIN WORKSPACE GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
