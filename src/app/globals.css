@@ -691,3 +691,23 @@ html, body {
   .rwl-hy { transition: none; }
   .rwl-hy-blob { animation: none; }
 }
+
+/* Job descriptions from company career pages (sanitised HTML), Find Jobs detail page */
+.rw-jd { color: #3B342D; font-size: 14.5px; line-height: 1.7; overflow-wrap: anywhere; }
+.rw-jd > * + * { margin-top: 0.85em; }
+.rw-jd h3, .rw-jd h4, .rw-jd h5 {
+  margin-top: 1.6em; font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #574F46;
+}
+.rw-jd strong, .rw-jd b { color: #1A1714; font-weight: 650; }
+.rw-jd ul, .rw-jd ol { padding-left: 1.2em; }
+.rw-jd ul { list-style: none; padding-left: 0; }
+.rw-jd ul > li { position: relative; padding-left: 1.2em; }
+.rw-jd ul > li::before {
+  content: ''; position: absolute; left: 0.15em; top: 0.68em;
+  width: 6px; height: 6px; border-radius: 9999px; background: #E7C43E;
+}
+.rw-jd ol { list-style: decimal; }
+.rw-jd li + li { margin-top: 0.45em; }
+.rw-jd a { color: #1A1714; text-decoration: underline; text-underline-offset: 2px; }
+.rw-jd blockquote { border-left: 3px solid #E6E0D7; padding-left: 1em; color: #574F46; }

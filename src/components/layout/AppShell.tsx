@@ -323,7 +323,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 <Menu className="w-4 h-4" />
               </button>
 
-              <div className={`${pathname === '/jobs' || pathname === '/find-jobs' ? 'hidden' : 'flex'} items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FFFFFF] border border-[#E6E0D7] text-[#6B6259] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all`}>
+              <div className={`${pathname === '/jobs' || pathname.startsWith('/find-jobs') ? 'hidden' : 'flex'} items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FFFFFF] border border-[#E6E0D7] text-[#6B6259] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all`}>
                 <Search className="w-3.5 h-3.5 shrink-0" />
                 <form
                   role="search"

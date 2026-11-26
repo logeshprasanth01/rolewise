@@ -2,7 +2,25 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Briefcase, CheckCircle2, Clock, Loader2, MapPin, Search, SlidersHorizontal, Wallet, X } from 'lucide-react';
+import {
+  Bookmark,
+  Briefcase,
+  CalendarClock,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  GraduationCap,
+  Laptop,
+  Loader2,
+  MapPin,
+  Search,
+  SlidersHorizontal,
+  Users,
+  Wallet,
+  X,
+} from 'lucide-react';
 import { quickAddJob } from '@/services/api';
 import { timeAgo } from '@/lib/job-portals';
 import { todayISO } from '@/lib/tracker';
@@ -25,6 +43,8 @@ interface OpenJob {
   salary: string | null;
 }
 
+type Counts = Record<string, number>;
+
 interface FeedResponse {
   jobs: OpenJob[];
   total: number;
@@ -33,15 +53,22 @@ interface FeedResponse {
   companies: number;
   relaxed: boolean;
   relaxedDomain: string | null;
-  domainCounts: Record<string, number>;
+  domainCounts: Counts;
+  cityCounts: Counts;
+  levelCounts: Counts;
+  workCounts: Counts;
+  postedCounts: Counts;
 }
 
-type TrackState = 'idle' | 'asking' | 'saving' | 'saved' | 'applied' | 'error';
+type FacetCounts = Pick<FeedResponse, 'domainCounts' | 'cityCounts' | 'levelCounts' | 'workCounts' | 'postedCounts'>;
+const NO_COUNTS: FacetCounts = { domainCounts: {}, cityCounts: {}, levelCounts: {}, workCounts: {}, postedCounts: {} };
+
+type TrackState = 'idle' | 'saving' | 'saved' | 'applied' | 'error';
 
 interface Filters {
   sort: 'relevant' | 'recent';
   posted: '' | '1' | '7' | '30';
-  level: '' | 'intern' | 'entry' | 'mid' | 'senior' | 'lead';
+  level: '' | 'early' | 'intern' | 'entry' | 'mid' | 'senior' | 'lead';
   work: '' | 'onsite' | 'remote';
   city: string;
   domain: string;
@@ -49,32 +76,36 @@ interface Filters {
 
 const DEFAULT_FILTERS: Filters = { sort: 'relevant', posted: '', level: '', work: '', city: '', domain: '' };
 
-const SORT_OPTIONS: { value: Filters['sort']; label: string }[] = [
-  { value: 'relevant', label: 'Most relevant' },
-  { value: 'recent', label: 'Most recent' },
-];
-const POSTED_OPTIONS: { value: Filters['posted']; label: string }[] = [
-  { value: '', label: 'Any time' },
-  { value: '1', label: 'Past 24 hours' },
-  { value: '7', label: 'Past week' },
-  { value: '30', label: 'Past month' },
-];
-const LEVEL_OPTIONS: { value: Filters['level']; label: string }[] = [
-  { value: '', label: 'Any level' },
+const LEVELS: { value: Filters['level']; label: string }[] = [
   { value: 'intern', label: 'Internship' },
   { value: 'entry', label: 'Entry level' },
   { value: 'mid', label: 'Mid level' },
   { value: 'senior', label: 'Senior' },
   { value: 'lead', label: 'Lead / Manager' },
 ];
-const WORK_OPTIONS: { value: Filters['work']; label: string }[] = [
-  { value: '', label: 'Any' },
+const POSTED: { value: Filters['posted']; label: string }[] = [
+  { value: '1', label: 'Past 24 hours' },
+  { value: '7', label: 'Past week' },
+  { value: '30', label: 'Past month' },
+];
+const WORK: { value: Filters['work']; label: string }[] = [
   { value: 'onsite', label: 'On-site / Hybrid' },
   { value: 'remote', label: 'Remote' },
 ];
 const CITIES = ['Bengaluru', 'Chennai', 'Hyderabad', 'Pune', 'Mumbai', 'Delhi NCR', 'Kolkata', 'Ahmedabad', 'Coimbatore', 'Kochi'];
 const DOMAINS = ['Engineering', 'Design', 'Product', 'Data & AI', 'Marketing', 'Sales', 'Customer Success', 'Operations', 'Finance & Legal', 'People & HR', 'Other'];
+/** Top tabs, like UXHack's All / Design / Product. Every other field is in the Field section. */
+const FIELD_TABS = ['', 'Design', 'Product', 'Engineering'];
 const CITY_KEY = 'rw-job-city';
+const PAGE_SIZE = 20;
+
+/** One-tap shortcuts above the list, each with a live count. */
+const PRESETS: { id: string; label: string; icon: React.ElementType; patch: Partial<Filters>; count: (c: FacetCounts) => number }[] = [
+  { id: 'early', label: 'Early career', icon: GraduationCap, patch: { level: 'early' }, count: (c) => c.levelCounts.early || 0 },
+  { id: 'remote', label: 'Remote', icon: Laptop, patch: { work: 'remote' }, count: (c) => c.workCounts.remote || 0 },
+  { id: 'week', label: 'Posted this week', icon: CalendarClock, patch: { posted: '7' }, count: (c) => c.postedCounts['7'] || 0 },
+  { id: 'lead', label: 'Lead roles', icon: Users, patch: { level: 'lead' }, count: (c) => c.levelCounts.lead || 0 },
+];
 
 const LOGO_TINTS = ['#FFE58A', '#E3EEF9', '#EEF7F0', '#F3EFE9', '#FFF0ED', '#EFEAE3', '#E8F0FF'];
 function tintFor(name: string) {
@@ -95,14 +126,16 @@ function buildUrl(query: string, f: Filters, page: number) {
   return `/api/jobs?${p.toString()}`;
 }
 
-/** Chips for the filters that are switched on (sort isn't a filter, so it has no chip). */
+const levelLabel = (v: Filters['level']) => (v === 'early' ? 'Early career' : LEVELS.find((o) => o.value === v)?.label || '');
+
+/** Filters that are on (sort isn't a filter). */
 function activeChips(f: Filters): { key: keyof Filters; label: string }[] {
   const chips: { key: keyof Filters; label: string }[] = [];
-  if (f.posted) chips.push({ key: 'posted', label: POSTED_OPTIONS.find((o) => o.value === f.posted)!.label });
-  if (f.level) chips.push({ key: 'level', label: LEVEL_OPTIONS.find((o) => o.value === f.level)!.label });
-  if (f.work) chips.push({ key: 'work', label: WORK_OPTIONS.find((o) => o.value === f.work)!.label });
-  if (f.city) chips.push({ key: 'city', label: f.city });
   if (f.domain) chips.push({ key: 'domain', label: f.domain });
+  if (f.level) chips.push({ key: 'level', label: levelLabel(f.level) });
+  if (f.city) chips.push({ key: 'city', label: f.city });
+  if (f.work) chips.push({ key: 'work', label: WORK.find((o) => o.value === f.work)!.label });
+  if (f.posted) chips.push({ key: 'posted', label: POSTED.find((o) => o.value === f.posted)!.label });
   return chips;
 }
 
@@ -119,8 +152,6 @@ interface JobOpeningsProps {
 
 export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', subtitle, as = 'h2', quickQueries = [] }: JobOpeningsProps) {
   const [query, setQuery] = useState(defaultQuery);
-  const [draft, setDraft] = useState(defaultQuery);
-  const [suggestOpen, setSuggestOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>(() => {
     try {
       const city = typeof window !== 'undefined' ? window.localStorage.getItem(CITY_KEY) || '' : '';
@@ -129,17 +160,20 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
       return DEFAULT_FILTERS;
     }
   });
-  const [panelOpen, setPanelOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const listTopRef = useRef<HTMLDivElement>(null);
 
-  const key = buildUrl(query, filters, 1);
+  const key = buildUrl(query, filters, page);
   const [feed, setFeed] = useState<(FeedResponse & { key: string }) | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [track, setTrack] = useState<Record<string, TrackState>>({});
 
   const current = feed && feed.key === key ? feed : null;
   const loading = !current && failedKey !== key;
   const failed = failedKey === key;
+  // Keep the last counts on screen while new results load, so numbers don't flicker to zero.
+  const counts: FacetCounts = feed ? { ...NO_COUNTS, ...feed } : NO_COUNTS;
 
   useEffect(() => {
     let cancelled = false;
@@ -159,28 +193,28 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
     };
   }, [key]);
 
+  const search = (q: string) => {
+    setQuery(q);
+    setPage(1);
+  };
+  const goToPage = (n: number) => {
+    setPage(n);
+    // Bring the top of the list into view, below the sticky header.
+    const top = listTopRef.current ? listTopRef.current.getBoundingClientRect().top + window.scrollY - 96 : 0;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  };
+
   const applyFilters = (next: Filters) => {
     setFilters(next);
+    setPage(1);
     try {
       window.localStorage.setItem(CITY_KEY, next.city);
     } catch {
       // storage unavailable
     }
   };
-
-  const loadMore = async () => {
-    if (!current || loadingMore) return;
-    setLoadingMore(true);
-    try {
-      const r = await fetch(buildUrl(query, filters, current.page + 1));
-      const data = (await r.json()) as FeedResponse;
-      setFeed((f) => (f && f.key === key ? { ...data, key, jobs: [...f.jobs, ...data.jobs] } : f));
-    } catch {
-      // keep what is shown
-    } finally {
-      setLoadingMore(false);
-    }
-  };
+  const patch = (p: Partial<Filters>) => applyFilters({ ...filters, ...p });
+  const clearAll = () => applyFilters({ ...DEFAULT_FILTERS, sort: filters.sort });
 
   const saveToTracker = async (job: OpenJob, status: 'saved' | 'applied') => {
     setTrack((t) => ({ ...t, [job.id]: 'saving' }));
@@ -204,10 +238,10 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
 
   const chips = activeChips(filters);
   const Heading = as;
-  const suggestions = quickQueries.filter((q) => q && q !== query);
+  const allCount = Object.values(counts.domainCounts).reduce((a, b) => a + b, 0);
 
   return (
-    <section aria-labelledby="job-openings-heading" className="space-y-4">
+    <section aria-labelledby="job-openings-heading" className="space-y-5">
       <div>
         <Heading
           id="job-openings-heading"
@@ -222,278 +256,226 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
         )}
       </div>
 
-      {/* SEARCH + FILTERS */}
-      <div className="space-y-2.5">
-        <form
-          role="search"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setSuggestOpen(false);
-            setQuery(draft.trim());
-          }}
-          className="flex gap-2"
-        >
-          <div className="relative flex-1 min-w-0">
-            <label htmlFor="job-query" className="sr-only">Search jobs by role, skill or company</label>
-            <div className="flex items-center gap-2 h-12 px-3.5 rounded-xl border border-[#E6E0D7] bg-white focus-within:border-[#1A1714] focus-within:ring-2 focus-within:ring-[#1A1714]/15">
-              <Search className="w-4 h-4 text-[#9A9086] shrink-0" aria-hidden="true" />
-              <input
-                id="job-query"
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onFocus={() => setSuggestOpen(true)}
-                onBlur={() => setSuggestOpen(false)}
-                placeholder="Search role, skill or company"
-                autoComplete="off"
-                className="w-full min-w-0 bg-transparent outline-none text-sm text-[#1A1714] placeholder:text-[#9A9086]"
-              />
-              {draft && (
+      <div className="lg:grid lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-6 lg:items-start">
+        {/* LEFT: search + filters (desktop) */}
+        <aside aria-label="Search and filters" className="hidden lg:block sticky top-24 rolewise-card p-4 max-h-[calc(100dvh-7.5rem)] overflow-y-auto">
+          <FieldTabs value={filters.domain} counts={counts.domainCounts} allCount={allCount} onChange={(d) => patch({ domain: d })} />
+          <div className="mt-3">
+            <SearchBox initial={query} onSearch={search} suggestions={quickQueries} />
+          </div>
+          <div className="mt-2">
+            <FilterSections filters={filters} counts={counts} onChange={patch} />
+          </div>
+          {chips.length > 0 && (
+            <button type="button" onClick={clearAll} className="mt-3 text-xs font-semibold text-[#6B6259] hover:text-[#1A1714] underline underline-offset-2 cursor-pointer">
+              Clear all filters
+            </button>
+          )}
+        </aside>
+
+        {/* RIGHT: shortcuts, count, sort, list */}
+        <div className="min-w-0" ref={listTopRef}>
+          {/* Phone / tablet: search + Filters button */}
+          <div className="lg:hidden flex gap-2 mb-3">
+            <div className="flex-1 min-w-0">
+              <SearchBox initial={query} onSearch={search} suggestions={quickQueries} />
+            </div>
+            <button
+              type="button"
+              onClick={() => setSheetOpen(true)}
+              aria-haspopup="dialog"
+              aria-label={chips.length ? `Filters, ${chips.length} on` : 'Filters'}
+              className={`h-11 px-3.5 rounded-xl border text-sm font-semibold inline-flex items-center gap-2 shrink-0 cursor-pointer ${
+                chips.length ? 'bg-[#1A1714] border-[#1A1714] text-white' : 'bg-white border-[#E6E0D7] text-[#1A1714]'
+              }`}
+            >
+              <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline" aria-hidden="true">Filters</span>
+              {chips.length > 0 && (
+                <span aria-hidden="true" className="min-w-5 h-5 px-1 rounded-full bg-[#FFD84D] text-[#1A1714] text-[11px] font-bold inline-flex items-center justify-center">
+                  {chips.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Quick filters with counts */}
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" aria-label="Quick filters">
+            {PRESETS.map((p) => {
+              const on = Object.entries(p.patch).every(([k, v]) => filters[k as keyof Filters] === v);
+              const n = p.count(counts);
+              const Icon = p.icon;
+              return (
                 <button
+                  key={p.id}
                   type="button"
-                  aria-label="Clear search"
-                  onClick={() => {
-                    setDraft('');
-                    setQuery('');
-                  }}
-                  className="text-[#9A9086] hover:text-[#1A1714] p-1 cursor-pointer"
+                  aria-pressed={on}
+                  onClick={() => patch(on ? Object.fromEntries(Object.keys(p.patch).map((k) => [k, DEFAULT_FILTERS[k as keyof Filters]])) : p.patch)}
+                  className={`shrink-0 h-10 px-3.5 rounded-full border text-xs font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${
+                    on ? 'bg-[#1A1714] border-[#1A1714] text-white' : 'bg-white border-[#E6E0D7] text-[#1A1714] hover:border-[#1A1714]/50'
+                  }`}
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                  {p.label}
+                  {feed && <span className={`tabular-nums font-normal ${on ? 'text-white/70' : 'text-[#9A9086]'}`}>{n}</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active filters as removable chips (phones; the sidebar shows them on desktop) */}
+          {chips.length > 0 && (
+            <div className="lg:hidden mt-2.5 flex flex-wrap items-center gap-1.5" aria-label="Active filters">
+              {chips.map((c) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => patch({ [c.key]: DEFAULT_FILTERS[c.key] } as Partial<Filters>)}
+                  className="h-8 pl-3 pr-2 rounded-full bg-[#FAF8F4] border border-[#E6E0D7] text-xs font-semibold text-[#1A1714] inline-flex items-center gap-1 cursor-pointer"
+                >
+                  {c.label}
+                  <X className="w-3 h-3 text-[#6B6259]" aria-hidden="true" />
+                  <span className="sr-only">Remove filter</span>
+                </button>
+              ))}
+              <button type="button" onClick={clearAll} className="h-8 px-2 text-xs font-semibold text-[#6B6259] cursor-pointer">
+                Clear all
+              </button>
+            </div>
+          )}
+
+          {/* Count + sort */}
+          <div className="mt-3 mb-2.5 flex items-center justify-between gap-3 min-h-9">
+            <p className="text-sm text-[#6B6259]" aria-live="polite">
+              {current ? (
+                <>
+                  <span className="font-semibold text-[#1A1714]">{current.total.toLocaleString('en-IN')} jobs</span>
+                  {query ? <> for “{query}”</> : null}
+                </>
+              ) : (
+                <span className="sr-only">Loading jobs</span>
+              )}
+            </p>
+            <label className="relative inline-flex items-center text-xs text-[#6B6259] shrink-0">
+              <span className="sr-only">Sort jobs</span>
+              <select
+                value={filters.sort}
+                onChange={(e) => patch({ sort: e.target.value as Filters['sort'] })}
+                className="appearance-none h-9 pl-3 pr-8 rounded-lg bg-transparent hover:bg-white border border-transparent hover:border-[#E6E0D7] text-sm font-semibold text-[#1A1714] cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#1A1714]/20"
+              >
+                <option value="relevant">Best match</option>
+                <option value="recent">Most recent</option>
+              </select>
+              <ChevronDown className="w-4 h-4 absolute right-2 pointer-events-none text-[#6B6259]" aria-hidden="true" />
+            </label>
+          </div>
+
+          {current?.relaxed && (
+            <p className="mb-2.5 text-xs text-[#8A5A12]">No openings titled “{query}” right now, so these are other {current.relaxedDomain} roles.</p>
+          )}
+
+          <ul className="space-y-2.5" aria-busy={loading}>
+            {loading &&
+              [0, 1, 2, 3].map((i) => (
+                <li key={i} className="rolewise-card p-4 flex items-center gap-3 animate-pulse" aria-hidden="true">
+                  <div className="w-12 h-12 rounded-xl bg-[#F3EFE9]" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 w-1/2 rounded bg-[#F3EFE9]" />
+                    <div className="h-2.5 w-1/3 rounded bg-[#F3EFE9]" />
+                  </div>
+                </li>
+              ))}
+
+            {current?.jobs.map((job) => {
+              const state = track[job.id] || 'idle';
+              const href = `/find-jobs/job?id=${encodeURIComponent(job.id)}${query ? `&q=${encodeURIComponent(query)}` : ''}`;
+              return (
+                <li key={job.id} className="relative rolewise-card p-4 sm:p-5 hover:border-[#CFC7BC] hover:shadow-[0_6px_24px_rgba(26,23,20,0.06)] transition-[border-color,box-shadow]">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div
+                      className="w-12 h-12 rounded-xl border border-[#E6E0D7] flex items-center justify-center overflow-hidden shrink-0 text-base font-bold text-[#1A1714]"
+                      style={{ background: job.logo ? '#FFFFFF' : tintFor(job.company) }}
+                      aria-hidden="true"
+                    >
+                      {job.logo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={job.logo} alt="" className="w-full h-full object-contain" loading="lazy" />
+                      ) : (
+                        job.company.charAt(0).toUpperCase()
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm sm:text-[15px] font-semibold text-[#1A1714] leading-snug pr-14">
+                        {/* The whole card opens the job page (stretched link). */}
+                        <Link href={href} className="after:absolute after:inset-0 after:rounded-[inherit] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#1A1714]/30">
+                          {job.title}
+                        </Link>
+                      </h3>
+                      <p className="text-xs mt-0.5">
+                        <span className="font-semibold text-[#1A1714]">{job.company}</span>
+                        <span className="text-[#9A9086]"> · {job.domain}</span>
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#6B6259]">
+                        <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" aria-hidden="true" />{job.location}</span>
+                        {job.type && <span className="inline-flex items-center gap-1"><Briefcase className="w-3 h-3" aria-hidden="true" />{job.type}</span>}
+                        {job.salary && <span className="inline-flex items-center gap-1"><Wallet className="w-3 h-3" aria-hidden="true" />{job.salary}</span>}
+                      </div>
+                      {state === 'saved' && (
+                        <p className="relative z-10 mt-2 text-[11px] text-[#2F6B42] flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Saved ·{' '}
+                          <Link href="/jobs" className="font-semibold underline underline-offset-2">Open tracker</Link>
+                        </p>
+                      )}
+                      {state === 'error' && <p className="relative z-10 mt-2 text-[11px] text-[#A4493A]">Couldn’t save. Try again.</p>}
+                    </div>
+
+                    <div className="absolute top-4 right-4 sm:top-5 sm:right-5 flex flex-col items-end gap-2">
+                      {job.postedAt && <span className="text-[11px] text-[#9A9086] tabular-nums">{timeAgo(job.postedAt).replace(' ago', '')}</span>}
+                    </div>
+                    {state !== 'saved' && (
+                      <button
+                        type="button"
+                        onClick={() => saveToTracker(job, 'saved')}
+                        disabled={state === 'saving'}
+                        aria-label={`Save ${job.title} at ${job.company}`}
+                        className="relative z-10 self-end shrink-0 w-10 h-10 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#1A1714] text-[#1A1714] inline-flex items-center justify-center disabled:opacity-60 cursor-pointer"
+                      >
+                        {state === 'saving' ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Bookmark className="w-4 h-4" aria-hidden="true" />}
+                      </button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          {(failed || (current && current.total === 0)) && (
+            <div className="rounded-2xl border border-dashed border-[#DDD5CA] bg-white/60 p-6 text-center">
+              <p className="text-sm font-semibold text-[#1A1714]">{failed ? 'Jobs couldn’t load right now' : 'No jobs match your search'}</p>
+              <p className="text-xs text-[#6B6259] mt-1">{failed ? 'Please try again in a minute.' : 'Try a shorter search or remove a filter.'}</p>
+              {!failed && chips.length > 0 && (
+                <button type="button" onClick={clearAll} className="mt-3 h-9 px-4 rounded-lg border border-[#E6E0D7] bg-white text-xs font-semibold text-[#1A1714] hover:border-[#1A1714] cursor-pointer">
+                  Clear filters
                 </button>
               )}
             </div>
-            {suggestOpen && !draft && suggestions.length > 0 && (
-              <div className="absolute z-30 left-0 right-0 mt-1 rounded-xl border border-[#E6E0D7] bg-white shadow-lg p-1.5" role="listbox" aria-label="Your roles">
-                <p className="px-2.5 pt-1 pb-1.5 text-[11px] font-semibold text-[#9A9086]">Your roles</p>
-                {suggestions.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    role="option"
-                    aria-selected={false}
-                    // mousedown so it runs before the input's blur closes the list
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setDraft(q);
-                      setQuery(q);
-                      setSuggestOpen(false);
-                    }}
-                    className="w-full text-left px-2.5 py-2 rounded-lg text-sm text-[#1A1714] hover:bg-[#FAF8F4] flex items-center gap-2 cursor-pointer"
-                  >
-                    <Briefcase className="w-3.5 h-3.5 text-[#9A9086]" aria-hidden="true" />
-                    {q}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
 
-          <button
-            type="button"
-            onClick={() => setPanelOpen(true)}
-            aria-haspopup="dialog"
-            aria-label={chips.length ? `Filters, ${chips.length} on` : 'Filters'}
-            className={`h-12 px-3.5 sm:px-4 rounded-xl border text-sm font-semibold inline-flex items-center gap-2 shrink-0 cursor-pointer transition-colors ${
-              chips.length ? 'bg-[#1A1714] border-[#1A1714] text-white' : 'bg-white border-[#E6E0D7] text-[#1A1714] hover:border-[#1A1714]'
-            }`}
-          >
-            <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
-            <span className="hidden sm:inline" aria-hidden="true">Filters</span>
-            {chips.length > 0 && (
-              <span aria-hidden="true" className="min-w-5 h-5 px-1 rounded-full bg-[#FFD84D] text-[#1A1714] text-[11px] font-bold inline-flex items-center justify-center">
-                {chips.length}
-              </span>
-            )}
-          </button>
-        </form>
-
-        {chips.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5" aria-label="Active filters">
-            {chips.map((c) => (
-              <button
-                key={c.key}
-                type="button"
-                onClick={() => applyFilters({ ...filters, [c.key]: DEFAULT_FILTERS[c.key] })}
-                className="h-8 pl-3 pr-2 rounded-full bg-[#FAF8F4] border border-[#E6E0D7] hover:border-[#1A1714] text-xs font-semibold text-[#1A1714] inline-flex items-center gap-1 cursor-pointer"
-              >
-                {c.label}
-                <X className="w-3 h-3 text-[#6B6259]" aria-hidden="true" />
-                <span className="sr-only">Remove filter</span>
-              </button>
-            ))}
-            <button type="button" onClick={() => applyFilters({ ...DEFAULT_FILTERS, sort: filters.sort })} className="h-8 px-2 text-xs font-semibold text-[#6B6259] hover:text-[#1A1714] cursor-pointer">
-              Clear all
-            </button>
-          </div>
-        )}
+          {current && current.total > PAGE_SIZE && (
+            <Pagination page={page} totalPages={Math.ceil(current.total / PAGE_SIZE)} onChange={goToPage} />
+          )}
+        </div>
       </div>
 
-      {/* RESULTS */}
-      <div aria-live="polite" aria-busy={loading}>
-        {current && (
-          <div className="mb-2.5 flex items-baseline justify-between gap-3">
-            <p className="text-sm text-[#6B6259]">
-              <span className="font-semibold text-[#1A1714]">{current.total.toLocaleString('en-IN')} jobs</span>
-              {query ? <> for “{query}”</> : null}
-            </p>
-            <p className="text-xs text-[#9A9086] shrink-0">{filters.sort === 'recent' ? 'Most recent first' : 'Best match first'}</p>
-          </div>
-        )}
-        {current?.relaxed && (
-          <p className="mb-2.5 text-xs text-[#8A5A12]">No openings titled “{query}” right now, so these are other {current.relaxedDomain} roles.</p>
-        )}
-
-        <ul className="space-y-2.5">
-          {loading &&
-            [0, 1, 2, 3].map((i) => (
-              <li key={i} className="rolewise-card p-4 flex items-center gap-3 animate-pulse" aria-hidden="true">
-                <div className="w-11 h-11 rounded-xl bg-[#F3EFE9]" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-3 w-1/2 rounded bg-[#F3EFE9]" />
-                  <div className="h-2.5 w-1/3 rounded bg-[#F3EFE9]" />
-                </div>
-              </li>
-            ))}
-
-          {current?.jobs.map((job) => {
-            const state = track[job.id] || 'idle';
-            const onApply = () => {
-              if (state === 'idle') setTrack((t) => ({ ...t, [job.id]: 'asking' }));
-            };
-            return (
-              <li key={job.id} className="rolewise-card p-4 sm:p-5 hover:border-[#CFC7BC] transition-colors">
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div
-                    className="w-11 h-11 rounded-xl border border-[#E6E0D7] flex items-center justify-center overflow-hidden shrink-0 text-sm font-bold text-[#1A1714]"
-                    style={{ background: job.logo ? '#FFFFFF' : tintFor(job.company) }}
-                    aria-hidden="true"
-                  >
-                    {job.logo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={job.logo} alt="" className="w-full h-full object-contain" loading="lazy" />
-                    ) : (
-                      job.company.charAt(0).toUpperCase()
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-sm sm:text-[15px] font-semibold text-[#1A1714] leading-snug">
-                      <a href={job.url} target="_blank" rel="noopener noreferrer" onClick={onApply} className="hover:underline underline-offset-2">
-                        {job.title}
-                      </a>
-                    </h3>
-                    <p className="text-xs text-[#574F46] mt-0.5">{job.company}</p>
-                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#6B6259]">
-                      <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" aria-hidden="true" />{job.location}</span>
-                      {job.type && <span className="inline-flex items-center gap-1"><Briefcase className="w-3 h-3" aria-hidden="true" />{job.type}</span>}
-                      {job.salary && <span className="inline-flex items-center gap-1"><Wallet className="w-3 h-3" aria-hidden="true" />{job.salary}</span>}
-                      {job.postedAt && <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" aria-hidden="true" />{timeAgo(job.postedAt)}</span>}
-                    </div>
-                    {job.source !== 'Company careers' && (
-                      <p className="mt-1.5 text-[10px] text-[#9A9086]">
-                        via{' '}
-                        <a
-                          href={job.sourceUrl || (job.source === 'Himalayas' ? 'https://himalayas.app/jobs' : 'https://jobicy.com')}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline underline-offset-2 hover:text-[#1A1714]"
-                        >
-                          {job.source}
-                        </a>
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="hidden sm:flex items-center gap-2 shrink-0">
-                    {state === 'asking' ? (
-                      <AppliedPrompt onYes={() => saveToTracker(job, 'applied')} onNo={() => setTrack((t) => ({ ...t, [job.id]: 'idle' }))} />
-                    ) : (
-                    <>
-                    <SaveButton state={state} onSave={() => saveToTracker(job, 'saved')} />
-                    <a
-                      href={job.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={onApply}
-                      className="h-10 px-4 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-xs font-bold inline-flex items-center gap-1.5"
-                    >
-                      Apply <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
-                      <span className="sr-only">for {job.title} at {job.company} (opens in a new tab)</span>
-                    </a>
-                    </>
-                    )}
-                  </div>
-                </div>
-
-                <div className="sm:hidden mt-3 flex items-center justify-end gap-2">
-                  {state === 'asking' ? (
-                    <AppliedPrompt onYes={() => saveToTracker(job, 'applied')} onNo={() => setTrack((t) => ({ ...t, [job.id]: 'idle' }))} />
-                  ) : (
-                  <>
-                  <a
-                    href={job.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={onApply}
-                    className="flex-1 h-11 rounded-xl bg-[#FFD84D] text-[#1A1714] text-sm font-bold inline-flex items-center justify-center gap-1.5"
-                  >
-                    Apply <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
-                  </a>
-                  <SaveButton state={state} onSave={() => saveToTracker(job, 'saved')} />
-                  </>
-                  )}
-                </div>
-
-                {(state === 'saved' || state === 'applied') && (
-                  <p className="mt-3 text-xs text-[#2F6B42] flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
-                    {state === 'applied' ? 'Marked as applied in your Job Tracker.' : 'Saved to your Job Tracker.'}{' '}
-                    <Link href="/jobs" className="font-semibold underline underline-offset-2">Open tracker</Link>
-                  </p>
-                )}
-                {state === 'error' && <p className="mt-3 text-xs text-[#A4493A]">Couldn’t save this job. Please try again.</p>}
-              </li>
-            );
-          })}
-        </ul>
-
-        {(failed || (current && current.total === 0)) && (
-          <div className="rounded-2xl border border-dashed border-[#DDD5CA] bg-white/60 p-6 text-center">
-            <p className="text-sm font-semibold text-[#1A1714]">{failed ? 'Jobs couldn’t load right now' : 'No jobs match your search'}</p>
-            <p className="text-xs text-[#6B6259] mt-1">{failed ? 'Please try again in a minute.' : 'Try a shorter search or remove a filter.'}</p>
-            {!failed && chips.length > 0 && (
-              <button type="button" onClick={() => applyFilters({ ...DEFAULT_FILTERS, sort: filters.sort })} className="mt-3 h-9 px-4 rounded-lg border border-[#E6E0D7] bg-white text-xs font-semibold text-[#1A1714] hover:border-[#1A1714] cursor-pointer">
-                Clear filters
-              </button>
-            )}
-          </div>
-        )}
-
-        {current?.hasMore && (
-          <div className="mt-4 flex justify-center">
-            <button
-              type="button"
-              onClick={loadMore}
-              disabled={loadingMore}
-              className="h-11 px-5 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#1A1714] text-sm font-semibold text-[#1A1714] inline-flex items-center gap-2 disabled:opacity-60 cursor-pointer"
-            >
-              {loadingMore && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />}
-              Show more jobs
-              <span className="text-[#9A9086] font-normal tabular-nums">
-                {current.jobs.length} of {current.total.toLocaleString('en-IN')}
-              </span>
-            </button>
-          </div>
-        )}
-      </div>
-
-      {panelOpen && (
-        <FilterPanel
+      {sheetOpen && (
+        <FilterSheet
           query={query}
           initial={filters}
-          onClose={() => setPanelOpen(false)}
+          onClose={() => setSheetOpen(false)}
           onApply={(f) => {
             applyFilters(f);
-            setPanelOpen(false);
+            setSheetOpen(false);
           }}
         />
       )}
@@ -501,23 +483,215 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
   );
 }
 
-/* ---------------- LinkedIn-style "All filters" panel ---------------- */
+/* ---------------- Search ---------------- */
 
-function FilterPanel({ query, initial, onClose, onApply }: { query: string; initial: Filters; onClose: () => void; onApply: (f: Filters) => void }) {
+function SearchBox({ initial, onSearch, suggestions }: { initial: string; onSearch: (q: string) => void; suggestions: string[] }) {
+  const [draft, setDraft] = useState(initial);
+  const [open, setOpen] = useState(false);
+  const list = suggestions.filter((q) => q && q !== initial);
+
+  return (
+    <form
+      role="search"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setOpen(false);
+        onSearch(draft.trim());
+      }}
+      className="relative"
+    >
+      <div className="flex items-center gap-2 h-11 px-3 rounded-xl border border-[#E6E0D7] bg-white focus-within:border-[#1A1714] focus-within:ring-2 focus-within:ring-[#1A1714]/15">
+        <Search className="w-4 h-4 text-[#9A9086] shrink-0" aria-hidden="true" />
+        <input
+          type="search"
+          aria-label="Search jobs by role, skill or company"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setOpen(false)}
+          placeholder="Search role, skill or company"
+          autoComplete="off"
+          enterKeyHint="search"
+          className="w-full min-w-0 bg-transparent outline-none text-sm text-[#1A1714] placeholder:text-[#9A9086] [&::-webkit-search-cancel-button]:hidden"
+        />
+        {draft && (
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => {
+              setDraft('');
+              onSearch('');
+            }}
+            className="text-[#9A9086] hover:text-[#1A1714] p-1 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+      {open && !draft && list.length > 0 && (
+        <div className="absolute z-30 left-0 right-0 mt-1 rounded-xl border border-[#E6E0D7] bg-white shadow-lg p-1.5">
+          <p className="px-2.5 pt-1 pb-1.5 text-[11px] font-semibold text-[#9A9086]">Your roles</p>
+          {list.map((q) => (
+            <button
+              key={q}
+              type="button"
+              // mousedown so it runs before the input's blur closes the list
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setDraft(q);
+                onSearch(q);
+                setOpen(false);
+              }}
+              className="w-full text-left px-2.5 py-2 rounded-lg text-sm text-[#1A1714] hover:bg-[#FAF8F4] flex items-center gap-2 cursor-pointer"
+            >
+              <Briefcase className="w-3.5 h-3.5 text-[#9A9086]" aria-hidden="true" />
+              {q}
+            </button>
+          ))}
+        </div>
+      )}
+    </form>
+  );
+}
+
+/* ---------------- Filters ---------------- */
+
+function FieldTabs({ value, counts, allCount, onChange }: { value: string; counts: Counts; allCount: number; onChange: (d: string) => void }) {
+  return (
+    <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Field">
+      {FIELD_TABS.map((d) => {
+        const active = value === d;
+        const n = d ? counts[d] : allCount;
+        return (
+          <button
+            key={d || 'all'}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => onChange(d)}
+            className={`h-9 px-3.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
+              active ? 'bg-[#1A1714] text-white border-[#1A1714]' : 'bg-white text-[#574F46] border-[#E6E0D7] hover:border-[#1A1714]/50'
+            }`}
+            title={typeof n === 'number' ? `${n} jobs` : undefined}
+          >
+            {d || 'All'}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function FilterSections({ filters, counts, onChange }: { filters: Filters; counts: FacetCounts; onChange: (p: Partial<Filters>) => void }) {
+  const cities = [...CITIES].sort((a, b) => (counts.cityCounts[b] || 0) - (counts.cityCounts[a] || 0));
+  return (
+    <div className="divide-y divide-[#E6E0D7]">
+      <Section title="Experience" value={filters.level ? levelLabel(filters.level) : 'All experience levels'}>
+        <Option label="All experience levels" active={!filters.level} onClick={() => onChange({ level: '' })} />
+        <Option label="Early career" hint="Internship + entry level" count={counts.levelCounts.early} active={filters.level === 'early'} onClick={() => onChange({ level: 'early' })} />
+        {LEVELS.map((o) => (
+          <Option key={o.value} label={o.label} count={counts.levelCounts[o.value]} active={filters.level === o.value} onClick={() => onChange({ level: o.value })} />
+        ))}
+      </Section>
+
+      <Section title="Location" value={filters.city || 'All India'}>
+        <Option label="All India" active={!filters.city} onClick={() => onChange({ city: '' })} />
+        {cities.map((c) => (
+          <Option key={c} label={c} count={counts.cityCounts[c]} active={filters.city === c} onClick={() => onChange({ city: c })} hideIfZero />
+        ))}
+      </Section>
+
+      <Section title="Work type" value={filters.work ? WORK.find((o) => o.value === filters.work)!.label : 'Any'}>
+        <Option label="Any" active={!filters.work} onClick={() => onChange({ work: '' })} />
+        {WORK.map((o) => (
+          <Option key={o.value} label={o.label} count={counts.workCounts[o.value]} active={filters.work === o.value} onClick={() => onChange({ work: o.value })} />
+        ))}
+      </Section>
+
+      <Section title="Date posted" value={filters.posted ? POSTED.find((o) => o.value === filters.posted)!.label : 'Any time'}>
+        <Option label="Any time" active={!filters.posted} onClick={() => onChange({ posted: '' })} />
+        {POSTED.map((o) => (
+          <Option key={o.value} label={o.label} count={counts.postedCounts[o.value]} active={filters.posted === o.value} onClick={() => onChange({ posted: o.value })} />
+        ))}
+      </Section>
+
+      <Section title="Field" value={filters.domain || 'All fields'}>
+        <Option label="All fields" active={!filters.domain} onClick={() => onChange({ domain: '' })} />
+        {DOMAINS.map((d) => (
+          <Option key={d} label={d} count={counts.domainCounts[d]} active={filters.domain === d} onClick={() => onChange({ domain: d })} hideIfZero />
+        ))}
+      </Section>
+    </div>
+  );
+}
+
+function Section({ title, value, children }: { title: string; value: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const id = `filter-${title.toLowerCase().replace(/\s+/g, '-')}`;
+  return (
+    <div className="py-1">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-3 py-2.5 text-left cursor-pointer group"
+      >
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold text-[#1A1714]">{title}</span>
+          <span className="block text-xs text-[#6B6259] truncate">{value}</span>
+        </span>
+        <ChevronDown className={`w-4 h-4 text-[#6B6259] group-hover:text-[#1A1714] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
+      </button>
+      {open && (
+        <div id={id} role="radiogroup" aria-label={title} className="pb-2 space-y-0.5">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Option({ label, hint, count, active, onClick, hideIfZero }: { label: string; hint?: string; count?: number; active: boolean; onClick: () => void; hideIfZero?: boolean }) {
+  if (hideIfZero && !active && !count) return null;
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={active}
+      onClick={onClick}
+      className={`w-full min-h-9 px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-[13px] cursor-pointer transition-colors ${
+        active ? 'bg-[#FFF4CC] text-[#1A1714] font-semibold' : 'text-[#574F46] hover:bg-[#FAF8F4]'
+      }`}
+    >
+      <span className={`w-4 h-4 shrink-0 flex items-center justify-center ${active ? '' : 'opacity-0'}`} aria-hidden="true">
+        <Check className="w-3.5 h-3.5" />
+      </span>
+      <span className="flex-1 min-w-0">
+        {label}
+        {hint && <span className="block text-[11px] font-normal text-[#9A9086]">{hint}</span>}
+      </span>
+      {typeof count === 'number' && <span className="text-[11px] font-normal text-[#9A9086] tabular-nums">{count}</span>}
+    </button>
+  );
+}
+
+/* ---------------- Phone filter sheet ---------------- */
+
+function FilterSheet({ query, initial, onClose, onApply }: { query: string; initial: Filters; onClose: () => void; onApply: (f: Filters) => void }) {
   const [draft, setDraft] = useState<Filters>(initial);
-  const [preview, setPreview] = useState<{ key: string; total: number; domainCounts: Record<string, number> } | null>(null);
+  const [preview, setPreview] = useState<(FeedResponse & { key: string }) | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const previewKey = buildUrl(query, { ...draft, domain: '' }, 1);
-  const totalKey = buildUrl(query, draft, 1);
+  const draftKey = buildUrl(query, draft, 1);
 
-  // Live result count for the button, like "Show 120 results".
+  // Live counts and "Show N jobs" for the choices in the sheet.
   useEffect(() => {
     let cancelled = false;
     const t = setTimeout(() => {
-      Promise.all([fetch(totalKey).then((r) => r.json()), totalKey === previewKey ? null : fetch(previewKey).then((r) => r.json())])
-        .then(([withDomain, withoutDomain]: [FeedResponse, FeedResponse | null]) => {
-          if (cancelled) return;
-          setPreview({ key: totalKey, total: withDomain.total, domainCounts: (withoutDomain || withDomain).domainCounts });
+      fetch(draftKey)
+        .then((r) => r.json() as Promise<FeedResponse>)
+        .then((data) => {
+          if (!cancelled) setPreview({ ...data, key: draftKey });
         })
         .catch(() => undefined);
     }, 200);
@@ -525,7 +699,7 @@ function FilterPanel({ query, initial, onClose, onApply }: { query: string; init
       cancelled = true;
       clearTimeout(t);
     };
-  }, [totalKey, previewKey]);
+  }, [draftKey]);
 
   // Dialog basics: Escape closes, focus moves in and stays in, page doesn't scroll behind.
   useEffect(() => {
@@ -536,7 +710,7 @@ function FilterPanel({ query, initial, onClose, onApply }: { query: string; init
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
       if (e.key === 'Tab' && panelRef.current) {
-        const items = panelRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input');
+        const items = panelRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input, select');
         const first = items[0];
         const last = items[items.length - 1];
         if (e.shiftKey && document.activeElement === first) {
@@ -556,61 +730,38 @@ function FilterPanel({ query, initial, onClose, onApply }: { query: string; init
     };
   }, [onClose]);
 
-  const set = <K extends keyof Filters>(k: K, v: Filters[K]) => setDraft((d) => ({ ...d, [k]: v }));
-  const counts = preview?.domainCounts || {};
-  const total = preview?.key === totalKey ? preview.total : null;
+  const counts: FacetCounts = preview ? { ...NO_COUNTS, ...preview } : NO_COUNTS;
+  const total = preview?.key === draftKey ? preview.total : null;
+  const allCount = Object.values(counts.domainCounts).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="fixed inset-0 z-[80]">
-      <button type="button" aria-label="Close filters" onClick={onClose} className="absolute inset-0 bg-[#1A1714]/30 backdrop-blur-[1px] cursor-default" />
+    <div className="fixed inset-0 z-[80] lg:hidden">
+      <button type="button" aria-label="Close filters" onClick={onClose} className="absolute inset-0 bg-[#1A1714]/30 cursor-default" />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="filters-title"
-        className="absolute bg-white flex flex-col shadow-[0_0_40px_rgba(26,23,20,0.18)] inset-x-0 bottom-0 top-12 rounded-t-[24px] sm:inset-y-0 sm:right-0 sm:left-auto sm:top-0 sm:w-[440px] sm:rounded-none sm:rounded-l-[24px] animate-in slide-in-from-bottom sm:slide-in-from-right duration-200"
+        className="absolute inset-x-0 bottom-0 top-12 bg-white rounded-t-[24px] flex flex-col shadow-[0_-10px_40px_rgba(26,23,20,0.18)] animate-in slide-in-from-bottom duration-200"
       >
-        <div className="flex items-center justify-between px-5 h-16 border-b border-[#E6E0D7] shrink-0">
-          <h2 id="filters-title" className="text-base font-bold text-[#1A1714]">All filters</h2>
-          <button type="button" onClick={onClose} aria-label="Close filters" className="w-10 h-10 rounded-full flex items-center justify-center text-[#6B6259] hover:bg-[#FAF8F4] hover:text-[#1A1714] cursor-pointer">
+        <div className="flex items-center justify-between px-5 h-14 border-b border-[#E6E0D7] shrink-0">
+          <h2 id="filters-title" className="text-base font-bold text-[#1A1714]">Filters</h2>
+          <button type="button" onClick={onClose} aria-label="Close filters" className="w-10 h-10 rounded-full flex items-center justify-center text-[#6B6259] hover:bg-[#FAF8F4] cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        <div className="flex-1 overflow-y-auto px-5 py-2 divide-y divide-[#E6E0D7]">
-          <FilterGroup label="Sort by" name="sort" options={SORT_OPTIONS} value={draft.sort} onChange={(v) => set('sort', v)} />
-          <FilterGroup label="Date posted" name="posted" options={POSTED_OPTIONS} value={draft.posted} onChange={(v) => set('posted', v)} />
-          <FilterGroup label="Experience level" name="level" options={LEVEL_OPTIONS} value={draft.level} onChange={(v) => set('level', v)} />
-          <FilterGroup label="Work type" name="work" options={WORK_OPTIONS} value={draft.work} onChange={(v) => set('work', v)} />
-          <FilterGroup
-            label="Location"
-            name="city"
-            options={[{ value: '', label: 'All India' }, ...CITIES.map((c) => ({ value: c, label: c }))]}
-            value={draft.city}
-            onChange={(v) => set('city', v)}
-          />
-          <FilterGroup
-            label="Field"
-            name="domain"
-            options={[
-              { value: '', label: 'All fields' },
-              ...DOMAINS.filter((d) => (counts[d] || 0) > 0 || draft.domain === d).map((d) => ({ value: d, label: d, count: counts[d] || 0 })),
-            ]}
-            value={draft.domain}
-            onChange={(v) => set('domain', v)}
-          />
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          <FieldTabs value={draft.domain} counts={counts.domainCounts} allCount={allCount} onChange={(d) => setDraft((f) => ({ ...f, domain: d }))} />
+          <div className="mt-2">
+            <FilterSections filters={draft} counts={counts} onChange={(p) => setDraft((f) => ({ ...f, ...p }))} />
+          </div>
         </div>
-
-        <div className="shrink-0 border-t border-[#E6E0D7] px-5 py-3.5 flex items-center justify-between gap-3 pb-[max(14px,env(safe-area-inset-bottom))]">
-          <button type="button" onClick={() => setDraft({ ...DEFAULT_FILTERS })} className="h-11 px-3 text-sm font-semibold text-[#574F46] hover:text-[#1A1714] cursor-pointer">
+        <div className="shrink-0 border-t border-[#E6E0D7] px-5 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] flex items-center justify-between gap-3">
+          <button type="button" onClick={() => setDraft({ ...DEFAULT_FILTERS, sort: draft.sort })} className="h-11 px-2 text-sm font-semibold text-[#574F46] cursor-pointer">
             Reset
           </button>
-          <button
-            type="button"
-            onClick={() => onApply(draft)}
-            className="h-11 px-6 rounded-xl bg-[#1A1714] hover:bg-[#3B342D] text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
-          >
-            {total === null ? 'Show results' : total === 0 ? 'No results' : `Show ${total.toLocaleString('en-IN')} results`}
+          <button type="button" onClick={() => onApply(draft)} className="h-11 px-6 rounded-xl bg-[#1A1714] text-white text-sm font-semibold cursor-pointer">
+            {total === null ? 'Show jobs' : total === 0 ? 'No jobs' : `Show ${total.toLocaleString('en-IN')} jobs`}
           </button>
         </div>
       </div>
@@ -618,73 +769,64 @@ function FilterPanel({ query, initial, onClose, onApply }: { query: string; init
   );
 }
 
-function FilterGroup<T extends string>({
-  label,
-  name,
-  options,
-  value,
-  onChange,
-}: {
-  label: string;
-  name: string;
-  options: { value: T; label: string; count?: number }[];
-  value: T;
-  onChange: (v: T) => void;
-}) {
+/* ---------------- Pagination ---------------- */
+
+/** 1 … 4 5 6 … 51 — first, last, and the pages around the current one. */
+function pageList(page: number, total: number): (number | '…')[] {
+  const pages = new Set([1, total, page - 1, page, page + 1].filter((n) => n >= 1 && n <= total));
+  if (page <= 3) [2, 3, 4].forEach((n) => n <= total && pages.add(n));
+  if (page >= total - 2) [total - 1, total - 2, total - 3].forEach((n) => n >= 1 && pages.add(n));
+  const sorted = [...pages].sort((a, b) => a - b);
+  const out: (number | '…')[] = [];
+  sorted.forEach((n, i) => {
+    if (i > 0 && n - sorted[i - 1] > 1) out.push('…');
+    out.push(n);
+  });
+  return out;
+}
+
+function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (n: number) => void }) {
+  const btn = 'h-10 min-w-10 px-2 rounded-xl text-sm font-semibold inline-flex items-center justify-center transition-colors';
   return (
-    <div className="py-4">
-      <p id={`filter-${name}`} className="text-sm font-semibold text-[#1A1714] mb-2.5">{label}</p>
-      <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-labelledby={`filter-${name}`}>
-        {options.map((o) => {
-          const active = value === o.value;
-          return (
-            <button
-              key={`${name}-${o.value || 'any'}`}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onChange(o.value)}
-              className={`h-9 px-3 rounded-full text-xs font-semibold border transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
-                active ? 'bg-[#1A1714] text-white border-[#1A1714]' : 'bg-white text-[#574F46] border-[#E6E0D7] hover:border-[#1A1714]/50'
-              }`}
-            >
-              {active && <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />}
-              {o.label}
-              {typeof o.count === 'number' && <span className={`tabular-nums ${active ? 'text-white/70' : 'text-[#9A9086]'}`}>{o.count}</span>}
-            </button>
-          );
-        })}
-      </div>
-    </div>
+    <nav aria-label="Job pages" className="mt-5 flex items-center justify-center gap-1 sm:gap-1.5">
+      <button
+        type="button"
+        onClick={() => onChange(page - 1)}
+        disabled={page <= 1}
+        aria-label="Previous page"
+        className={`${btn} border border-[#E6E0D7] bg-white text-[#1A1714] hover:border-[#1A1714] disabled:opacity-40 disabled:hover:border-[#E6E0D7] disabled:cursor-not-allowed cursor-pointer`}
+      >
+        <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+      </button>
+      {pageList(page, totalPages).map((n, i) =>
+        n === '…' ? (
+          <span key={`gap-${i}`} className="w-6 text-center text-sm text-[#9A9086]" aria-hidden="true">
+            …
+          </span>
+        ) : (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            aria-label={`Page ${n}`}
+            aria-current={n === page ? 'page' : undefined}
+            className={`${btn} cursor-pointer ${n === page ? 'bg-[#1A1714] text-white' : 'text-[#574F46] hover:bg-white hover:text-[#1A1714]'}`}
+          >
+            {n}
+          </button>
+        )
+      )}
+      <button
+        type="button"
+        onClick={() => onChange(page + 1)}
+        disabled={page >= totalPages}
+        aria-label="Next page"
+        className={`${btn} border border-[#E6E0D7] bg-white text-[#1A1714] hover:border-[#1A1714] disabled:opacity-40 disabled:hover:border-[#E6E0D7] disabled:cursor-not-allowed cursor-pointer`}
+      >
+        <ChevronRight className="w-4 h-4" aria-hidden="true" />
+      </button>
+    </nav>
   );
 }
 
-/** Shown in place of Save / Apply right after Apply is clicked. */
-function AppliedPrompt({ onYes, onNo }: { onYes: () => void; onNo: () => void }) {
-  return (
-    <div className="flex items-center gap-2" role="group" aria-label="Did you apply?">
-      <span className="text-xs font-semibold text-[#1A1714] mr-1">Did you apply?</span>
-      <button type="button" onClick={onYes} className="h-10 max-sm:h-11 px-4 rounded-xl bg-[#1A1714] hover:bg-[#3B342D] text-white text-xs font-semibold cursor-pointer">
-        Yes
-      </button>
-      <button type="button" onClick={onNo} className="h-10 max-sm:h-11 px-4 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#1A1714] text-xs font-semibold text-[#1A1714] cursor-pointer">
-        No
-      </button>
-    </div>
-  );
-}
 
-function SaveButton({ state, onSave }: { state: TrackState; onSave: () => void }) {
-  if (state === 'saved' || state === 'applied') return null;
-  return (
-    <button
-      type="button"
-      onClick={onSave}
-      disabled={state === 'saving'}
-      className="h-10 px-3.5 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#1A1714] text-xs font-semibold text-[#1A1714] inline-flex items-center gap-1.5 disabled:opacity-60 cursor-pointer max-sm:h-11 max-sm:px-4"
-    >
-      {state === 'saving' ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Briefcase className="w-3.5 h-3.5" aria-hidden="true" />}
-      Save
-    </button>
-  );
-}
