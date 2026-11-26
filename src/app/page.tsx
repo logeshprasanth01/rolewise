@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   Briefcase,
@@ -18,13 +18,15 @@ import {
   Search,
   Send,
   CheckCircle2,
+  Circle,
+  CircleDot,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { getInterviewHistory, getPreparationItems, getUserRoles } from '@/services/api';
 import { timeAgo } from '@/lib/job-portals';
 import { greeting, isAnalyzed, isActive, isFollowUpDue, followUpDate, formatDate, relativeDay, statusOf, todayISO, addDaysISO } from '@/lib/tracker';
 import { StatusPill } from '@/components/tracker/StatusPill';
-import { InterviewHistoryRecord, Role } from '@/types/database';
+import { InterviewHistoryRecord, PreparationItem, Role } from '@/types/database';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 import { Mascot } from '@/components/brand/Mascot';
 import { JobsInfographic } from '@/components/dashboard/JobsInfographic';
@@ -41,6 +43,29 @@ export default function DashboardPage() {
     inProgress: 0,
     notStarted: 0,
   });
+  /** Open prep tasks (in progress first, then by priority), for the "Up next" list. */
+  const [upNext, setUpNext] = useState<(PreparationItem & { roleTitle: string })[]>([]);
+  // On wide screens the card stretches to match the right column, so show as many tasks as fit
+  // (whole rows only). On phones the card isn't stretched, so a fixed 4.
+  const upNextRef = useRef<HTMLDivElement>(null);
+  const [upNextFit, setUpNextFit] = useState(4);
+  useEffect(() => {
+    const el = upNextRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const wide = window.matchMedia('(min-width: 1024px)');
+    const measure = () => {
+      if (!wide.matches) return setUpNextFit(4);
+      const row = el.querySelector('li')?.getBoundingClientRect().height || 57;
+      setUpNextFit(Math.max(3, Math.floor(el.getBoundingClientRect().height / row)));
+    };
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    wide.addEventListener('change', measure);
+    return () => {
+      ro.disconnect();
+      wide.removeEventListener('change', measure);
+    };
+  }, [upNext.length]);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -76,6 +101,18 @@ export default function DashboardPage() {
           );
 
         setPreparationStats(nextStats);
+
+        const rank = (i: PreparationItem) =>
+          (i.status === 'in_progress' ? 0 : 10) + ({ high: 0, medium: 1, low: 2 }[String(i.priority).toLowerCase()] ?? 3);
+        setUpNext(
+          preparationByRole
+            .flatMap((result, idx) =>
+              result.items.map((item) => ({ ...item, roleTitle: analyzedRoles[idx].title || 'Role' }))
+            )
+            .filter((i) => i.status !== 'completed')
+            .sort((a, b) => rank(a) - rank(b) || (a.order_index ?? 0) - (b.order_index ?? 0))
+            .slice(0, 10)
+        );
       } catch (err) {
         console.error('Error fetching dashboard preparation analytics:', err);
         setRolesLoaded(true);
@@ -402,64 +439,119 @@ export default function DashboardPage() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-5 items-center my-auto">
-                <div className="space-y-3">
-                  {[
-                    { label: 'Completed', value: preparationStats.completed, track: 'bg-[#F3EFE9]', fill: 'bg-[#6FA77F]' },
-                    { label: 'In progress', value: preparationStats.inProgress, track: 'bg-[#F3EFE9]', fill: 'bg-[#E7B416]' },
-                    { label: 'Not started', value: preparationStats.notStarted, track: 'bg-[#F3EFE9]', fill: 'bg-[#9A9086]' },
-                  ].map((item) => {
-                    const total =
-                      preparationStats.completed +
-                      preparationStats.inProgress +
-                      preparationStats.notStarted;
-                    const width = total > 0 ? Math.max((item.value / total) * 100, item.value > 0 ? 8 : 0) : 0;
-
-                    return (
-                      <div key={item.label} className="space-y-1.5">
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="font-medium text-[#6B6259]">{item.label}</span>
-                          <span className="font-semibold text-[#1A1714]">{item.value}</span>
-                        </div>
-                        <div className={`h-2.5 rounded-full ${item.track}`} aria-hidden="true">
-                          <div
-                            className={`h-full rounded-full ${item.fill} transition-all duration-500`}
-                            style={{ width: `${width}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
+              {prepTotal === 0 ? (
+                /* No prep plan yet: a real empty state instead of a 0-of-0 summary */
+                <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+                  <span className="w-14 h-14 rounded-full bg-[#FFF4CC] flex items-center justify-center" aria-hidden="true">
+                    <Layers className="w-6 h-6 text-[#8A5A12]" />
+                  </span>
+                  <p className="mt-3 text-sm font-bold text-[#1A1714]">No prep plan yet</p>
+                  <p className="mt-1 text-xs text-[#6B6259] max-w-[260px]">Analyse a job against your resume and we&apos;ll build a step-by-step plan.</p>
+                  <Link
+                    href={roles[0] ? `/jobs/new?roleId=${roles[0].id}` : '/jobs/new'}
+                    data-ui-sound="click"
+                    className="mt-4 inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-[#1A1714] text-white text-xs font-semibold hover:bg-black"
+                  >
+                    Analyse a job <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                  </Link>
                 </div>
-
-                {/* Share of the plan that is done */}
-                <div className="flex sm:flex-col items-center gap-4 sm:gap-2 sm:w-[132px]">
-                  <div className="relative w-[104px] h-[104px] shrink-0" role="img" aria-label={`${prepDonePct}% of ${prepTotal} preparation items completed`}>
-                    <svg viewBox="0 0 104 104" className="w-full h-full -rotate-90">
-                      <circle cx="52" cy="52" r="44" fill="none" stroke="#F3EFE9" strokeWidth="10" />
-                      <circle
-                        cx="52"
-                        cy="52"
-                        r="44"
-                        fill="none"
-                        stroke="#6FA77F"
-                        strokeWidth="10"
-                        strokeLinecap="round"
-                        strokeDasharray={2 * Math.PI * 44}
-                        strokeDashoffset={2 * Math.PI * 44 * (1 - prepDonePct / 100)}
-                        className="transition-[stroke-dashoffset] duration-700"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-xl font-bold text-[#1A1714] tabular-nums">{prepDonePct}%</span>
-                      <span className="text-[10px] text-[#6B6259]">done</span>
-                    </div>
-                  </div>
-                  <p className="text-[11px] text-[#6B6259] sm:text-center leading-snug">
-                    <span className="font-semibold text-[#1A1714] tabular-nums">{prepTotal}</span> items in your plans
+              ) : (
+              <>
+              {/* Summary: ring + one segmented bar */}
+              <div className="flex items-center gap-5">
+                <div className="relative w-[84px] h-[84px] shrink-0" role="img" aria-label={`${prepDonePct}% of ${prepTotal} preparation items completed`}>
+                  <svg viewBox="0 0 84 84" className="w-full h-full -rotate-90">
+                    <circle cx="42" cy="42" r="35" fill="none" stroke="#F3EFE9" strokeWidth="9" />
+                    <circle
+                      cx="42"
+                      cy="42"
+                      r="35"
+                      fill="none"
+                      stroke="#6FA77F"
+                      strokeWidth="9"
+                      strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 35}
+                      strokeDashoffset={2 * Math.PI * 35 * (1 - prepDonePct / 100)}
+                      className="transition-[stroke-dashoffset] duration-700"
+                    />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-[#1A1714] tabular-nums">{prepDonePct}%</span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-[#1A1714]">
+                    <span className="text-xl font-bold tabular-nums">{preparationStats.completed}</span>
+                    <span className="text-[#6B6259]"> of {prepTotal} tasks done</span>
                   </p>
+                  <div className="mt-2.5 flex h-2.5 gap-0.5 rounded-full overflow-hidden bg-[#F3EFE9]" aria-hidden="true">
+                    {[
+                      { v: preparationStats.completed, c: 'bg-[#6FA77F]' },
+                      { v: preparationStats.inProgress, c: 'bg-[#E7B416]' },
+                      { v: preparationStats.notStarted, c: 'bg-[#D9D2C8]' },
+                    ].map((seg, i) =>
+                      seg.v > 0 ? <span key={i} className={`${seg.c} h-full`} style={{ width: `${(seg.v / Math.max(prepTotal, 1)) * 100}%` }} /> : null
+                    )}
+                  </div>
+                  <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#6B6259]">
+                    {[
+                      { label: 'Done', v: preparationStats.completed, c: 'bg-[#6FA77F]' },
+                      { label: 'In progress', v: preparationStats.inProgress, c: 'bg-[#E7B416]' },
+                      { label: 'Not started', v: preparationStats.notStarted, c: 'bg-[#D9D2C8]' },
+                    ].map((l) => (
+                      <li key={l.label} className="inline-flex items-center gap-1.5">
+                        <span className={`w-2 h-2 rounded-full ${l.c}`} aria-hidden="true" />
+                        {l.label} <span className="font-semibold text-[#1A1714] tabular-nums">{l.v}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
+
+              {/* Up next: the actual tasks, so the card is something to act on */}
+              <div className="border-t border-[#F0ECE6] pt-4 flex-1 flex flex-col">
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#9A9086]">Up next</h3>
+                {upNext.length > 0 ? (
+                  // lg: height 0 + flex-1 → takes the leftover space without making the card taller.
+                  <div ref={upNextRef} className="mt-2 lg:h-0 lg:flex-1 lg:min-h-[171px] overflow-hidden">
+                  <ul className="-mx-2 divide-y divide-[#F3EFE9]">
+                    {upNext.slice(0, upNextFit).map((item) => {
+                      const started = item.status === 'in_progress';
+                      const priority = String(item.priority || '').toLowerCase();
+                      return (
+                        <li key={item.id}>
+                          <Link
+                            href={`/roles/${item.role_id}/preparation`}
+                            data-ui-sound="click"
+                            className="group flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-[#FAF8F4] transition-colors"
+                          >
+                            {started ? (
+                              <CircleDot className="w-4 h-4 text-[#C99A0E] shrink-0" aria-label="In progress" />
+                            ) : (
+                              <Circle className="w-4 h-4 text-[#CFC7BC] shrink-0" aria-label="Not started" />
+                            )}
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-[13px] font-semibold text-[#1A1714] line-clamp-2 lg:line-clamp-1">{item.title}</span>
+                              <span className="block text-[11px] text-[#6B6259] truncate">{item.roleTitle}</span>
+                            </span>
+                            {priority === 'high' && (
+                              <span className="h-5 px-2 rounded-full bg-[#FFF0ED] text-[#C25E4D] text-[10px] font-semibold inline-flex items-center shrink-0">High</span>
+                            )}
+                            <ChevronRight className="w-4 h-4 text-[#B5ADA3] group-hover:text-[#1A1714] transition-colors shrink-0" aria-hidden="true" />
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  </div>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-6">
+                    <CheckCircle2 className="w-8 h-8 text-[#6FA77F]" aria-hidden="true" />
+                    <p className="mt-2 text-sm font-bold text-[#1A1714]">Every task is done</p>
+                    <p className="mt-0.5 text-xs text-[#6B6259]">Keep sharp with a practice answer.</p>
+                  </div>
+                )}
+              </div>
+              </>
+              )}
             </section>
           )}
 
