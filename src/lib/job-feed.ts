@@ -115,7 +115,7 @@ export function levelOf(title: string): Level {
   if (/\b(intern|internship|trainee|apprentice)\b/.test(t)) return 'intern';
   if (/\b(director|head|vp|vice president|chief|cxo|manager|lead)\b/.test(t) && !/\b(account|key account|area|territory|relationship) manager\b/.test(t)) return 'lead';
   if (/\b(senior|sr\.?|staff|principal)\b/.test(t)) return 'senior';
-  if (/\b(junior|jr\.?|entry|fresher|graduate|associate|executive|i)\b/.test(t)) return 'entry';
+  if (/\b(junior|jr\.?|entry|fresher|graduate|associate|i)\b/.test(t) && !/\baccount executive\b/.test(t)) return 'entry';
   return 'mid';
 }
 
@@ -123,7 +123,7 @@ export function domainOf(title: string, department = ''): Domain {
   const t = `${title}`.toLowerCase();
   const d = `${department}`.toLowerCase();
   const test = (re: RegExp) => re.test(t) || (!!d && re.test(d));
-  if (/\b(sales engineer|solutions? engineer|solutions? consultant|pre-?sales)/i.test(t)) return 'Sales';
+  if (/\b(sales engineer|solutions? engineer|solutions? consultant|pre-?sales|account executive|account manager|business development)/i.test(t)) return 'Sales';
   if (/\b(designer|design lead|ux|ui\b|ui\/|user research|visual|graphic|illustrat|motion|creative director)/i.test(t)) return 'Design';
   if (/\b(product manager|product owner|product lead|head of product|program manager|technical program|tpm\b|product ops)/i.test(t)) return 'Product';
   if (/\b(data scien|data analy|analytics|machine learning|\bml\b|\bai\b|research scientist|applied scientist|data engineer|business intelligence|\bbi\b|statistic|decision science|llm)/i.test(t)) return 'Data & AI';
