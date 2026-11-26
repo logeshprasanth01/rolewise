@@ -29,6 +29,7 @@ import { computeFitScore, fitBand } from '@/lib/fit-score';
 import { FitAnalysis, Role, RoleRequirement } from '@/types/database';
 import { keywordReport, resumeChecks, shortRequirement } from '@/lib/get-noticed';
 import { companyApplyLink } from '@/lib/job-portals';
+import { CompanyLogo } from '@/components/jobs/CompanyLogo';
 
 type StatusKey = 'strong' | 'transferable' | 'investigation' | 'not_demonstrated';
 
@@ -702,14 +703,7 @@ function SimilarJobs({ query }: { query: string }) {
               href={`/find-jobs/job?id=${encodeURIComponent(j.id)}&q=${encodeURIComponent(query)}`}
               className="rolewise-card flex items-center gap-3 px-4 py-3 hover:border-[#CFC7BC] hover:shadow-[0_4px_14px_rgba(26,23,20,0.06)] transition-[border-color,box-shadow] group"
             >
-              <span className="w-10 h-10 rounded-xl border border-[#E6E0D7] bg-[#FFF4CC] flex items-center justify-center overflow-hidden shrink-0 text-sm font-bold text-[#1A1714]" aria-hidden="true">
-                {j.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={j.logo} alt="" className="w-full h-full object-contain bg-white" loading="lazy" />
-                ) : (
-                  j.company.charAt(0).toUpperCase()
-                )}
-              </span>
+              <CompanyLogo company={j.company} logo={j.logo} className="w-10 h-10 rounded-xl text-sm" />
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-[#1A1714] truncate">{j.title}</span>
                 <span className="block text-[11px] text-[#6B6259] truncate">

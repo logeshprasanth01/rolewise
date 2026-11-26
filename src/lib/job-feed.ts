@@ -122,6 +122,31 @@ const BOARDS: ['gh' | 'lever' | 'ashby' | 'sr' | 'workable', string, string][] =
   ['ashby', 'airwallex', 'Airwallex'],
 ];
 
+/** Company websites, for logos on boards that don't send one. */
+const COMPANY_DOMAINS: Record<string, string> = {
+  Paytm: 'paytm.com', Apna: 'apna.co', Swiggy: 'swiggy.com', Bosch: 'bosch.com', Okta: 'okta.com',
+  Zscaler: 'zscaler.com', ServiceNow: 'servicenow.com', MongoDB: 'mongodb.com', Databricks: 'databricks.com',
+  Meesho: 'meesho.com', Rubrik: 'rubrik.com', Stripe: 'stripe.com', 'Hevo Data': 'hevodata.com',
+  'Sarvam AI': 'sarvam.ai', Sigmoid: 'sigmoid.com', Zeta: 'zeta.tech', InMobi: 'inmobi.com',
+  Freshworks: 'freshworks.com', GitLab: 'gitlab.com', Zenoti: 'zenoti.com', Toast: 'toasttab.com',
+  HackerRank: 'hackerrank.com', Mindtickle: 'mindtickle.com', Grab: 'grab.com', Elastic: 'elastic.co',
+  LinkedIn: 'linkedin.com', Twilio: 'twilio.com', Agoda: 'agoda.com', OpenAI: 'openai.com',
+  FamPay: 'famapp.in', Glance: 'glance.com', Snowflake: 'snowflake.com', Airbnb: 'airbnb.com',
+  CRED: 'cred.club', Druva: 'druva.com', Coinbase: 'coinbase.com', 'Sumo Logic': 'sumologic.com',
+  Commvault: 'commvault.com', Groww: 'groww.in', ixigo: 'ixigo.com', Datadog: 'datadoghq.com',
+  SpotDraft: 'spotdraft.com', Ubisoft: 'ubisoft.com', Samsara: 'samsara.com', DevRev: 'devrev.ai',
+  'Observe.AI': 'observe.ai', 'New Relic': 'newrelic.com', Atlan: 'atlan.com', Unacademy: 'unacademy.com',
+  Instahyre: 'instahyre.com', 'Pocket FM': 'pocketfm.com', Figma: 'figma.com', Notion: 'notion.so',
+  Wise: 'wise.com', Nium: 'nium.com', Airwallex: 'airwallex.com', Amazon: 'amazon.com',
+};
+
+/** A logo for a known company (its site icon, 128px; 404 when the site has none, so the UI falls back). */
+export function logoFor(company: string): string | null {
+  const domain = COMPANY_DOMAINS[company];
+  if (!domain) return null;
+  return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`;
+}
+
 const CITIES: [string, RegExp][] = [
   ['Bengaluru', /bengaluru|bangalore/i],
   ['Chennai', /chennai/i],
@@ -237,6 +262,7 @@ function make(partial: Omit<OpenJob, 'city' | 'domain' | 'remote'> & { remote?: 
       : clean(partial.location) || (remote ? 'Remote' : 'India');
   return {
     ...partial,
+    logo: partial.logo || logoFor(partial.company),
     title: clean(partial.title),
     location,
     city,

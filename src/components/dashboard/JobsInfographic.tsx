@@ -4,6 +4,7 @@ import React, { useEffect, useId, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ArrowUpRight, Building2, MapPin, TrendingUp } from 'lucide-react';
 import { timeAgo } from '@/lib/job-portals';
+import { CompanyLogo } from '@/components/jobs/CompanyLogo';
 
 interface MiniJob {
   id: string;
@@ -34,12 +35,6 @@ const LEVELS = [
   { key: 'lead', label: 'Lead', color: '#1A1714' },
 ];
 
-const TINTS = ['#FFE58A', '#E3EEF9', '#EEF7F0', '#F3EFE9', '#FFF0ED', '#EFEAE3', '#E8F0FF'];
-const tintFor = (name: string) => {
-  let h = 0;
-  for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return TINTS[h % TINTS.length];
-};
 const fmt = (n: number) => n.toLocaleString('en-IN');
 
 function dayLabel(daysAgo: number) {
@@ -373,18 +368,7 @@ function FreshPicks({ jobs, scope }: { jobs: MiniJob[]; scope: string }) {
               href={`/find-jobs/job?id=${encodeURIComponent(j.id)}${scope ? `&q=${encodeURIComponent(scope)}` : ''}`}
               className="group flex items-center gap-3 rounded-xl bg-white border border-[#E6E0D7] px-3 py-2.5 hover:border-[#CFC7BC] hover:shadow-[0_4px_14px_rgba(26,23,20,0.06)] transition-[border-color,box-shadow] h-full"
             >
-              <span
-                className="w-9 h-9 rounded-lg border border-[#E6E0D7] flex items-center justify-center overflow-hidden shrink-0 text-xs font-bold text-[#1A1714]"
-                style={{ background: j.logo ? '#FFFFFF' : tintFor(j.company) }}
-                aria-hidden="true"
-              >
-                {j.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={j.logo} alt="" className="w-full h-full object-contain" loading="lazy" />
-                ) : (
-                  j.company.charAt(0).toUpperCase()
-                )}
-              </span>
+              <CompanyLogo company={j.company} logo={j.logo} className="w-9 h-9 rounded-lg text-xs" />
               <span className="min-w-0 flex-1">
                 <span className="block text-[13px] font-semibold text-[#1A1714] truncate">{j.title}</span>
                 <span className="block text-[11px] text-[#6B6259] truncate">

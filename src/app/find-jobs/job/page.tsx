@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowUpRight, Bookmark, BookmarkCheck, Briefcase, CalendarDa
 import { quickAddJob } from '@/services/api';
 import { keywordReport } from '@/lib/get-noticed';
 import { todayISO } from '@/lib/tracker';
+import { CompanyLogo } from '@/components/jobs/CompanyLogo';
 
 interface JobDetail {
   id: string;
@@ -46,12 +47,6 @@ const LEVEL_LABEL: Record<string, string> = {
 
 type Track = 'idle' | 'asking' | 'saving' | 'saved' | 'applied' | 'error';
 
-const TINTS = ['#FFE58A', '#E3EEF9', '#EEF7F0', '#F3EFE9', '#FFF0ED', '#EFEAE3', '#E8F0FF'];
-const tintFor = (name: string) => {
-  let h = 0;
-  for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return TINTS[h % TINTS.length];
-};
 
 /** "3-5 years", "4+ years", "minimum 2 years" → "3–5 yrs", "4+ yrs", "2+ yrs". */
 function experienceFrom(text: string): string | null {
@@ -254,18 +249,7 @@ function JobDetailView({ id, q }: { id: string | null; q: string }) {
           {/* HEADER */}
           <header className="rolewise-card p-5 sm:p-8">
             <div className="flex items-start gap-4 sm:gap-5">
-              <div
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border border-[#E6E0D7] flex items-center justify-center overflow-hidden shrink-0 text-xl font-bold text-[#1A1714]"
-                style={{ background: job.logo ? '#FFFFFF' : tintFor(job.company) }}
-                aria-hidden="true"
-              >
-                {job.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={job.logo} alt="" className="w-full h-full object-contain" />
-                ) : (
-                  job.company.charAt(0).toUpperCase()
-                )}
-              </div>
+              <CompanyLogo company={job.company} logo={job.logo} className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl text-xl" eager />
               <div className="min-w-0 flex-1">
                 <h1 className="text-xl sm:text-[26px] font-bold text-[#1A1714] tracking-[-0.015em] leading-tight">{job.title}</h1>
                 <p className="mt-1.5 text-sm sm:text-base">
@@ -409,18 +393,7 @@ function JobDetailView({ id, q }: { id: string | null; q: string }) {
                       onClick={() => window.scrollTo({ top: 0 })}
                       className="flex gap-3 px-5 py-4 hover:bg-[#FAF8F4] transition-colors"
                     >
-                      <span
-                        className="w-11 h-11 rounded-xl border border-[#E6E0D7] flex items-center justify-center overflow-hidden shrink-0 text-sm font-bold text-[#1A1714]"
-                        style={{ background: s.logo ? '#FFFFFF' : tintFor(s.company) }}
-                        aria-hidden="true"
-                      >
-                        {s.logo ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={s.logo} alt="" className="w-full h-full object-contain" loading="lazy" />
-                        ) : (
-                          s.company.charAt(0).toUpperCase()
-                        )}
-                      </span>
+                      <CompanyLogo company={s.company} logo={s.logo} className="w-11 h-11 rounded-xl text-sm" />
                       <span className="min-w-0">
                         <span className="block text-sm font-semibold text-[#1A1714] leading-snug">{s.title}</span>
                         <span className="block text-xs text-[#574F46] mt-1">{s.company}</span>
