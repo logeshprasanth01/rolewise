@@ -81,8 +81,18 @@ export async function GET(req: NextRequest) {
   // Best match first, then newest.
   filtered.sort((a, b) => b.s - a.s || (Date.parse(b.j.postedAt || '') || 0) - (Date.parse(a.j.postedAt || '') || 0));
 
-  const total = filtered.length;
-  const jobs = filtered.slice((page - 1) * pageSize, page * pageSize).map(({ j }) => j);
+  // Keep variety: no company more than 4 times in any run of 20 (big employers otherwise fill page 1).
+  const spread: typeof filtered = [];
+  const deferred: typeof filtered = [];
+  for (const item of filtered) {
+    const window = spread.slice(-19);
+    if (window.filter((x) => x.j.company === item.j.company).length >= 4) deferred.push(item);
+    else spread.push(item);
+  }
+  const ordered = [...spread, ...deferred];
+
+  const total = ordered.length;
+  const jobs = ordered.slice((page - 1) * pageSize, page * pageSize).map(({ j }) => j);
   const companies = new Set(filtered.map(({ j }) => j.company)).size;
 
   return NextResponse.json(

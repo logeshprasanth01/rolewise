@@ -115,15 +115,16 @@ export function domainOf(title: string, department = ''): Domain {
   if (/\b(designer|design lead|ux|ui\b|ui\/|user research|visual|graphic|illustrat|motion|creative director)/i.test(t)) return 'Design';
   if (/\b(product manager|product owner|product lead|head of product|program manager|technical program|tpm\b|product ops)/i.test(t)) return 'Product';
   if (/\b(data scien|data analy|analytics|machine learning|\bml\b|\bai\b|research scientist|applied scientist|data engineer|business intelligence|\bbi\b|statistic|decision science|llm)/i.test(t)) return 'Data & AI';
+  if (/\b(sap|abap|salesforce developer|servicenow|oracle|erp)\b/i.test(t)) return 'Engineering';
   if (/\b(engineer|developer|sde|architect|devops|sre\b|site reliability|qa\b|quality assurance|test|security|infrastructure|platform|firmware|embedded|mobile|android|ios|frontend|backend|full ?stack|software|technical lead|tech lead|programmer|it support|it admin|network|cloud)/i.test(t)) return 'Engineering';
   if (/\b(market|brand|content|seo|growth|social media|communications|pr\b|public relations|copywrit|community|campaign|demand gen|events?)\b/i.test(t)) return 'Marketing';
   if (/\b(sales|account executive|account manager|business development|bdr|sdr|partnerships?|alliances|channel|key account|pre-?sales|solutions consultant|revenue|ad sales)\b/i.test(t)) return 'Sales';
   if (/\b(customer|support|success|service|onboarding|implementation|client|helpdesk|technical account)\b/i.test(t)) return 'Customer Success';
   if (/\b(finance|account(ant|ing)|audit|tax|treasury|payroll|legal|counsel|compliance|risk|controller|fp&a|collections|credit)\b/i.test(t)) return 'Finance & Legal';
   if (/\b(recruit|talent|hr\b|human resources|people|hrbp|learning|l&d|workplace|culture)\b/i.test(t)) return 'People & HR';
-  if (/\b(operations|ops\b|supply|logistics|procurement|strategy|analyst|business|category|program|project|admin|executive assistant|office|facilities|fleet|warehouse)\b/i.test(t)) return 'Operations';
+  if (/\b(operations|ops\b|supply|logistics|procurement|purchas|buyer|sourcing|quality|manufactur|plant|production|strategy|analyst|business|category|program|project|admin|executive assistant|office|facilities|fleet|warehouse)\b/i.test(t)) return 'Operations';
   // Fall back to the department name
-  if (test(/engineer|technology|r&d|it\b/)) return 'Engineering';
+  if (test(/engineer|technology|r&d|it\b|developer|software|information technology/)) return 'Engineering';
   if (test(/design/)) return 'Design';
   if (test(/product/)) return 'Product';
   if (test(/data|ai\b/)) return 'Data & AI';
@@ -132,7 +133,8 @@ export function domainOf(title: string, department = ''): Domain {
   if (test(/support|success|customer/)) return 'Customer Success';
   if (test(/finance|legal/)) return 'Finance & Legal';
   if (test(/people|hr|talent/)) return 'People & HR';
-  if (test(/operation|business/)) return 'Operations';
+  if (test(/operation|business|purchas|procure|supply|manufactur|quality/)) return 'Operations';
+  if (/\b(consultant|specialist|associate|manager|coordinator)\b/i.test(t)) return 'Operations';
   return 'Other';
 }
 
@@ -145,6 +147,17 @@ const clean = (s: string) =>
     .replace(/&#8211;|&ndash;/g, '–')
     .replace(/\s+/g, ' ')
     .trim();
+
+const titleCase = (s: string) => s.toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase());
+
+/** "bangalore, , India" → "Bengaluru, India"; unknown places keep their own name. */
+function tidyPlace(city?: string, region?: string): string {
+  const raw = [city, region].filter((x) => x && x.trim()).join(' ');
+  const known = cityOf(raw);
+  if (known) return `${known}, India`;
+  const first = (city || region || '').trim();
+  return first ? `${titleCase(first)}, India` : 'India';
+}
 
 async function getJson(url: string, init?: RequestInit): Promise<unknown> {
   const res = await fetch(url, { ...init, signal: AbortSignal.timeout(9000), next: { revalidate: 3600 } });
@@ -244,7 +257,7 @@ async function board(ats: string, slug: string, company: string): Promise<OpenJo
       title: j.name,
       company,
       logo: null,
-      location: j.location?.fullLocation || [j.location?.city, j.location?.region, 'India'].filter(Boolean).join(', '),
+      location: tidyPlace(j.location?.city, j.location?.region),
       remote: !!j.location?.remote,
       type: j.typeOfEmployment?.label || '',
       department: j.function?.label || j.department?.label || '',
@@ -269,8 +282,10 @@ function money(min?: number, max?: number, cur?: string, period?: string): strin
 async function himalayas(q: string): Promise<OpenJob[]> {
   const url = `https://himalayas.app/jobs/api/search?country=India${q ? `&q=${encodeURIComponent(q)}` : ''}&sort=recent`;
   const d = (await getJson(url, { headers: { Accept: 'application/json' } })) as { jobs?: HimalayasJob[] };
-  return (d.jobs || []).map((j) => {
-    const where = (j.locationRestrictions || []).length ? `Remote · ${(j.locationRestrictions || []).slice(0, 2).join(', ')}` : 'Remote · Worldwide';
+  return (d.jobs || [])
+    .filter((j) => !(j.locationRestrictions || []).length || (j.locationRestrictions || []).some((c) => /india/i.test(c)))
+    .map((j) => {
+    const where = (j.locationRestrictions || []).length ? 'Remote · India' : 'Remote · Worldwide';
     const pub = typeof j.pubDate === 'number' ? new Date(j.pubDate * 1000).toISOString() : j.pubDate || null;
     return make({
       id: `him-${j.guid}`,
