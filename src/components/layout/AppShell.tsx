@@ -14,7 +14,6 @@ import {
   FileText,
   Settings,
   Search,
-  Bell,
   LogOut,
   Plus,
   ChevronRight,
@@ -29,6 +28,7 @@ import { RolewiseLogo } from '@/components/brand/RolewiseLogo';
 import { BootScreen } from '@/components/layout/BootScreen';
 import { Mascot } from '@/components/brand/Mascot';
 import { openRowi } from '@/lib/rowi-events';
+import { Avatar, HeaderActions } from '@/components/layout/HeaderActions';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -128,6 +128,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     return <AuthView />;
   }
 
+  const meta = (session.user?.user_metadata || {}) as Record<string, unknown>;
+  const avatarUrl =
+    (typeof meta.avatar_url === 'string' && meta.avatar_url) || (typeof meta.picture === 'string' && meta.picture) || null;
+
   return (
     <div className="min-h-screen bg-[#FAF8F4] text-[#1A1714] font-sans">
       <div className="min-h-screen w-full bg-[#FAF8F4] flex min-w-0">
@@ -221,9 +225,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   isNavActive('/profile') ? 'bg-[#FFFFFF] border-[#1A1714]' : 'bg-[#FAF8F4] border-[#E6E0D7] hover:border-[#CFC7BC] hover:bg-[#EFEEE9]'
                 } ${isSidebarCollapsed ? 'w-10 h-10 mx-auto p-0 justify-center rounded-full' : 'flex-1 h-12 px-2 rounded-[14px]'}`}
               >
-                <div className="w-8 h-8 rounded-full bg-[#1A1714] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
-                  {userName ? userName[0].toUpperCase() : 'U'}
-                </div>
+                <Avatar name={userName} url={avatarUrl} className="w-8 h-8 text-xs" />
                 <div className={`min-w-0 text-left flex-1 overflow-hidden ${isSidebarCollapsed ? 'hidden' : ''}`}>
                   <p className="text-xs font-bold text-[#1A1714] truncate">{userName || 'Candidate'}</p>
                   <p className="text-[10px] text-[#6B6259] truncate">{session.user?.email || 'Profile'}</p>
@@ -292,9 +294,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
             <div className="p-3 border-t border-[#E6E0D7]">
               <Link href="/profile" data-ui-sound="click" className="flex items-center gap-3 px-2 py-2 mb-2 rounded-[14px] hover:bg-[#FAF8F4]">
-                <div className="w-9 h-9 rounded-full bg-[#1A1714] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
-                  {userName ? userName[0].toUpperCase() : 'U'}
-                </div>
+                <Avatar name={userName} url={avatarUrl} className="w-9 h-9 text-xs" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold text-[#1A1714] truncate">{userName || 'Candidate'}</p>
                   <p className="text-[10px] text-[#6B6259] truncate">{session.user?.email || 'Profile'}</p>
@@ -323,7 +323,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 <Menu className="w-4 h-4" />
               </button>
 
-              <div className={`${pathname === '/jobs' || pathname.startsWith('/find-jobs') ? 'hidden' : 'flex'} items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FFFFFF] border border-[#E6E0D7] text-[#6B6259] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all`}>
+              <div className={`${pathname === '/jobs' || pathname.startsWith('/find-jobs') ? 'hidden' : 'hidden sm:flex'} items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FFFFFF] border border-[#E6E0D7] text-[#6B6259] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all`}>
                 <Search className="w-3.5 h-3.5 shrink-0" />
                 <form
                   role="search"
@@ -348,6 +348,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               </div>
 
               <div className="ml-auto flex items-center gap-2">
+                {/* Phones: the search box collapses to an icon so the header has room. */}
+                {pathname !== '/jobs' && !pathname.startsWith('/find-jobs') && (
+                  <Link href="/jobs" data-ui-sound="click" aria-label="Search your jobs" className="sm:hidden w-10 h-10 rounded-full border border-[#E6E0D7] bg-white flex items-center justify-center text-[#6B6259] hover:text-[#1A1714]">
+                    <Search className="w-4 h-4" aria-hidden="true" />
+                  </Link>
+                )}
                 {pathname !== '/' && pathname !== '/dashboard' && !pathname?.startsWith('/jobs') && (
                   <Link href="/jobs/new" data-ui-sound="click" aria-label="Add a job" className="touch-target inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0">
                     <Plus className="w-4 h-4" /><span className="hidden sm:inline">Add a job</span>
@@ -362,9 +368,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 >
                   <Mascot size={30} track={false} animated={false} sound={false} interactive={false} />
                 </button>
-                <Link href="/jobs?filter=due" title="Follow-ups due" aria-label="Follow-ups due" data-ui-sound="click" className="w-10 h-10 rounded-full border border-[#E6E0D7] bg-[#FFFFFF] flex items-center justify-center text-[#6B6259] hover:text-[#1A1714] hover:bg-[#FFFFFF] transition-all duration-200 hover:-translate-y-0.5 relative">
-                  <Bell className="w-4 h-4" />
-                </Link>
+                <HeaderActions name={userName} email={session.user?.email || ''} avatarUrl={avatarUrl} onSignOut={() => signOut()} />
               </div>
             </div>
           </header>
