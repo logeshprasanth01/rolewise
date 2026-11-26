@@ -27,6 +27,7 @@ import {
 import { quickAddJob } from '@/services/api';
 import { timeAgo } from '@/lib/job-portals';
 import { todayISO } from '@/lib/tracker';
+import { CompanyLogo } from '@/components/jobs/CompanyLogo';
 
 interface OpenJob {
   id: string;
@@ -144,12 +145,6 @@ const PRESETS: { id: string; label: string; icon: React.ElementType; patch: Part
   { id: 'lead', label: 'Lead roles', icon: Users, patch: { level: 'lead' }, count: (c) => c.levelCounts.lead || 0 },
 ];
 
-const LOGO_TINTS = ['#FFE58A', '#E3EEF9', '#EEF7F0', '#F3EFE9', '#FFF0ED', '#EFEAE3', '#E8F0FF'];
-function tintFor(name: string) {
-  let h = 0;
-  for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return LOGO_TINTS[h % LOGO_TINTS.length];
-}
 
 function buildUrl(query: string, f: Filters, page: number, since: number) {
   const p = new URLSearchParams({ page: String(page) });
@@ -468,18 +463,7 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
               return (
                 <li key={job.id} className="group relative rolewise-card px-4 py-3.5 sm:px-5 sm:py-4 hover:border-[#CFC7BC] hover:shadow-[0_4px_18px_rgba(26,23,20,0.06)] transition-[border-color,box-shadow]">
                   <div className="flex items-start gap-3.5">
-                    <div
-                      className="w-11 h-11 rounded-xl border border-[#E6E0D7] flex items-center justify-center overflow-hidden shrink-0 text-[15px] font-bold text-[#1A1714]"
-                      style={{ background: job.logo ? '#FFFFFF' : tintFor(job.company) }}
-                      aria-hidden="true"
-                    >
-                      {job.logo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={job.logo} alt="" className="w-full h-full object-contain" loading="lazy" />
-                      ) : (
-                        job.company.charAt(0).toUpperCase()
-                      )}
-                    </div>
+                    <CompanyLogo company={job.company} logo={job.logo} className="w-11 h-11 rounded-xl text-[15px]" />
 
                     <div className="min-w-0 flex-1">
                       <h3 className="text-sm sm:text-[15px] font-semibold text-[#1A1714] leading-snug">

@@ -7,7 +7,7 @@
  * /api/jobs reads from here; if the store is empty or unreachable it falls back to the live feeds.
  */
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { OpenJob, aggregatorEnabled, aggregatorJobs, companyJobs, remoteJobs, setFreshFetch } from '@/lib/job-feed';
+import { OpenJob, aggregatorEnabled, aggregatorJobs, companyJobs, logoFor, remoteJobs, setFreshFetch } from '@/lib/job-feed';
 
 const URL_ = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '';
@@ -171,6 +171,7 @@ export async function storedJobs(): Promise<StoredFeed | null> {
       const isNew = seen > base && now - seen < NEW_WINDOW;
       return {
         ...job,
+        logo: job.logo || logoFor(job.company),
         firstSeenAt: first_seen_at,
         isNew,
         // A listing with no posted date was posted around when we first saw it (after the first sync).
@@ -197,5 +198,6 @@ export async function storedDetail(id: string): Promise<OpenJob | null> {
   if (!db) return null;
   const { data, error } = await db.from('job_listings').select('job, description_html, first_seen_at').eq('id', id).maybeSingle();
   if (error || !data) return null;
-  return { ...(data.job as OpenJob), descriptionHtml: (data.description_html as string | null) || undefined, firstSeenAt: data.first_seen_at as string };
+  const job = data.job as OpenJob;
+  return { ...job, logo: job.logo || logoFor(job.company), descriptionHtml: (data.description_html as string | null) || undefined, firstSeenAt: data.first_seen_at as string };
 }
