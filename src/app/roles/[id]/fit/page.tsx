@@ -732,7 +732,7 @@ export default function RoleFitPage() {
       <div className="pt-4">
         <JobOpenings
           defaultQuery={role.title}
-          title="More jobs to apply for"
+          title="Jobs to apply for"
         />
       </div>
 
