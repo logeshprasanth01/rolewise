@@ -46,42 +46,68 @@ export interface OpenJob {
   domain: Domain;
   postedAt: string | null;
   url: string;
-  source: 'Company careers' | 'Himalayas' | 'Jobicy';
+  /** 'Company careers', 'Himalayas', 'Jobicy', or the job site JSearch found it on (LinkedIn, Indeed, Naukri…). */
+  source: string;
   sourceUrl: string | null;
   salary: string | null;
+  /** Raw HTML from the source when the list API includes it. Never sent in list responses. */
+  descriptionHtml?: string;
 }
 
 /** Boards verified to return India openings (Nov 2026). [ats, slug, display name] */
-const BOARDS: [ 'gh' | 'lever' | 'ashby' | 'sr', string, string][] = [
+const BOARDS: ['gh' | 'lever' | 'ashby' | 'sr' | 'workable', string, string][] = [
   ['lever', 'paytm', 'Paytm'],
-  ['gh', 'okta', 'Okta'],
-  ['sr', 'BoschGroup', 'Bosch'],
+  ['workable', 'apna', 'Apna'],
   ['sr', 'Swiggy', 'Swiggy'],
+  ['sr', 'BoschGroup', 'Bosch'],
+  ['gh', 'okta', 'Okta'],
   ['gh', 'zscaler', 'Zscaler'],
+  ['sr', 'ServiceNow', 'ServiceNow'],
   ['gh', 'mongodb', 'MongoDB'],
   ['gh', 'databricks', 'Databricks'],
   ['lever', 'meesho', 'Meesho'],
   ['gh', 'rubrik', 'Rubrik'],
   ['gh', 'stripe', 'Stripe'],
+  ['lever', 'hevodata', 'Hevo Data'],
   ['ashby', 'sarvam', 'Sarvam AI'],
-  ['gh', 'inmobi', 'InMobi'],
+  ['gh', 'sigmoid', 'Sigmoid'],
   ['lever', 'zeta', 'Zeta'],
-  ['gh', 'gitlab', 'GitLab'],
+  ['gh', 'inmobi', 'InMobi'],
   ['sr', 'Freshworks', 'Freshworks'],
+  ['gh', 'gitlab', 'GitLab'],
+  ['gh', 'zenoti', 'Zenoti'],
   ['gh', 'toast', 'Toast'],
+  ['gh', 'hackerrank', 'HackerRank'],
   ['lever', 'mindtickle', 'Mindtickle'],
+  ['sr', 'Grab', 'Grab'],
   ['gh', 'elastic', 'Elastic'],
+  ['lever', 'linkedin', 'LinkedIn'],
   ['gh', 'twilio', 'Twilio'],
+  ['gh', 'agoda', 'Agoda'],
   ['ashby', 'openai', 'OpenAI'],
+  ['lever', 'fampay', 'FamPay'],
+  ['gh', 'glance', 'Glance'],
+  ['ashby', 'snowflake', 'Snowflake'],
   ['gh', 'airbnb', 'Airbnb'],
+  ['lever', 'cred', 'CRED'],
   ['gh', 'druva', 'Druva'],
   ['gh', 'coinbase', 'Coinbase'],
-  ['lever', 'cred', 'CRED'],
+  ['gh', 'sumologic', 'Sumo Logic'],
+  ['gh', 'commvault', 'Commvault'],
   ['gh', 'groww', 'Groww'],
+  ['sr', 'ixigo', 'ixigo'],
+  ['gh', 'datadog', 'Datadog'],
+  ['ashby', 'spotdraft', 'SpotDraft'],
   ['sr', 'Ubisoft2', 'Ubisoft'],
   ['gh', 'samsara', 'Samsara'],
   ['gh', 'devrev', 'DevRev'],
+  ['gh', 'observeai', 'Observe.AI'],
+  ['gh', 'newrelic', 'New Relic'],
   ['ashby', 'atlan', 'Atlan'],
+  ['sr', 'unacademy', 'Unacademy'],
+  ['sr', 'instahyre', 'Instahyre'],
+  ['lever', 'pocketfm', 'Pocket FM'],
+  ['gh', 'figma', 'Figma'],
   ['ashby', 'notion', 'Notion'],
 ];
 
@@ -198,8 +224,9 @@ function make(partial: Omit<OpenJob, 'city' | 'domain' | 'remote'> & { remote?: 
 }
 
 type GHJob = { id: number; title: string; absolute_url: string; updated_at?: string; first_published?: string; location?: { name?: string }; departments?: { name: string }[] };
-type LeverJob = { id: string; text: string; hostedUrl: string; createdAt?: number; workplaceType?: string; categories?: { location?: string; allLocations?: string[]; team?: string; department?: string; commitment?: string } };
-type AshbyJob = { id: string; title: string; jobUrl: string; publishedAt?: string; location?: string; secondaryLocations?: { location?: string }[]; department?: string; team?: string; employmentType?: string; isRemote?: boolean; workplaceType?: string };
+type LeverJob = { id: string; text: string; hostedUrl: string; createdAt?: number; workplaceType?: string; description?: string; lists?: { text: string; content: string }[]; additional?: string; categories?: { location?: string; allLocations?: string[]; team?: string; department?: string; commitment?: string } };
+type AshbyJob = { id: string; title: string; jobUrl: string; descriptionHtml?: string; publishedAt?: string; location?: string; secondaryLocations?: { location?: string }[]; department?: string; team?: string; employmentType?: string; isRemote?: boolean; workplaceType?: string };
+type WorkableJob = { title: string; shortcode: string; employment_type?: string; telecommuting?: boolean; department?: string; function?: string; url?: string; application_url?: string; published_on?: string; created_at?: string; country?: string; city?: string; state?: string; description?: string };
 type SRJob = { id: string; name: string; releasedDate?: string; location?: { city?: string; region?: string; country?: string; remote?: boolean; fullLocation?: string }; department?: { label?: string }; function?: { label?: string }; typeOfEmployment?: { label?: string } };
 
 async function board(ats: string, slug: string, company: string): Promise<OpenJob[]> {
@@ -243,6 +270,7 @@ async function board(ats: string, slug: string, company: string): Promise<OpenJo
           source: 'Company careers',
           sourceUrl: null,
           salary: null,
+          descriptionHtml: [j.description || '', ...(j.lists || []).map((l) => `<h3>${l.text}</h3><ul>${l.content}</ul>`), j.additional || ''].join(''),
         })
       );
   }
@@ -266,8 +294,32 @@ async function board(ats: string, slug: string, company: string): Promise<OpenJo
           source: 'Company careers',
           sourceUrl: null,
           salary: null,
+          descriptionHtml: j.descriptionHtml || '',
         });
       });
+  }
+  if (ats === 'workable') {
+    const d = (await getJson(`https://apply.workable.com/api/v1/widget/accounts/${slug}?details=true`)) as { jobs?: WorkableJob[] };
+    return (d.jobs || [])
+      .filter((j) => INDIA.test(`${j.country || ''} ${j.city || ''} ${j.state || ''}`))
+      .map((j) =>
+        make({
+          id: `workable-${slug}-${j.shortcode}`,
+          title: j.title,
+          company,
+          logo: null,
+          location: tidyPlace(j.city, j.state),
+          remote: !!j.telecommuting,
+          type: j.employment_type || '',
+          department: j.department || j.function || '',
+          postedAt: j.published_on || j.created_at || null,
+          url: j.url || j.application_url || `https://apply.workable.com/${slug}/j/${j.shortcode}/`,
+          source: 'Company careers',
+          sourceUrl: null,
+          salary: null,
+          descriptionHtml: j.description || '',
+        })
+      );
   }
   // SmartRecruiters
   const d = (await getJson(`https://api.smartrecruiters.com/v1/companies/${slug}/postings?country=in&limit=100`)) as { content?: SRJob[] };
@@ -290,7 +342,7 @@ async function board(ats: string, slug: string, company: string): Promise<OpenJo
   );
 }
 
-type HimalayasJob = { title: string; companyName: string; companyLogo?: string; employmentType?: string; locationRestrictions?: string[]; categories?: string[]; parentCategories?: string[]; minSalary?: number; maxSalary?: number; currency?: string; salaryPeriod?: string; pubDate?: number | string; applicationLink: string; guid: string };
+type HimalayasJob = { description?: string; title: string; companyName: string; companyLogo?: string; employmentType?: string; locationRestrictions?: string[]; categories?: string[]; parentCategories?: string[]; minSalary?: number; maxSalary?: number; currency?: string; salaryPeriod?: string; pubDate?: number | string; applicationLink: string; guid: string };
 
 function money(min?: number, max?: number, cur?: string, period?: string): string | null {
   if (!min && !max) return null;
@@ -321,11 +373,12 @@ async function himalayas(q: string): Promise<OpenJob[]> {
       source: 'Himalayas',
       sourceUrl: j.guid?.startsWith('http') ? j.guid : 'https://himalayas.app/jobs',
       salary: money(j.minSalary, j.maxSalary, j.currency, j.salaryPeriod),
+      descriptionHtml: j.description || '',
     });
   });
 }
 
-type JobicyJob = { id: number; url: string; jobTitle: string; companyName: string; companyLogo?: string; jobType?: string[] | string; jobGeo?: string; jobIndustry?: string[]; pubDate?: string; salaryMin?: number; salaryMax?: number; salaryCurrency?: string; salaryPeriod?: string };
+type JobicyJob = { jobDescription?: string; id: number; url: string; jobTitle: string; companyName: string; companyLogo?: string; jobType?: string[] | string; jobGeo?: string; jobIndustry?: string[]; pubDate?: string; salaryMin?: number; salaryMax?: number; salaryCurrency?: string; salaryPeriod?: string };
 
 async function jobicy(q: string): Promise<OpenJob[]> {
   const url = `https://jobicy.com/api/v2/remote-jobs?count=50${q ? `&tag=${encodeURIComponent(q)}` : ''}`;
@@ -347,6 +400,7 @@ async function jobicy(q: string): Promise<OpenJob[]> {
         source: 'Jobicy',
         sourceUrl: j.url,
         salary: money(j.salaryMin, j.salaryMax, j.salaryCurrency, j.salaryPeriod),
+        descriptionHtml: j.jobDescription || '',
       })
     );
 }
@@ -395,5 +449,127 @@ export async function remoteJobs(q: string): Promise<OpenJob[]> {
   const jobs = [...(h.status === 'fulfilled' ? h.value : []), ...(j.status === 'fulfilled' ? j.value : [])];
   if (remoteCache.size > 200) remoteCache.clear();
   remoteCache.set(key, { at: Date.now(), jobs });
+  return jobs;
+}
+
+
+/* ---------- one job, with its full description ---------- */
+
+const decodeEntities = (s: string) =>
+  s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
+
+/** Find a job by id in the cached feeds and return it with its description HTML (unsanitised). */
+export async function jobDetail(id: string, q = ''): Promise<OpenJob | null> {
+  const [company, remote] = await Promise.all([companyJobs().catch(() => ({ jobs: [] as OpenJob[] })), remoteJobs(q).catch(() => [] as OpenJob[])]);
+  const agg = id.startsWith('js-') ? await aggregatorJobs(q).catch(() => [] as OpenJob[]) : [];
+  let job = [...company.jobs, ...remote, ...agg].find((j) => j.id === id) || null;
+  if (!job && q) job = (await remoteJobs('').catch(() => [] as OpenJob[])).find((j) => j.id === id) || null;
+  if (!job) return null;
+  if (job.descriptionHtml) return job;
+
+  try {
+    if (id.startsWith('gh-')) {
+      const [, slug, jobId] = id.match(/^gh-(.+)-(\d+)$/) || [];
+      const d = (await getJson(`https://boards-api.greenhouse.io/v1/boards/${slug}/jobs/${jobId}`)) as { content?: string };
+      return { ...job, descriptionHtml: decodeEntities(d.content || '') };
+    }
+    if (id.startsWith('sr-')) {
+      const [, slug, jobId] = id.match(/^sr-(.+)-(\d+)$/) || [];
+      const d = (await getJson(`https://api.smartrecruiters.com/v1/companies/${slug}/postings/${jobId}`)) as {
+        jobAd?: { sections?: Record<string, { title?: string; text?: string }> };
+        applyUrl?: string;
+      };
+      const sections = d.jobAd?.sections || {};
+      const html = ['jobDescription', 'qualifications', 'additionalInformation', 'companyDescription']
+        .map((k) => sections[k])
+        .filter((x) => x?.text)
+        .map((x) => `<h3>${x!.title || ''}</h3>${x!.text}`)
+        .join('');
+      return { ...job, descriptionHtml: html, url: d.applyUrl || job.url };
+    }
+  } catch (err) {
+    console.error('[Rolewise] job detail fetch failed', id, err);
+  }
+  return job;
+}
+
+
+/* ---------- LinkedIn / Indeed / Naukri / Glassdoor listings via JSearch (optional) ----------
+ * JSearch (RapidAPI) licenses Google for Jobs data, which covers LinkedIn, Indeed, Naukri, Glassdoor
+ * and company sites. It switches on only when JSEARCH_API_KEY is set in Vercel. We prefer the
+ * direct company apply link when JSearch has one, so Apply goes to the employer, not a portal.
+ */
+type JSearchJob = {
+  job_id: string;
+  job_title: string;
+  employer_name: string;
+  employer_logo?: string | null;
+  job_publisher?: string;
+  job_employment_type?: string;
+  job_apply_link: string;
+  job_apply_is_direct?: boolean;
+  apply_options?: { publisher: string; apply_link: string; is_direct?: boolean }[];
+  job_description?: string;
+  job_is_remote?: boolean;
+  job_city?: string | null;
+  job_state?: string | null;
+  job_posted_at_datetime_utc?: string | null;
+  job_min_salary?: number | null;
+  job_max_salary?: number | null;
+  job_salary_currency?: string | null;
+  job_salary_period?: string | null;
+};
+
+const aggCache = new Map<string, { at: number; jobs: OpenJob[] }>();
+const AGG_TTL = 6 * 60 * 60 * 1000; // free plans have small monthly quotas, so cache longer
+
+export function aggregatorEnabled(): boolean {
+  return !!process.env.JSEARCH_API_KEY;
+}
+
+export async function aggregatorJobs(q: string): Promise<OpenJob[]> {
+  const key = process.env.JSEARCH_API_KEY;
+  if (!key) return [];
+  const cacheKey = q.toLowerCase().trim() || '__all__';
+  const hit = aggCache.get(cacheKey);
+  if (hit && Date.now() - hit.at < AGG_TTL) return hit.jobs;
+
+  const query = `${q.trim() || 'jobs'} in India`;
+  const res = await fetch(
+    `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(query)}&page=1&num_pages=3&country=in&date_posted=month`,
+    {
+      headers: { 'X-RapidAPI-Key': key, 'X-RapidAPI-Host': 'jsearch.p.rapidapi.com' },
+      signal: AbortSignal.timeout(12000),
+      next: { revalidate: 21600 },
+    }
+  );
+  if (!res.ok) throw new Error(`jsearch ${res.status}`);
+  const d = (await res.json()) as { data?: JSearchJob[] };
+  const escape = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const jobs = (d.data || []).map((j) => {
+    const direct = j.apply_options?.find((o) => o.is_direct) || (j.job_apply_is_direct ? { publisher: j.employer_name, apply_link: j.job_apply_link } : null);
+    const loc = [j.job_city, j.job_state].filter(Boolean).join(', ');
+    return make({
+      id: `js-${j.job_id.replace(/[^a-zA-Z0-9_-]/g, '')}`,
+      title: j.job_title,
+      company: clean(j.employer_name),
+      logo: j.employer_logo || null,
+      location: j.job_is_remote ? 'Remote · India' : loc || 'India',
+      remote: !!j.job_is_remote,
+      type: (j.job_employment_type || '').replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase()),
+      department: '',
+      postedAt: j.job_posted_at_datetime_utc || null,
+      url: direct?.apply_link || j.job_apply_link,
+      source: direct ? 'Company careers' : j.job_publisher || 'Job site',
+      sourceUrl: direct ? null : j.job_apply_link,
+      salary: money(j.job_min_salary || undefined, j.job_max_salary || undefined, j.job_salary_currency || undefined, j.job_salary_period?.toLowerCase()),
+      descriptionHtml: (j.job_description || '')
+        .split(/\n{2,}/)
+        .map((para) => `<p>${escape(para).replace(/\n/g, '<br/>')}</p>`)
+        .join(''),
+    });
+  });
+  if (aggCache.size > 100) aggCache.clear();
+  aggCache.set(cacheKey, { at: Date.now(), jobs });
   return jobs;
 }

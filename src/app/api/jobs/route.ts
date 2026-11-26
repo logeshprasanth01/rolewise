@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DOMAINS, Domain, OpenJob, companyJobs, domainOf, levelOf, remoteJobs } from '@/lib/job-feed';
+import { DOMAINS, Domain, OpenJob, aggregatorJobs, companyJobs, domainOf, levelOf, remoteJobs } from '@/lib/job-feed';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -44,12 +44,20 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, Math.min(50, Number(sp.get('page')) || 1));
   const pageSize = 20;
 
-  const [company, remote] = await Promise.all([companyJobs().catch(() => ({ jobs: [] as OpenJob[], companies: 0 })), remoteJobs(q).catch(() => [] as OpenJob[])]);
+  const [company, remote, agg] = await Promise.all([
+    companyJobs().catch(() => ({ jobs: [] as OpenJob[], companies: 0 })),
+    remoteJobs(q).catch(() => [] as OpenJob[]),
+    aggregatorJobs(q).catch((err) => {
+      console.error('[Rolewise] JSearch failed', err);
+      return [] as OpenJob[];
+    }),
+  ]);
 
   // De-duplicate across sources by company + title.
   const seen = new Set<string>();
   const all: OpenJob[] = [];
-  for (const j of [...company.jobs, ...remote]) {
+  // Company career pages first, then LinkedIn/Indeed/Naukri listings, then remote boards.
+  for (const j of [...company.jobs, ...agg, ...remote]) {
     const key = `${j.company.toLowerCase()}|${j.title.toLowerCase()}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -124,13 +132,22 @@ export async function GET(req: NextRequest) {
   const deferred: typeof filtered = [];
   for (const item of filtered) {
     const window = spread.slice(-19);
-    if (window.filter((x) => x.j.company === item.j.company).length >= 4) deferred.push(item);
+    const sameCompany = window.filter((x) => x.j.company === item.j.company).length;
+    // Remote-board jobs (Himalayas, Jobicy) take at most 1 in 4 slots, so India company roles lead.
+    const isBoard = item.j.source === 'Himalayas' || item.j.source === 'Jobicy';
+    const boards = window.filter((x) => x.j.source === 'Himalayas' || x.j.source === 'Jobicy').length;
+    if (sameCompany >= 4 || (isBoard && boards >= 5)) deferred.push(item);
     else spread.push(item);
   }
   const ordered = [...spread, ...deferred];
 
   const total = ordered.length;
-  const jobs = ordered.slice((page - 1) * pageSize, page * pageSize).map(({ j }) => j);
+  // Descriptions are only sent by /api/jobs/detail.
+  const jobs = ordered.slice((page - 1) * pageSize, page * pageSize).map(({ j }) => {
+    const rest = { ...j };
+    delete rest.descriptionHtml;
+    return rest;
+  });
   const companies = new Set(filtered.map(({ j }) => j.company)).size;
 
   return NextResponse.json(

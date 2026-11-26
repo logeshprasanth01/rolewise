@@ -3,13 +3,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
-  ArrowUpRight,
+  Bookmark,
   Briefcase,
   CalendarClock,
   Check,
   CheckCircle2,
   ChevronDown,
-  Clock,
+  ChevronLeft,
+  ChevronRight,
   GraduationCap,
   Laptop,
   Loader2,
@@ -62,7 +63,7 @@ interface FeedResponse {
 type FacetCounts = Pick<FeedResponse, 'domainCounts' | 'cityCounts' | 'levelCounts' | 'workCounts' | 'postedCounts'>;
 const NO_COUNTS: FacetCounts = { domainCounts: {}, cityCounts: {}, levelCounts: {}, workCounts: {}, postedCounts: {} };
 
-type TrackState = 'idle' | 'asking' | 'saving' | 'saved' | 'applied' | 'error';
+type TrackState = 'idle' | 'saving' | 'saved' | 'applied' | 'error';
 
 interface Filters {
   sort: 'relevant' | 'recent';
@@ -96,6 +97,7 @@ const DOMAINS = ['Engineering', 'Design', 'Product', 'Data & AI', 'Marketing', '
 /** Top tabs, like UXHack's All / Design / Product. Every other field is in the Field section. */
 const FIELD_TABS = ['', 'Design', 'Product', 'Engineering'];
 const CITY_KEY = 'rw-job-city';
+const PAGE_SIZE = 20;
 
 /** One-tap shortcuts above the list, each with a live count. */
 const PRESETS: { id: string; label: string; icon: React.ElementType; patch: Partial<Filters>; count: (c: FacetCounts) => number }[] = [
@@ -159,11 +161,12 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
     }
   });
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const listTopRef = useRef<HTMLDivElement>(null);
 
-  const key = buildUrl(query, filters, 1);
+  const key = buildUrl(query, filters, page);
   const [feed, setFeed] = useState<(FeedResponse & { key: string }) | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [track, setTrack] = useState<Record<string, TrackState>>({});
 
   const current = feed && feed.key === key ? feed : null;
@@ -190,8 +193,20 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
     };
   }, [key]);
 
+  const search = (q: string) => {
+    setQuery(q);
+    setPage(1);
+  };
+  const goToPage = (n: number) => {
+    setPage(n);
+    // Bring the top of the list into view, below the sticky header.
+    const top = listTopRef.current ? listTopRef.current.getBoundingClientRect().top + window.scrollY - 96 : 0;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  };
+
   const applyFilters = (next: Filters) => {
     setFilters(next);
+    setPage(1);
     try {
       window.localStorage.setItem(CITY_KEY, next.city);
     } catch {
@@ -200,20 +215,6 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
   };
   const patch = (p: Partial<Filters>) => applyFilters({ ...filters, ...p });
   const clearAll = () => applyFilters({ ...DEFAULT_FILTERS, sort: filters.sort });
-
-  const loadMore = async () => {
-    if (!current || loadingMore) return;
-    setLoadingMore(true);
-    try {
-      const r = await fetch(buildUrl(query, filters, current.page + 1));
-      const data = (await r.json()) as FeedResponse;
-      setFeed((f) => (f && f.key === key ? { ...data, key, jobs: [...f.jobs, ...data.jobs] } : f));
-    } catch {
-      // keep what is shown
-    } finally {
-      setLoadingMore(false);
-    }
-  };
 
   const saveToTracker = async (job: OpenJob, status: 'saved' | 'applied') => {
     setTrack((t) => ({ ...t, [job.id]: 'saving' }));
@@ -260,7 +261,7 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
         <aside aria-label="Search and filters" className="hidden lg:block sticky top-24 rolewise-card p-4 max-h-[calc(100dvh-7.5rem)] overflow-y-auto">
           <FieldTabs value={filters.domain} counts={counts.domainCounts} allCount={allCount} onChange={(d) => patch({ domain: d })} />
           <div className="mt-3">
-            <SearchBox initial={query} onSearch={setQuery} suggestions={quickQueries} />
+            <SearchBox initial={query} onSearch={search} suggestions={quickQueries} />
           </div>
           <div className="mt-2">
             <FilterSections filters={filters} counts={counts} onChange={patch} />
@@ -273,11 +274,11 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
         </aside>
 
         {/* RIGHT: shortcuts, count, sort, list */}
-        <div className="min-w-0">
+        <div className="min-w-0" ref={listTopRef}>
           {/* Phone / tablet: search + Filters button */}
           <div className="lg:hidden flex gap-2 mb-3">
             <div className="flex-1 min-w-0">
-              <SearchBox initial={query} onSearch={setQuery} suggestions={quickQueries} />
+              <SearchBox initial={query} onSearch={search} suggestions={quickQueries} />
             </div>
             <button
               type="button"
@@ -387,11 +388,9 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
 
             {current?.jobs.map((job) => {
               const state = track[job.id] || 'idle';
-              const onApply = () => {
-                if (state === 'idle') setTrack((t) => ({ ...t, [job.id]: 'asking' }));
-              };
+              const href = `/find-jobs/job?id=${encodeURIComponent(job.id)}${query ? `&q=${encodeURIComponent(query)}` : ''}`;
               return (
-                <li key={job.id} className="rolewise-card p-4 sm:p-5 hover:border-[#CFC7BC] transition-colors">
+                <li key={job.id} className="relative rolewise-card p-4 sm:p-5 hover:border-[#CFC7BC] hover:shadow-[0_6px_24px_rgba(26,23,20,0.06)] transition-[border-color,box-shadow]">
                   <div className="flex items-start gap-3 sm:gap-4">
                     <div
                       className="w-12 h-12 rounded-xl border border-[#E6E0D7] flex items-center justify-center overflow-hidden shrink-0 text-base font-bold text-[#1A1714]"
@@ -407,18 +406,12 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-sm sm:text-[15px] font-semibold text-[#1A1714] leading-snug">
-                          <a href={job.url} target="_blank" rel="noopener noreferrer" onClick={onApply} className="hover:underline underline-offset-2">
-                            {job.title}
-                          </a>
-                        </h3>
-                        {job.postedAt && (
-                          <span className="sm:hidden shrink-0 text-[11px] text-[#9A9086] tabular-nums" title="Posted">
-                            {timeAgo(job.postedAt)}
-                          </span>
-                        )}
-                      </div>
+                      <h3 className="text-sm sm:text-[15px] font-semibold text-[#1A1714] leading-snug pr-14">
+                        {/* The whole card opens the job page (stretched link). */}
+                        <Link href={href} className="after:absolute after:inset-0 after:rounded-[inherit] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#1A1714]/30">
+                          {job.title}
+                        </Link>
+                      </h3>
                       <p className="text-xs mt-0.5">
                         <span className="font-semibold text-[#1A1714]">{job.company}</span>
                         <span className="text-[#9A9086]"> · {job.domain}</span>
@@ -427,71 +420,31 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
                         <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" aria-hidden="true" />{job.location}</span>
                         {job.type && <span className="inline-flex items-center gap-1"><Briefcase className="w-3 h-3" aria-hidden="true" />{job.type}</span>}
                         {job.salary && <span className="inline-flex items-center gap-1"><Wallet className="w-3 h-3" aria-hidden="true" />{job.salary}</span>}
-                        {job.postedAt && <span className="hidden sm:inline-flex items-center gap-1"><Clock className="w-3 h-3" aria-hidden="true" />{timeAgo(job.postedAt)}</span>}
                       </div>
-                      {job.source !== 'Company careers' && (
-                        <p className="mt-1.5 text-[10px] text-[#9A9086]">
-                          via{' '}
-                          <a
-                            href={job.sourceUrl || (job.source === 'Himalayas' ? 'https://himalayas.app/jobs' : 'https://jobicy.com')}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline underline-offset-2 hover:text-[#1A1714]"
-                          >
-                            {job.source}
-                          </a>
+                      {state === 'saved' && (
+                        <p className="relative z-10 mt-2 text-[11px] text-[#2F6B42] flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Saved ·{' '}
+                          <Link href="/jobs" className="font-semibold underline underline-offset-2">Open tracker</Link>
                         </p>
                       )}
+                      {state === 'error' && <p className="relative z-10 mt-2 text-[11px] text-[#A4493A]">Couldn’t save. Try again.</p>}
                     </div>
 
-                    <div className="hidden sm:flex items-center gap-2 shrink-0 self-center">
-                      {state === 'asking' ? (
-                        <AppliedPrompt onYes={() => saveToTracker(job, 'applied')} onNo={() => setTrack((t) => ({ ...t, [job.id]: 'idle' }))} />
-                      ) : (
-                        <>
-                          <SaveButton state={state} onSave={() => saveToTracker(job, 'saved')} />
-                          <a
-                            href={job.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={onApply}
-                            className="h-10 px-4 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-xs font-bold inline-flex items-center gap-1.5"
-                          >
-                            Apply <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
-                            <span className="sr-only">for {job.title} at {job.company} (opens in a new tab)</span>
-                          </a>
-                        </>
-                      )}
+                    <div className="absolute top-4 right-4 sm:top-5 sm:right-5 flex flex-col items-end gap-2">
+                      {job.postedAt && <span className="text-[11px] text-[#9A9086] tabular-nums">{timeAgo(job.postedAt).replace(' ago', '')}</span>}
                     </div>
-                  </div>
-
-                  <div className="sm:hidden mt-3 flex items-center justify-end gap-2">
-                    {state === 'asking' ? (
-                      <AppliedPrompt onYes={() => saveToTracker(job, 'applied')} onNo={() => setTrack((t) => ({ ...t, [job.id]: 'idle' }))} />
-                    ) : (
-                      <>
-                        <a
-                          href={job.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={onApply}
-                          className="flex-1 h-11 rounded-xl bg-[#FFD84D] text-[#1A1714] text-sm font-bold inline-flex items-center justify-center gap-1.5"
-                        >
-                          Apply <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
-                        </a>
-                        <SaveButton state={state} onSave={() => saveToTracker(job, 'saved')} />
-                      </>
+                    {state !== 'saved' && (
+                      <button
+                        type="button"
+                        onClick={() => saveToTracker(job, 'saved')}
+                        disabled={state === 'saving'}
+                        aria-label={`Save ${job.title} at ${job.company}`}
+                        className="relative z-10 self-end shrink-0 w-10 h-10 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#1A1714] text-[#1A1714] inline-flex items-center justify-center disabled:opacity-60 cursor-pointer"
+                      >
+                        {state === 'saving' ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Bookmark className="w-4 h-4" aria-hidden="true" />}
+                      </button>
                     )}
                   </div>
-
-                  {(state === 'saved' || state === 'applied') && (
-                    <p className="mt-3 text-xs text-[#2F6B42] flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
-                      {state === 'applied' ? 'Marked as applied in your Job Tracker.' : 'Saved to your Job Tracker.'}{' '}
-                      <Link href="/jobs" className="font-semibold underline underline-offset-2">Open tracker</Link>
-                    </p>
-                  )}
-                  {state === 'error' && <p className="mt-3 text-xs text-[#A4493A]">Couldn’t save this job. Please try again.</p>}
                 </li>
               );
             })}
@@ -509,21 +462,8 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
             </div>
           )}
 
-          {current?.hasMore && (
-            <div className="mt-4 flex justify-center">
-              <button
-                type="button"
-                onClick={loadMore}
-                disabled={loadingMore}
-                className="h-11 px-5 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#1A1714] text-sm font-semibold text-[#1A1714] inline-flex items-center gap-2 disabled:opacity-60 cursor-pointer"
-              >
-                {loadingMore && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />}
-                Load more jobs
-                <span className="text-[#9A9086] font-normal tabular-nums">
-                  {current.jobs.length} of {current.total.toLocaleString('en-IN')}
-                </span>
-              </button>
-            </div>
+          {current && current.total > PAGE_SIZE && (
+            <Pagination page={page} totalPages={Math.ceil(current.total / PAGE_SIZE)} onChange={goToPage} />
           )}
         </div>
       </div>
@@ -829,32 +769,64 @@ function FilterSheet({ query, initial, onClose, onApply }: { query: string; init
   );
 }
 
-/** Shown in place of Save / Apply right after Apply is clicked. */
-function AppliedPrompt({ onYes, onNo }: { onYes: () => void; onNo: () => void }) {
+/* ---------------- Pagination ---------------- */
+
+/** 1 … 4 5 6 … 51 — first, last, and the pages around the current one. */
+function pageList(page: number, total: number): (number | '…')[] {
+  const pages = new Set([1, total, page - 1, page, page + 1].filter((n) => n >= 1 && n <= total));
+  if (page <= 3) [2, 3, 4].forEach((n) => n <= total && pages.add(n));
+  if (page >= total - 2) [total - 1, total - 2, total - 3].forEach((n) => n >= 1 && pages.add(n));
+  const sorted = [...pages].sort((a, b) => a - b);
+  const out: (number | '…')[] = [];
+  sorted.forEach((n, i) => {
+    if (i > 0 && n - sorted[i - 1] > 1) out.push('…');
+    out.push(n);
+  });
+  return out;
+}
+
+function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (n: number) => void }) {
+  const btn = 'h-10 min-w-10 px-2 rounded-xl text-sm font-semibold inline-flex items-center justify-center transition-colors';
   return (
-    <div className="flex items-center gap-2" role="group" aria-label="Did you apply?">
-      <span className="text-xs font-semibold text-[#1A1714] mr-1">Did you apply?</span>
-      <button type="button" onClick={onYes} className="h-10 max-sm:h-11 px-4 rounded-xl bg-[#1A1714] hover:bg-[#3B342D] text-white text-xs font-semibold cursor-pointer">
-        Yes
+    <nav aria-label="Job pages" className="mt-5 flex items-center justify-center gap-1 sm:gap-1.5">
+      <button
+        type="button"
+        onClick={() => onChange(page - 1)}
+        disabled={page <= 1}
+        aria-label="Previous page"
+        className={`${btn} border border-[#E6E0D7] bg-white text-[#1A1714] hover:border-[#1A1714] disabled:opacity-40 disabled:hover:border-[#E6E0D7] disabled:cursor-not-allowed cursor-pointer`}
+      >
+        <ChevronLeft className="w-4 h-4" aria-hidden="true" />
       </button>
-      <button type="button" onClick={onNo} className="h-10 max-sm:h-11 px-4 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#1A1714] text-xs font-semibold text-[#1A1714] cursor-pointer">
-        No
+      {pageList(page, totalPages).map((n, i) =>
+        n === '…' ? (
+          <span key={`gap-${i}`} className="w-6 text-center text-sm text-[#9A9086]" aria-hidden="true">
+            …
+          </span>
+        ) : (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            aria-label={`Page ${n}`}
+            aria-current={n === page ? 'page' : undefined}
+            className={`${btn} cursor-pointer ${n === page ? 'bg-[#1A1714] text-white' : 'text-[#574F46] hover:bg-white hover:text-[#1A1714]'}`}
+          >
+            {n}
+          </button>
+        )
+      )}
+      <button
+        type="button"
+        onClick={() => onChange(page + 1)}
+        disabled={page >= totalPages}
+        aria-label="Next page"
+        className={`${btn} border border-[#E6E0D7] bg-white text-[#1A1714] hover:border-[#1A1714] disabled:opacity-40 disabled:hover:border-[#E6E0D7] disabled:cursor-not-allowed cursor-pointer`}
+      >
+        <ChevronRight className="w-4 h-4" aria-hidden="true" />
       </button>
-    </div>
+    </nav>
   );
 }
 
-function SaveButton({ state, onSave }: { state: TrackState; onSave: () => void }) {
-  if (state === 'saved' || state === 'applied') return null;
-  return (
-    <button
-      type="button"
-      onClick={onSave}
-      disabled={state === 'saving'}
-      className="h-10 px-3.5 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#1A1714] text-xs font-semibold text-[#1A1714] inline-flex items-center gap-1.5 disabled:opacity-60 cursor-pointer max-sm:h-11 max-sm:px-4"
-    >
-      {state === 'saving' ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Briefcase className="w-3.5 h-3.5" aria-hidden="true" />}
-      Save
-    </button>
-  );
-}
+
