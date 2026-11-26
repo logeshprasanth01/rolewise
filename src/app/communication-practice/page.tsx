@@ -46,7 +46,7 @@ export default function CommunicationPracticePage() {
           General drills
         </h1>
         <p className="text-xs sm:text-base text-[#6B6259] leading-relaxed max-w-2xl">
-          Build fluency and clarity by practicing how you communicate, independent of any specific job application.
+          Practise how you speak in interviews, for any job.
         </p>
 
         {/* Dynamic Context Header */}
@@ -62,7 +62,7 @@ export default function CommunicationPracticePage() {
           ) : (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E6E0D7] text-xs text-[#6B6259]">
               <MessagesSquare className="w-3.5 h-3.5 text-[#1A1714]" />
-              <span>General communication drills (accessible anytime without a job)</span>
+              <span>Drills you can do anytime, no job needed</span>
             </div>
           )}
         </div>
@@ -81,7 +81,7 @@ export default function CommunicationPracticePage() {
                 Voice Practice
               </h2>
               <p className="text-xs sm:text-sm text-[#6B6259] leading-relaxed">
-                Record your spoken responses using your microphone. Listen to your playback and receive observable feedback on clarity, structure, and conciseness.
+                Record an answer and get feedback on clarity, structure and length.
               </p>
             </div>
 
@@ -123,7 +123,7 @@ export default function CommunicationPracticePage() {
                 Video Practice
               </h2>
               <p className="text-xs sm:text-sm text-[#6B6259] leading-relaxed">
-                Simulate a real video conference interview with live camera and microphone preview. Review your captured recording and re-record as needed.
+                Practise on camera like a real video interview. Re-record anytime.
               </p>
             </div>
 
@@ -138,7 +138,7 @@ export default function CommunicationPracticePage() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-[#6FA77F]" />
-                <span>Focuses strictly on observable delivery (no personality judgments)</span>
+                <span>Feedback on delivery only, never personality</span>
               </div>
             </div>
           </div>

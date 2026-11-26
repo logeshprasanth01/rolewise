@@ -131,38 +131,26 @@ export function resumeChecks(resumeText: string, jobTitle: string): ResumeCheck[
     {
       id: 'metrics',
       ok: metrics >= 3,
-      title: metrics >= 3 ? `${metrics} measurable results` : metrics === 0 ? 'No measurable results yet' : `Only ${metrics} measurable result${metrics === 1 ? '' : 's'}`,
-      detail:
-        metrics >= 3
-          ? 'Numbers make your impact easy to spot. Keep the strongest ones near the top.'
-          : 'Add numbers to your best bullets: “cut drop-off by 18%”, “shipped 40 screens”, “used by 2k people”.',
+      title: metrics >= 3 ? `${metrics} results with numbers` : `${metrics} result${metrics === 1 ? '' : 's'} with numbers`,
+      detail: 'Add numbers to your best bullets, like “cut drop-off by 18%”.',
     },
     {
       id: 'title',
       ok: titleOk,
-      title: titleOk ? `Your resume speaks “${jobTitle}”` : `“${jobTitle}” is missing from your resume`,
-      detail: titleOk
-        ? 'The role name appears in your resume, so a recruiter searching for it can find you.'
-        : `Use the role name in your headline or summary, e.g. “${jobTitle} with …”. Recruiters search by title first.`,
+      title: titleOk ? 'Role title in your resume' : 'Role title missing',
+      detail: `Use “${jobTitle}” in your headline. Recruiters search by title.`,
     },
     {
       id: 'link',
       ok: hasLink,
-      title: hasLink ? 'Portfolio or profile link found' : 'No portfolio or profile link',
-      detail: hasLink
-        ? 'Make sure the link opens without a login and shows work related to this role.'
-        : 'Add a portfolio, Behance, GitHub or LinkedIn link at the top. Recruiters check proof of work first.',
+      title: hasLink ? 'Portfolio or profile link' : 'No portfolio or profile link',
+      detail: 'Add a portfolio, GitHub or LinkedIn link at the top.',
     },
     {
       id: 'length',
       ok: words >= 250 && words <= 900,
-      title: words < 250 ? 'Resume looks thin' : words > 900 ? 'Resume is long' : 'Resume length is easy to skim',
-      detail:
-        words < 250
-          ? `About ${words} words. Add 2–3 bullets per role showing what you did and the result.`
-          : words > 900
-          ? `About ${words} words. Trim older or unrelated work so this role’s strengths stand out.`
-          : `About ${words} words, which is about one to two pages. Good for a quick skim.`,
+      title: words < 250 ? 'Resume is thin' : words > 900 ? 'Resume is long' : 'Easy-to-skim length',
+      detail: words < 250 ? `About ${words} words. Add 2–3 bullets per role.` : `About ${words} words. Trim older or unrelated work.`,
     },
   ];
 }

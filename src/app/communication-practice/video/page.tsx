@@ -406,7 +406,7 @@ export default function VideoPracticePage() {
           &ldquo;{question}&rdquo;
         </h2>
         <p className="text-xs text-[#6B6259]">
-          Look directly at the camera. Focus on structuring your answer: situation, action taken, and measurable impact.
+          Look at the camera. Cover the situation, your action and the result.
         </p>
       </section>
 

@@ -129,8 +129,7 @@ export default function ProfilePage() {
         <div className="px-5 py-4">
           <p className="text-sm font-semibold text-[#1A1714]">Your data</p>
           <p className="mt-1 text-xs text-[#6B6259] leading-relaxed">
-            Your jobs, resume text, role analysis and saved mock-interview feedback are tied to your account and only
-            visible to you. Voice and video recordings are only used to create your transcript and aren&apos;t saved.
+            Your jobs, resume and feedback are visible only to you. Recordings are used for transcripts and aren&apos;t saved.
           </p>
         </div>
         <button

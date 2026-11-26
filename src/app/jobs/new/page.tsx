@@ -24,23 +24,40 @@ import { ProcessingDialog } from '@/components/ui/ProcessingDialog';
 import { invokeAnalyzeRole, getSupabaseClient, getRole } from '@/services/api';
 import { extractJobMeta } from '@/lib/job-meta';
 
-// Common job roles (Requirement 1)
+// Common roles across fields, A–Z (no field comes first)
 const JOB_TITLE_OPTIONS = [
-  'Product Designer',
-  'UX Designer',
-  'UI/UX Designer',
-  'UI Designer',
-  'User Experience Designer',
-  'Product Manager',
-  'Software Engineer',
-  'Frontend Developer',
+  'Account Executive',
+  'Account Manager',
+  'Accountant',
   'Backend Developer',
-  'Full Stack Developer',
-  'Data Analyst',
-  'Data Scientist',
   'Business Analyst',
-  'Marketing Manager',
+  'Business Development Executive',
+  'Content Writer',
+  'Customer Success Manager',
+  'Customer Support Executive',
+  'Data Analyst',
+  'Data Engineer',
+  'Data Scientist',
+  'DevOps Engineer',
+  'Digital Marketing Executive',
+  'Financial Analyst',
+  'Frontend Developer',
+  'Full Stack Developer',
   'Graphic Designer',
+  'HR Executive',
+  'Machine Learning Engineer',
+  'Marketing Manager',
+  'Mobile Developer',
+  'Operations Manager',
+  'Product Designer',
+  'Product Manager',
+  'Project Manager',
+  'QA Engineer',
+  'Recruiter',
+  'Sales Executive',
+  'Software Engineer',
+  'UI/UX Designer',
+  'UX Designer',
   'Video Editor',
   'Other',
 ];
@@ -677,7 +694,7 @@ export default function AddJobPage() {
       <section className="space-y-1.5">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1714] tracking-tight">Add a job</h1>
         <p className="text-sm sm:text-base text-[#6B6259]">
-          Give Rolewise the role and your experience. We&apos;ll connect the two to build your preparation plan.
+          Add the role and your experience. We&apos;ll build your prep plan.
         </p>
       </section>
 
@@ -827,7 +844,7 @@ export default function AddJobPage() {
               <div>
                 <h2 className="text-sm sm:text-base font-semibold text-[#1A1714]">Your experience</h2>
                 <p className="text-xs text-[#6B6259]">
-                  Rolewise needs your experience to understand how your background connects to this role.
+                  Used to match your background to this role.
                 </p>
               </div>
             </div>
@@ -982,7 +999,7 @@ export default function AddJobPage() {
               <div>
                 <h3 className="text-sm sm:text-base font-bold text-[#1A1714]">Analysis complete</h3>
                 <p className="text-xs text-[#574F46]">
-                  Role requirements, fit analysis, and preparation roadmap have been generated.
+                  Your fit and prep plan are ready.
                 </p>
               </div>
             </div>
@@ -1036,7 +1053,7 @@ export default function AddJobPage() {
           <div>
             <p className="font-semibold text-[#1A1714]">Why Rolewise needs this</p>
             <p className="text-[11px] text-[#6B6259]">
-              Your job description tells us what the role requires. Your experience tells us where your background connects.
+              The job description shows what’s needed. Your experience shows where you fit.
             </p>
           </div>
         </div>

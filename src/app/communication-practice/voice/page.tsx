@@ -261,7 +261,7 @@ export default function VoicePracticePage() {
           &ldquo;{question}&rdquo;
         </h2>
         <p className="text-xs text-[#6B6259]">
-          Focus on a clear structure: describe the situation, the actions you took, and what you learned.
+          Cover the situation, what you did and what you learned.
         </p>
       </section>
 

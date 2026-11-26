@@ -30,7 +30,7 @@ export default function ResumePage() {
           Resume & Candidate Experience
         </h1>
         <p className="text-xs sm:text-sm text-[#6B6259]">
-          Your background is used by Rolewise to connect with role requirements and generate authentic interview follow-up questions.
+          Used to match you to each role and write your interview questions.
         </p>
       </section>
 
@@ -108,7 +108,7 @@ export default function ResumePage() {
               <h3 className="text-sm font-semibold text-[#1A1714]">Uploaded Resume File</h3>
             </div>
             <p className="text-xs text-[#6B6259] leading-relaxed">
-              When you add a job, your uploaded resume text is automatically extracted and analyzed against the role description.
+              Your resume is read and matched to each job you add.
             </p>
           </div>
 

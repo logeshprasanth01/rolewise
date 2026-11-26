@@ -91,7 +91,7 @@ export function QuickAddSheet({ open, onClose, onAdded }: QuickAddSheetProps) {
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
             <h2 id="quick-add-title" className="text-lg font-bold text-[#1A1714] tracking-tight">Log an application</h2>
-            <p className="text-[13px] text-[#6B6259]">Takes 10 seconds. Ask Rowi for the fit analysis later from the job page.</p>
+            <p className="text-[13px] text-[#6B6259]">Takes 10 seconds. Get the fit analysis later from the job page.</p>
           </div>
           <button type="button" onClick={() => { setError(null); onClose(); }} aria-label="Close" className="touch-target w-10 h-10 rounded-full border border-[#E6E0D7] flex items-center justify-center text-[#6B6259] hover:text-[#1A1714] shrink-0">
             <X className="w-4 h-4" />
@@ -101,7 +101,7 @@ export function QuickAddSheet({ open, onClose, onAdded }: QuickAddSheetProps) {
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label htmlFor="qa-title" className={label}>Role</label>
-            <input id="qa-title" ref={titleRef} className={field} placeholder="Senior UI/UX Designer" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} autoComplete="off" />
+            <input id="qa-title" ref={titleRef} className={field} placeholder="e.g. Business Analyst" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} autoComplete="off" />
           </div>
           <div className="space-y-1.5">
             <label htmlFor="qa-company" className={label}>Company</label>

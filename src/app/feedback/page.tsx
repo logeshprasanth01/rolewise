@@ -67,7 +67,7 @@ export default function FeedbackPage() {
           <div className="space-y-1">
             <h2 className="text-base font-bold text-[#1A1714]">No mock interviews yet</h2>
             <p className="text-sm text-[#6B6259] max-w-sm mx-auto">
-              Finish a mock interview with Rowi for one of your jobs and your answers, strengths and what to work on will appear here.
+              Finish a mock interview with Rowi to see your feedback here.
             </p>
           </div>
           <Link
@@ -151,7 +151,7 @@ export default function FeedbackPage() {
                         </div>
                       </section>
                     ) : (
-                      <p className="text-sm text-[#6B6259] rounded-xl bg-[#FAF8F4] p-4">The overall summary wasn’t generated for this session. Your answer-by-answer feedback is below.</p>
+                      <p className="text-sm text-[#6B6259] rounded-xl bg-[#FAF8F4] p-4">No overall summary for this session. Answer feedback is below.</p>
                     )}
 
                     {selected.rounds && selected.rounds.length > 0 && (

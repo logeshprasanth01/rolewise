@@ -370,7 +370,7 @@ function JobDetailView({ id, q }: { id: string | null; q: string }) {
               </span>
               <div>
                 <h2 id="fit-heading" className="text-sm font-bold text-[#1A1714]">Check your fit before you apply</h2>
-                <p className="mt-1 text-xs text-[#6B6259] leading-relaxed">See what to lead with, what to reword and which gaps to fill for this job, then get your prep plan.</p>
+                <p className="mt-1 text-xs text-[#6B6259] leading-relaxed">See what to lead with and what to fix, then get a prep plan.</p>
               </div>
             </div>
             <button

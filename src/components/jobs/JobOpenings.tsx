@@ -95,8 +95,6 @@ const WORK: { value: Filters['work']; label: string }[] = [
 ];
 const CITIES = ['Bengaluru', 'Chennai', 'Hyderabad', 'Pune', 'Mumbai', 'Delhi NCR', 'Kolkata', 'Ahmedabad', 'Coimbatore', 'Kochi'];
 const DOMAINS = ['Engineering', 'Design', 'Product', 'Data & AI', 'Marketing', 'Sales', 'Customer Success', 'Operations', 'Finance & Legal', 'People & HR', 'Other'];
-/** Top tabs, like UXHack's All / Design / Product. Every other field is in the Field section. */
-const FIELD_TABS = ['', 'Design', 'Product'];
 const CITY_KEY = 'rw-job-city';
 const PAGE_SIZE = 20;
 
@@ -243,7 +241,6 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
 
   const chips = activeChips(filters);
   const Heading = as;
-  const allCount = Object.values(counts.domainCounts).reduce((a, b) => a + b, 0);
 
   return (
     <section aria-labelledby="job-openings-heading" className="space-y-4 sm:space-y-5">
@@ -264,8 +261,7 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
       <div className="lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:gap-5 lg:items-start">
         {/* LEFT: search + filters (desktop) */}
         <aside aria-label="Search and filters" className="hidden lg:block sticky top-24 rolewise-card p-3.5 max-h-[calc(100dvh-7.5rem)] overflow-y-auto">
-          <FieldTabs value={filters.domain} counts={counts.domainCounts} allCount={allCount} onChange={(d) => patch({ domain: d })} />
-          <div className="mt-2.5">
+          <div>
             <SearchBox initial={query} onSearch={search} suggestions={quickQueries} />
           </div>
           <div className="mt-1">
@@ -566,36 +562,17 @@ function SearchBox({ initial, onSearch, suggestions }: { initial: string; onSear
 
 /* ---------------- Filters ---------------- */
 
-function FieldTabs({ value, counts, allCount, onChange }: { value: string; counts: Counts; allCount: number; onChange: (d: string) => void }) {
-  return (
-    <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-[#F3EFE9]" role="radiogroup" aria-label="Field">
-      {FIELD_TABS.map((d) => {
-        const active = value === d;
-        const n = d ? counts[d] : allCount;
-        return (
-          <button
-            key={d || 'all'}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            onClick={() => onChange(d)}
-            className={`h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-              active ? 'bg-white text-[#1A1714] shadow-[0_1px_2px_rgba(26,23,20,0.12)]' : 'text-[#6B6259] hover:text-[#1A1714]'
-            }`}
-            title={typeof n === 'number' ? `${n} jobs` : undefined}
-          >
-            {d || 'All'}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 function FilterSections({ filters, counts, onChange }: { filters: Filters; counts: FacetCounts; onChange: (p: Partial<Filters>) => void }) {
   const cities = [...CITIES].sort((a, b) => (counts.cityCounts[b] || 0) - (counts.cityCounts[a] || 0));
   return (
     <div className="divide-y divide-[#E6E0D7]">
+      <Section title="Field" value={filters.domain || 'All fields'}>
+        <Option label="All fields" count={Object.values(counts.domainCounts).reduce((a, b) => a + b, 0) || undefined} active={!filters.domain} onClick={() => onChange({ domain: '' })} />
+        {[...DOMAINS].sort((a, b) => (counts.domainCounts[b] || 0) - (counts.domainCounts[a] || 0)).map((d) => (
+          <Option key={d} label={d} count={counts.domainCounts[d]} active={filters.domain === d} onClick={() => onChange({ domain: d })} hideIfZero />
+        ))}
+      </Section>
+
       <Section title="Experience" value={filters.level ? levelLabel(filters.level) : 'All experience levels'}>
         <Option label="All experience levels" active={!filters.level} onClick={() => onChange({ level: '' })} />
         <Option label="Early career" hint="Internship + entry level" count={counts.levelCounts.early} active={filters.level === 'early'} onClick={() => onChange({ level: 'early' })} />
@@ -625,12 +602,6 @@ function FilterSections({ filters, counts, onChange }: { filters: Filters; count
         ))}
       </Section>
 
-      <Section title="Field" value={filters.domain || 'All fields'}>
-        <Option label="All fields" active={!filters.domain} onClick={() => onChange({ domain: '' })} />
-        {DOMAINS.map((d) => (
-          <Option key={d} label={d} count={counts.domainCounts[d]} active={filters.domain === d} onClick={() => onChange({ domain: d })} hideIfZero />
-        ))}
-      </Section>
     </div>
   );
 }
@@ -742,7 +713,6 @@ function FilterSheet({ query, initial, onClose, onApply }: { query: string; init
 
   const counts: FacetCounts = preview ? { ...NO_COUNTS, ...preview } : NO_COUNTS;
   const total = preview?.key === draftKey ? preview.total : null;
-  const allCount = Object.values(counts.domainCounts).reduce((a, b) => a + b, 0);
 
   return (
     <div className="fixed inset-0 z-[80] lg:hidden">
@@ -761,8 +731,7 @@ function FilterSheet({ query, initial, onClose, onApply }: { query: string; init
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-5 py-4">
-          <FieldTabs value={draft.domain} counts={counts.domainCounts} allCount={allCount} onChange={(d) => setDraft((f) => ({ ...f, domain: d }))} />
-          <div className="mt-2">
+          <div>
             <FilterSections filters={draft} counts={counts} onChange={(p) => setDraft((f) => ({ ...f, ...p }))} />
           </div>
         </div>

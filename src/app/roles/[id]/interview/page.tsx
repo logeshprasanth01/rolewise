@@ -922,7 +922,7 @@ export default function InterviewPage() {
             Your interview feedback
           </h1>
           <p className="text-xs sm:text-sm text-[#6B6259]">
-            Communication practice review based on your spoken and written responses.
+            Based on your spoken and written answers.
           </p>
         </section>
 
@@ -963,7 +963,7 @@ export default function InterviewPage() {
                 ))
               ) : (
                 <li className="text-[#6B6259]">
-                  Continue practicing structuring actions and articulating measurable outcomes.
+                  Keep practising clear actions and measurable results.
                 </li>
               )}
             </ul>
@@ -1026,8 +1026,7 @@ export default function InterviewPage() {
                       2. Measurable Outcome Drill
                     </p>
                     <p className="text-xs text-[#6B6259] mt-0.5 leading-relaxed">
-                      For every project scenario, prepare one metric of success (e.g., user
-                      completion rate, latency reduction, cross-team adoption).
+                      Prepare one success metric for each project you mention.
                     </p>
                   </div>
                 </>
@@ -1211,8 +1210,7 @@ export default function InterviewPage() {
                   Question generation is taking longer than expected.
                 </p>
                 <p className="text-[11px] text-[#6B6259] mt-0.5">
-                  Synthesizing questions based on role requirements is taking a bit longer. You can
-                  try again safely.
+                  Writing your questions is taking longer than usual. Try again.
                 </p>
               </div>
             </div>
@@ -1278,7 +1276,7 @@ export default function InterviewPage() {
         )}
 
         <p className="text-xs text-[#6B6259] pt-1">
-          Answer naturally. Rowi will evaluate both your response and how you communicate it.
+          Answer naturally. Rowi reviews what you say and how you say it.
         </p>
       </section>
 
@@ -1418,10 +1416,10 @@ export default function InterviewPage() {
               <AlertCircle className="w-4 h-4 text-[#D97968] flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs font-semibold text-[#D97968]">
-                  Your recording was captured, but transcription is temporarily unavailable.
+                  Recording saved, but transcription isn’t available right now.
                 </p>
                 <p className="text-[11px] text-[#6B6259] mt-0.5">
-                  You can listen to your recording, retry transcription, or type your answer.
+                  Listen back, retry, or type your answer.
                 </p>
               </div>
             </div>
@@ -1456,7 +1454,7 @@ export default function InterviewPage() {
         {/* Card Footer: Helper copy & Primary CTA (Requirement 13) */}
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E6E0D7]/60">
           <p className="text-xs text-[#6B6259] text-center sm:text-left">
-            Prefer speaking? Your recorded answer can be transcribed automatically.
+            Prefer speaking? We’ll transcribe your answer.
           </p>
 
           <button

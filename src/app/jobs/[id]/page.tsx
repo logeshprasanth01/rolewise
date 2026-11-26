@@ -284,7 +284,7 @@ export default function JobDetailPage() {
         <h2 id="next-step" className="text-xs font-bold uppercase tracking-[0.08em] text-[#6B6259]">Next step</h2>
         {status === 'saved' && (
           <div className="mt-2 space-y-3">
-            <p className="text-[15px] text-[#1A1714]">You haven’t applied yet. When you send it, mark it applied and Rolewise will remind you to follow up in 7 days.</p>
+            <p className="text-[15px] text-[#1A1714]">Not applied yet. Mark it applied and we’ll remind you to follow up in 7 days.</p>
             <button type="button" onClick={() => setStatus('applied')} className="h-11 px-4 rounded-xl bg-[#1A1714] text-white text-sm font-semibold inline-flex items-center gap-2">
               <Send className="w-4 h-4" /> I’ve applied today
             </button>
@@ -357,7 +357,7 @@ export default function JobDetailPage() {
           </div>
         ) : (
           <div className="mt-2 space-y-3">
-            <p className="text-[15px] text-[#1A1714]">Paste the job description and your resume. Rolewise maps your experience to each requirement and builds a prep plan and mock interview.</p>
+            <p className="text-[15px] text-[#1A1714]">Add the job description and your resume to get a fit score, prep plan and mock interview.</p>
             <Link href={`/jobs/new?roleId=${role.id}`} className="h-11 px-4 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-sm font-bold inline-flex items-center gap-2">
               <ListChecks className="w-4 h-4" /> Build my prep plan
             </Link>

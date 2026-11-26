@@ -306,7 +306,7 @@ export const AuthModal: React.FC = () => {
                 </p>
               </div>
               <p className="text-xs leading-relaxed text-[#7A5416]">
-                Please wait a while before trying again. If you already have an account, you can sign in directly.
+                Please wait a moment and try again. Already have an account? Sign in.
               </p>
             </div>
 

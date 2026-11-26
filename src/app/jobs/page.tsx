@@ -166,7 +166,7 @@ export default function JobTrackerPage() {
               <Plus className="w-4 h-4" /> Add a job
             </Link>
           </div>
-          <p className="text-[11px] text-[#6B6259]">Add a job to get a fit score and prep plan. Already applied? Log it to track follow-ups.</p>
+          <p className="text-[11px] text-[#6B6259]">Add a job for a fit score and prep plan, or log one you’ve applied to.</p>
         </div>
       </header>
 
@@ -249,7 +249,7 @@ export default function JobTrackerPage() {
           <div className="space-y-1">
             <h2 className="text-base font-bold text-[#1A1714]">Start your tracker</h2>
             <p className="text-sm text-[#6B6259] max-w-sm mx-auto">
-              Log every application here. Rolewise reminds you when to follow up and builds an interview plan for the ones that move forward.
+              Log every application. We’ll remind you when to follow up.
             </p>
           </div>
           <div className="flex flex-col items-center gap-2">

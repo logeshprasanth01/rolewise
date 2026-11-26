@@ -329,7 +329,7 @@ export default function DashboardPage() {
               {/* Single primary action: the plus icon and label share one clickable button */}
               <div className="border-2 border-dashed border-[#E6E0D7] rounded-2xl p-6 sm:p-8 text-center space-y-4 bg-[#FFFFFF]/50">
                 <p className="text-xs sm:text-sm text-[#6B6259] max-w-sm mx-auto">
-                  Paste a job description or upload role details to build your requirement fit.
+                  Paste a job description to see how well you fit.
                 </p>
                 <Link
                   data-ui-sound="click"
@@ -390,7 +390,7 @@ export default function DashboardPage() {
                     <h2 className="text-sm sm:text-base font-semibold text-[#1A1714]">Preparation progress</h2>
                   </div>
                   <p className="text-xs text-[#6B6259] mt-1">
-                    Your current preparation items across active roles.
+                    Across your active roles.
                   </p>
                 </div>
                 <Link

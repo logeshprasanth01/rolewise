@@ -122,11 +122,11 @@ const STATUS: Record<Status, { label: string; weight: number; color: string; chi
 const STATUS_ORDER: Status[] = ['strong', 'transferable', 'evidence', 'missing'];
 
 const SAMPLE_REQS: { text: string; status: Status }[] = [
-  { text: '3+ years designing digital products', status: 'strong' },
-  { text: 'End-to-end process, research to prototype', status: 'strong' },
-  { text: 'Design systems in Figma', status: 'strong' },
-  { text: 'Working closely with engineers', status: 'transferable' },
-  { text: 'Designing for accessibility at scale', status: 'missing' },
+  { text: '3+ years in business or data analysis', status: 'strong' },
+  { text: 'Writing clear requirements with stakeholders', status: 'strong' },
+  { text: 'SQL and Excel for reporting', status: 'strong' },
+  { text: 'Working closely with engineering teams', status: 'transferable' },
+  { text: 'Experience in fintech or payments', status: 'missing' },
 ];
 
 const FIRST_TEN = [
@@ -568,7 +568,7 @@ function FitSimulator() {
         <div className="rounded-[28px] bg-[#FFFFFF] p-6 text-[#1A1714] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.6)] sm:p-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[14px] font-medium text-[#5E554B]">Sample role: Product Designer</p>
+              <p className="text-[14px] font-medium text-[#5E554B]">Sample role: Business Analyst</p>
               <div className="mt-1 flex items-end gap-3">
                 <span className="text-[64px] font-semibold leading-none tracking-[-0.04em] tabular-nums" aria-hidden>
                   {shown}%

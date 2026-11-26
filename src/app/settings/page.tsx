@@ -211,7 +211,7 @@ export default function SettingsPage() {
       <section className="space-y-1">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1714] tracking-tight">Settings</h1>
         <p className="text-xs sm:text-sm text-[#6B6259]">
-          Manage your profile, accessibility, practice permissions, and workspace preferences.
+          Profile, accessibility and practice settings.
         </p>
       </section>
 
@@ -285,7 +285,7 @@ export default function SettingsPage() {
           <Accessibility className="w-4 h-4 text-[#5E554B]" />
           <div>
             <h2 className="text-sm font-semibold text-[#1A1714]">Accessibility</h2>
-            <p className="text-xs text-[#6B6259]">Optional interface enhancements for clearer focus, contrast, and interaction.</p>
+            <p className="text-xs text-[#6B6259]">Clearer focus, contrast and interaction.</p>
           </div>
         </div>
 
@@ -341,7 +341,7 @@ export default function SettingsPage() {
           <h2 className="text-sm font-semibold text-[#1A1714]">Audio & Video</h2>
         </div>
         <p className="text-xs text-[#6B6259] leading-relaxed">
-          Communication Practice uses your browser microphone and camera permissions.
+          Practice uses your browser’s microphone and camera.
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <button type="button" onClick={handleTestMic} className="touch-target inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E6E0D7] hover:bg-[#FAF8F4] text-xs font-semibold text-[#1A1714]">
@@ -371,7 +371,7 @@ export default function SettingsPage() {
           <h2 className="text-sm font-semibold text-[#1A1714]">Privacy & Security</h2>
         </div>
         <p className="text-xs text-[#6B6259] leading-relaxed">
-          Your job descriptions, resume details, and practice recordings are tied to your authenticated account. Rolewise does not expose workspace data to other users.
+          Your jobs, resume and recordings are private to your account.
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#4F7F5B]">
