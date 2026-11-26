@@ -8,9 +8,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Briefcase,
-  Layers,
-  Bot,
-  Clock,
+  ListChecks,
+  Mic,
+  MessageSquareText,
   FileText,
   Settings,
   Search,
@@ -46,9 +46,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const navItems = [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
     { label: 'Job Tracker', href: '/jobs', icon: Briefcase },
-    { label: 'Preparation', href: '/preparation', icon: Layers },
-    { label: 'Practice', href: '/roles', icon: Bot },
-    { label: 'Feedback', href: '/feedback', icon: Clock },
+    { label: 'Find Jobs', href: '/find-jobs', icon: Search },
+    { label: 'Preparation', href: '/preparation', icon: ListChecks },
+    { label: 'Practice', href: '/roles', icon: Mic },
+    { label: 'Feedback', href: '/feedback', icon: MessageSquareText },
     { label: 'Resume', href: '/resume', icon: FileText },
   ];
 
@@ -197,49 +198,49 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             })}
           </nav>
 
-          <div className={`p-2 lg:p-3 space-y-2 border-t border-[#E6E0D7] shrink-0 ${isSidebarCollapsed ? 'px-0' : 'px-4'}`}>
+          <div className={`py-3 space-y-1.5 border-t border-[#E6E0D7] shrink-0 ${isSidebarCollapsed ? 'px-0' : 'px-4'}`}>
             <Link
               href="/settings"
               title={isSidebarCollapsed ? 'Settings' : undefined}
               data-ui-sound="click"
-              className={`flex items-center gap-3 min-h-11 rounded-[14px] text-xs font-semibold transition-all duration-300 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 gap-0 justify-center rounded-xl' : 'w-full px-3'} ${isNavActive('/settings') ? 'bg-[#1A1714] text-[#FFFFFF] border border-[#1A1714]' : 'text-[#6B6259] hover:bg-[#FAF8F4] hover:text-[#1A1714]'}`}
+              className={`flex items-center gap-3 h-10 rounded-xl text-xs font-semibold transition-all duration-300 ${isSidebarCollapsed ? 'w-10 mx-auto p-0 gap-0 justify-center' : 'w-full px-3'} ${isNavActive('/settings') ? 'bg-[#1A1714] text-[#FFFFFF] border border-[#1A1714]' : 'text-[#6B6259] hover:bg-[#FAF8F4] hover:text-[#1A1714]'}`}
             >
               <Settings className="w-4 h-4 shrink-0" />
               <span className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}>Settings</span>
             </Link>
 
-            {/* Profile card opens the profile page directly. (The old dropdown rendered
-                outside the overflow-hidden sidebar on desktop, so it was invisible.) */}
-            <Link
-              href="/profile"
-              data-ui-sound="click"
-              title={isSidebarCollapsed ? 'My profile' : undefined}
-              aria-label="My profile"
-              aria-current={isNavActive('/profile') ? 'page' : undefined}
-              className={`flex items-center gap-3 min-h-12 rounded-[15px] border transition-all duration-300 ${
-                isNavActive('/profile') ? 'bg-[#FFFFFF] border-[#1A1714]' : 'bg-[#FAF8F4] border-[#E6E0D7] hover:border-[#CFC7BC] hover:bg-[#EFEEE9]'
-              } ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 justify-center rounded-full' : 'w-full px-2.5'}`}
-            >
-              <div className="w-8 h-8 rounded-full bg-[#1A1714] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
-                {userName ? userName[0].toUpperCase() : 'U'}
-              </div>
-              <div className={`min-w-0 text-left flex-1 overflow-hidden ${isSidebarCollapsed ? 'hidden' : ''}`}>
-                <p className="text-xs font-bold text-[#1A1714] truncate">{userName || 'Candidate'}</p>
-                <p className="text-[10px] text-[#6B6259] truncate">{session.user?.email || 'Profile'}</p>
-              </div>
-              <ChevronRight className={`w-3.5 h-3.5 text-[#6B6259] shrink-0 ${isSidebarCollapsed ? 'hidden' : ''}`} aria-hidden="true" />
-            </Link>
+            {/* Profile + sign out share one row, so the footer stays compact. */}
+            <div className={`flex items-center gap-1.5 ${isSidebarCollapsed ? 'flex-col' : ''}`}>
+              <Link
+                href="/profile"
+                data-ui-sound="click"
+                title={isSidebarCollapsed ? 'My profile' : undefined}
+                aria-label="My profile"
+                aria-current={isNavActive('/profile') ? 'page' : undefined}
+                className={`flex items-center gap-2.5 min-w-0 border transition-all duration-300 ${
+                  isNavActive('/profile') ? 'bg-[#FFFFFF] border-[#1A1714]' : 'bg-[#FAF8F4] border-[#E6E0D7] hover:border-[#CFC7BC] hover:bg-[#EFEEE9]'
+                } ${isSidebarCollapsed ? 'w-10 h-10 mx-auto p-0 justify-center rounded-full' : 'flex-1 h-12 px-2 rounded-[14px]'}`}
+              >
+                <div className="w-8 h-8 rounded-full bg-[#1A1714] text-[#FFFFFF] font-bold text-xs flex items-center justify-center shrink-0">
+                  {userName ? userName[0].toUpperCase() : 'U'}
+                </div>
+                <div className={`min-w-0 text-left flex-1 overflow-hidden ${isSidebarCollapsed ? 'hidden' : ''}`}>
+                  <p className="text-xs font-bold text-[#1A1714] truncate">{userName || 'Candidate'}</p>
+                  <p className="text-[10px] text-[#6B6259] truncate">{session.user?.email || 'Profile'}</p>
+                </div>
+              </Link>
 
-            <button
-              type="button"
-              data-ui-sound="click"
-              onClick={() => signOut()}
-              title="Sign out"
-              className={`flex items-center gap-3 min-h-10 rounded-[13px] text-xs font-semibold text-[#6B6259] hover:bg-[#FFF0ED] hover:text-[#D97968] transition-all duration-200 ${isSidebarCollapsed ? 'w-10 h-10 min-h-10 mx-auto p-0 justify-center rounded-xl' : 'w-full px-3'}`}
-            >
-              <LogOut className="w-4 h-4 shrink-0" />
-              <span className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ${isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[150px] opacity-100 translate-x-0'}`}>Sign out</span>
-            </button>
+              <button
+                type="button"
+                data-ui-sound="click"
+                onClick={() => signOut()}
+                title="Sign out"
+                aria-label="Sign out"
+                className={`flex items-center justify-center shrink-0 w-10 h-10 rounded-xl text-[#6B6259] hover:bg-[#FFF0ED] hover:text-[#D97968] transition-all duration-200 ${isSidebarCollapsed ? 'mx-auto' : ''}`}
+              >
+                <LogOut className="w-4 h-4 shrink-0" />
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -322,7 +323,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 <Menu className="w-4 h-4" />
               </button>
 
-              <div className={`${pathname === '/jobs' ? 'hidden' : 'flex'} items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FFFFFF] border border-[#E6E0D7] text-[#6B6259] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all`}>
+              <div className={`${pathname === '/jobs' || pathname === '/find-jobs' ? 'hidden' : 'flex'} items-center gap-2 w-full max-w-md h-10 px-3 rounded-full bg-[#FFFFFF] border border-[#E6E0D7] text-[#6B6259] focus-within:border-[#B8A93F] focus-within:ring-2 focus-within:ring-[#FFD84D]/20 transition-all`}>
                 <Search className="w-3.5 h-3.5 shrink-0" />
                 <form
                   role="search"
@@ -377,9 +378,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           {[
             { ...navItems[0], label: 'Home' },
             { ...navItems[1], label: 'Jobs' },
-            { ...navItems[2], label: 'Prep' },
-            { ...navItems[3], label: 'Practice' },
-            { ...navItems[4], label: 'Feedback' },
+            { ...navItems[3], label: 'Prep' },
+            { ...navItems[4], label: 'Practice' },
+            { ...navItems[2], label: 'Find' },
           ].map((item) => {
             const Icon = item.icon;
             const active = isNavActive(item.href);

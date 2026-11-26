@@ -7,7 +7,7 @@ import {
   Mic,
   Square,
   RotateCcw,
-  Sparkles,
+  MessageCircle,
   Loader2,
   AlertCircle,
   CheckCircle2,
@@ -252,7 +252,7 @@ export default function VoicePracticePage() {
       <section className="rolewise-card p-6 space-y-3">
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFE58A] text-[#1A1714]">
-            <Sparkles className="w-3.5 h-3.5" />
+            <MessageCircle className="w-3.5 h-3.5" />
             General Interview Communication
           </span>
         </div>

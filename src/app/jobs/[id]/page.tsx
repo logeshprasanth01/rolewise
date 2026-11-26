@@ -6,10 +6,9 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   ExternalLink,
-  Sparkles,
   Target,
   ListChecks,
-  Bot,
+  Mic,
   BellRing,
   Copy,
   Check,
@@ -326,7 +325,7 @@ export default function JobDetailPage() {
                 : 'Add the interview date below, then run a practice round for this role.'}
             </p>
             <Link href={isAnalyzed(role) ? `/roles/${role.id}/interview` : `/jobs/new?roleId=${role.id}`} className="h-11 px-4 rounded-xl bg-[#FFD84D] text-[#1A1714] text-sm font-bold inline-flex items-center gap-2">
-              <Bot className="w-4 h-4" /> {isAnalyzed(role) ? 'Practice this interview' : 'Build interview prep first'}
+              <Mic className="w-4 h-4" /> {isAnalyzed(role) ? 'Practice this interview' : 'Build interview prep first'}
             </Link>
           </div>
         )}
@@ -348,7 +347,7 @@ export default function JobDetailPage() {
             {[
               { href: `/roles/${role.id}/fit`, label: 'Role fit', icon: Target },
               { href: `/roles/${role.id}/preparation`, label: 'Prep plan', icon: ListChecks },
-              { href: `/roles/${role.id}/interview`, label: 'Rowi interview', icon: Bot },
+              { href: `/roles/${role.id}/interview`, label: 'Rowi interview', icon: Mic },
             ].map(({ href, label: l, icon: Icon }) => (
               <Link key={href} href={href} className="rounded-2xl bg-white border border-[#E6E0D7] hover:border-[#1A1714] p-3 flex flex-col items-center gap-1.5 text-center transition-colors">
                 <Icon className="w-5 h-5 text-[#1A1714]" />
@@ -360,7 +359,7 @@ export default function JobDetailPage() {
           <div className="mt-2 space-y-3">
             <p className="text-[15px] text-[#1A1714]">Paste the job description and your resume. Rolewise maps your experience to each requirement and builds a prep plan and mock interview.</p>
             <Link href={`/jobs/new?roleId=${role.id}`} className="h-11 px-4 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-[#1A1714] text-sm font-bold inline-flex items-center gap-2">
-              <Sparkles className="w-4 h-4" /> Build my prep plan
+              <ListChecks className="w-4 h-4" /> Build my prep plan
             </Link>
           </div>
         )}

@@ -76,18 +76,21 @@ export function CtaIllustration() {
         </g>
       </g>
 
-      {/* sparkles */}
+      {/* confetti dots (plain shapes, no AI-style sparkles) */}
       {[
-        [62, 70, 1],
-        [236, 140, 0.8],
-        [350, 150, 0.9],
-        [40, 134, 0.7],
-      ].map(([x, y, sc], i) => (
-        <path
+        [62, 70, 5],
+        [236, 140, 4],
+        [350, 150, 4.5],
+        [40, 134, 3.5],
+      ].map(([x, y, r], i) => (
+        <circle
           key={i}
-          d="M0 -10 Q2 -2 10 0 Q2 2 0 10 Q-2 2 -10 0 Q-2 -2 0 -10 Z"
-          fill={ink}
-          transform={`translate(${x} ${y}) scale(${sc})`}
+          cx={x}
+          cy={y}
+          r={r}
+          fill={i % 2 === 0 ? '#FFD84D' : ink}
+          stroke={ink}
+          strokeWidth="2"
           className="rwl-twinkle"
           style={{ animationDelay: `${i * 0.4}s` }}
         />

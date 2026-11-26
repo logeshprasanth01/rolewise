@@ -648,6 +648,10 @@ export default function AddJobPage() {
         setCreatedRoleId(finalRoleId);
       }
       setAnalysisStatus('completed');
+      // Go straight to the role fit page; the "Analysis complete" card stays only as a fallback.
+      if (finalRoleId) {
+        router.replace(`/roles/${finalRoleId}/fit`);
+      }
     } catch (err: unknown) {
       clearTimeout(stepTimer1);
       clearTimeout(stepTimer2);

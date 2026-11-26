@@ -7,7 +7,7 @@ import {
   Video,
   Square,
   RotateCcw,
-  Sparkles,
+  MessageCircleQuestion,
   Loader2,
   AlertCircle,
   CheckCircle2,
@@ -397,7 +397,7 @@ export default function VideoPracticePage() {
       <section className="rolewise-card p-6 space-y-3">
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEF7F0] text-[#6FA77F]">
-            <Sparkles className="w-3.5 h-3.5" />
+            <MessageCircleQuestion className="w-3.5 h-3.5" />
             Question 1
           </span>
         </div>

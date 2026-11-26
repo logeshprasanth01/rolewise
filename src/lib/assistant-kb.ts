@@ -108,6 +108,20 @@ export const HELP: HelpEntry[] = [
     link: { label: 'Open job tracker', href: '/jobs' },
   },
   {
+    id: 'find-jobs',
+    keywords: ['find jobs', 'job search', 'openings', 'apply', 'where to apply', 'vacancies', 'naukri', 'linkedin', 'indeed', 'remote jobs'],
+    answer:
+      'Find Jobs shows openings for the roles you are preparing for. Pick a location to open a ready-made search on LinkedIn, Naukri, Indeed, Google Jobs or Glassdoor, or apply to a live remote opening. Apply opens the original posting; afterwards you can mark it as applied in your tracker in one tap.',
+    link: { label: 'Find jobs', href: '/find-jobs' },
+  },
+  {
+    id: 'get-noticed',
+    keywords: ['get noticed', 'stand out', 'recruiter', 'shortlisted', 'attention', 'keywords', 'ats', 'improve resume'],
+    answer:
+      'Every role fit page has a "How to get noticed" section: what to lead with, which bullets to reword in the job’s language, which gaps to fill, the job’s keywords your resume has or misses, and a quick resume check.',
+    link: { label: 'Open job tracker', href: '/jobs' },
+  },
+  {
     id: 'privacy',
     keywords: ['privacy', 'private', 'data', 'safe', 'secure', 'who can see', 'delete'],
     answer:

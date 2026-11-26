@@ -13,7 +13,7 @@ import {
   Play,
   Pause,
   RefreshCw,
-  Sparkles,
+  Target,
   CheckCircle2,
   AlertCircle,
   Loader2,
@@ -1171,7 +1171,7 @@ export default function InterviewPage() {
             title={currentCompetency || 'Role Competency'}
             className="inline-flex min-w-0 max-w-[70%] items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFE58A] text-[#1A1714] border border-[#FFE58A]"
           >
-            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            <Target className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">{currentCompetency || 'Role Competency'}</span>
           </span>
           <span className="shrink-0 text-xs text-[#6B6259]">

@@ -7,7 +7,7 @@ import {
   Mic,
   Video,
   ArrowRight,
-  Sparkles,
+  MessagesSquare,
   ShieldCheck,
   Briefcase,
   HelpCircle,
@@ -61,7 +61,7 @@ export default function CommunicationPracticePage() {
             </div>
           ) : (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E6E0D7] text-xs text-[#6B6259]">
-              <Sparkles className="w-3.5 h-3.5 text-[#1A1714]" />
+              <MessagesSquare className="w-3.5 h-3.5 text-[#1A1714]" />
               <span>General communication drills (accessible anytime without a job)</span>
             </div>
           )}

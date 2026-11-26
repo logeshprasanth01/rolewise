@@ -6,7 +6,7 @@ import {
   FileText,
   Upload,
   CheckCircle2,
-  Sparkles,
+  ListChecks,
   ArrowRight,
   User,
   Briefcase,
@@ -67,7 +67,7 @@ export default function ResumePage() {
         <div className="rolewise-card p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#1A1714]" />
+              <ListChecks className="w-4 h-4 text-[#1A1714]" />
               <h3 className="text-sm font-semibold text-[#1A1714]">Key Skills & Specializations</h3>
             </div>
             <button

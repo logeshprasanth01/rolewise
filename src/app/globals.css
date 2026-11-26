@@ -383,11 +383,13 @@ html[data-accessibility="enhanced"] .rw-search-input:focus-visible {
 
 
 
-/* Responsive safety: prevent page-level horizontal overflow on narrow screens. */
+/* Responsive safety: prevent page-level horizontal overflow on narrow screens.
+   `clip` (not `hidden`) so html/body don't become scroll containers — `hidden` broke
+   the sticky sidebar, which scrolled away and left an empty gap under "Sign out". */
 html, body {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 @media (max-width: 1023px) {

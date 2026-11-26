@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Sparkles, ClipboardList, ChevronRight, BellRing, Briefcase, X, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
+import { Plus, Search, ListChecks, ClipboardList, ChevronRight, BellRing, Briefcase, X, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 import { getUserRoles, updateApplication, removeRole } from '@/services/api';
 import type { ApplicationStatus, Role } from '@/types/database';
 import {
@@ -303,7 +303,7 @@ export default function JobTrackerPage() {
                       )}
                       {isAnalyzed(role) && (
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#2F6B42]">
-                          <Sparkles className="w-3 h-3" /> Prep plan ready
+                          <ListChecks className="w-3 h-3" /> Prep plan ready
                         </span>
                       )}
                     </div>

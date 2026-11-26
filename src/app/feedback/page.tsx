@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Bot, ChevronDown, MessageSquare, ThumbsUp, Wrench, Dumbbell } from 'lucide-react';
+import { Mic, ChevronDown, MessageSquare, ThumbsUp, Wrench, Dumbbell } from 'lucide-react';
 import { getInterviewHistory, getUserRoles } from '@/services/api';
 import type { CommunicationAnalysisResponse, InterviewHistoryRecord, Role } from '@/types/database';
 import { isAnalyzed } from '@/lib/tracker';
@@ -74,7 +74,7 @@ export default function FeedbackPage() {
             href={practiceRole ? `/roles/${practiceRole.id}/interview` : '/jobs'}
             className="touch-target inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-[#FFD84D] hover:bg-[#E7C43E] text-sm font-bold text-[#1A1714]"
           >
-            <Bot className="w-4 h-4" /> {practiceRole ? `Practice for ${practiceRole.company}` : 'Pick a job to practice'}
+            <Mic className="w-4 h-4" /> {practiceRole ? `Practice for ${practiceRole.company}` : 'Pick a job to practice'}
           </Link>
         </section>
       ) : (
@@ -115,7 +115,7 @@ export default function FeedbackPage() {
                       {role && (
                         <div className="flex flex-wrap gap-2 mt-3">
                           <Link href={`/roles/${role.id}/interview`} className="h-10 px-4 rounded-xl bg-[#FFD84D] text-[13px] font-bold text-[#1A1714] inline-flex items-center gap-1.5">
-                            <Bot className="w-4 h-4" /> Practice again
+                            <Mic className="w-4 h-4" /> Practice again
                           </Link>
                           <Link href={`/jobs/${role.id}`} className="h-10 px-4 rounded-xl bg-white border border-[#E6E0D7] text-[13px] font-semibold text-[#1A1714] inline-flex items-center">
                             Open job
