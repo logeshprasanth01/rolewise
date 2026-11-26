@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DOMAINS, Domain, OpenJob, companyJobs, domainOf, remoteJobs } from '@/lib/job-feed';
+import { DOMAINS, Domain, OpenJob, companyJobs, domainOf, levelOf, remoteJobs } from '@/lib/job-feed';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -28,7 +28,7 @@ function score(job: OpenJob, words: string[]): number {
 }
 
 /**
- * GET /api/jobs?q=&domain=&city=&remote=1&page=1
+ * GET /api/jobs?q=&domain=&city=&work=remote|onsite&level=intern|entry|mid|senior|lead&posted=1|7|30&sort=relevant|recent&page=1
  * Real openings: India roles from company career boards + India-friendly remote roles.
  */
 export async function GET(req: NextRequest) {
@@ -37,6 +37,10 @@ export async function GET(req: NextRequest) {
   const domainParam = sp.get('domain') as Domain | null;
   const domain = domainParam && DOMAINS.includes(domainParam) ? domainParam : null;
   const city = (sp.get('city') || '').trim();
+  const work = sp.get('work');
+  const level = sp.get('level');
+  const postedDays = Number(sp.get('posted')) || 0;
+  const sort = sp.get('sort') === 'recent' ? 'recent' : 'relevant';
   const page = Math.max(1, Math.min(50, Number(sp.get('page')) || 1));
   const pageSize = 20;
 
@@ -64,11 +68,19 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 2. Location
+  // 2. Location, work type, experience level, date posted
+  const since = postedDays ? Date.now() - postedDays * 86_400_000 : 0;
   const byCity = matched.filter(({ j }) => {
-    if (!city || city === 'All India') return true;
-    if (city === 'Remote') return j.remote;
-    return j.city === city || j.location.includes(city);
+    if (city && city !== 'All India') {
+      if (city === 'Remote') {
+        if (!j.remote) return false;
+      } else if (!(j.city === city || j.location.includes(city))) return false;
+    }
+    if (work === 'remote' && !j.remote) return false;
+    if (work === 'onsite' && j.remote) return false;
+    if (level && levelOf(j.title) !== level) return false;
+    if (since && !(Date.parse(j.postedAt || '') >= since)) return false;
+    return true;
   });
 
   // Facet counts (before the domain filter, so the chips show what each domain would give)
@@ -78,8 +90,9 @@ export async function GET(req: NextRequest) {
   // 3. Domain
   const filtered = domain ? byCity.filter(({ j }) => j.domain === domain) : byCity;
 
-  // Best match first, then newest.
-  filtered.sort((a, b) => b.s - a.s || (Date.parse(b.j.postedAt || '') || 0) - (Date.parse(a.j.postedAt || '') || 0));
+  // Most relevant: best match first, then newest. Most recent: newest only.
+  const time = (x: { j: OpenJob }) => Date.parse(x.j.postedAt || '') || 0;
+  filtered.sort((a, b) => (sort === 'recent' ? time(b) - time(a) : b.s - a.s || time(b) - time(a)));
 
   // Keep variety: no company more than 4 times in any run of 20 (big employers otherwise fill page 1).
   const spread: typeof filtered = [];

@@ -107,6 +107,18 @@ export function cityOf(location: string): string | null {
 }
 
 /** Classify by title first (most reliable), then department. */
+export type Level = 'intern' | 'entry' | 'mid' | 'senior' | 'lead';
+
+/** Experience level from the title, the way LinkedIn groups it. */
+export function levelOf(title: string): Level {
+  const t = title.toLowerCase();
+  if (/\b(intern|internship|trainee|apprentice)\b/.test(t)) return 'intern';
+  if (/\b(director|head|vp|vice president|chief|cxo|manager|lead)\b/.test(t) && !/\b(account|key account|area|territory|relationship) manager\b/.test(t)) return 'lead';
+  if (/\b(senior|sr\.?|staff|principal)\b/.test(t)) return 'senior';
+  if (/\b(junior|jr\.?|entry|fresher|graduate|associate|executive|i)\b/.test(t)) return 'entry';
+  return 'mid';
+}
+
 export function domainOf(title: string, department = ''): Domain {
   const t = `${title}`.toLowerCase();
   const d = `${department}`.toLowerCase();

@@ -21,7 +21,7 @@ export default function FindJobsPage() {
       <JobOpenings
         as="h1"
         title="Find jobs"
-        subtitle="Real openings in every field, from company career pages and remote job boards. Updated every hour. Apply opens the original posting, then track it here."
+        subtitle="Real openings in every field, updated hourly. Apply opens the original posting."
         quickQueries={targets}
       />
     </div>

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Briefcase, CheckCircle2, Clock, Loader2, MapPin, Search, Wallet, X } from 'lucide-react';
+import { ArrowUpRight, Briefcase, CheckCircle2, Clock, Loader2, MapPin, Search, SlidersHorizontal, Wallet, X } from 'lucide-react';
 import { quickAddJob } from '@/services/api';
-import { portalLinks, timeAgo } from '@/lib/job-portals';
+import { timeAgo } from '@/lib/job-portals';
 import { todayISO } from '@/lib/tracker';
 
 interface OpenJob {
@@ -38,8 +38,42 @@ interface FeedResponse {
 
 type TrackState = 'idle' | 'asking' | 'saving' | 'saved' | 'applied' | 'error';
 
+interface Filters {
+  sort: 'relevant' | 'recent';
+  posted: '' | '1' | '7' | '30';
+  level: '' | 'intern' | 'entry' | 'mid' | 'senior' | 'lead';
+  work: '' | 'onsite' | 'remote';
+  city: string;
+  domain: string;
+}
+
+const DEFAULT_FILTERS: Filters = { sort: 'relevant', posted: '', level: '', work: '', city: '', domain: '' };
+
+const SORT_OPTIONS: { value: Filters['sort']; label: string }[] = [
+  { value: 'relevant', label: 'Most relevant' },
+  { value: 'recent', label: 'Most recent' },
+];
+const POSTED_OPTIONS: { value: Filters['posted']; label: string }[] = [
+  { value: '', label: 'Any time' },
+  { value: '1', label: 'Past 24 hours' },
+  { value: '7', label: 'Past week' },
+  { value: '30', label: 'Past month' },
+];
+const LEVEL_OPTIONS: { value: Filters['level']; label: string }[] = [
+  { value: '', label: 'Any level' },
+  { value: 'intern', label: 'Internship' },
+  { value: 'entry', label: 'Entry level' },
+  { value: 'mid', label: 'Mid level' },
+  { value: 'senior', label: 'Senior' },
+  { value: 'lead', label: 'Lead / Manager' },
+];
+const WORK_OPTIONS: { value: Filters['work']; label: string }[] = [
+  { value: '', label: 'Any' },
+  { value: 'onsite', label: 'On-site / Hybrid' },
+  { value: 'remote', label: 'Remote' },
+];
+const CITIES = ['Bengaluru', 'Chennai', 'Hyderabad', 'Pune', 'Mumbai', 'Delhi NCR', 'Kolkata', 'Ahmedabad', 'Coimbatore', 'Kochi'];
 const DOMAINS = ['Engineering', 'Design', 'Product', 'Data & AI', 'Marketing', 'Sales', 'Customer Success', 'Operations', 'Finance & Legal', 'People & HR', 'Other'];
-const CITIES = ['All India', 'Bengaluru', 'Chennai', 'Hyderabad', 'Pune', 'Mumbai', 'Delhi NCR', 'Remote'];
 const CITY_KEY = 'rw-job-city';
 
 const LOGO_TINTS = ['#FFE58A', '#E3EEF9', '#EEF7F0', '#F3EFE9', '#FFF0ED', '#EFEAE3', '#E8F0FF'];
@@ -49,6 +83,29 @@ function tintFor(name: string) {
   return LOGO_TINTS[h % LOGO_TINTS.length];
 }
 
+function buildUrl(query: string, f: Filters, page: number) {
+  const p = new URLSearchParams({ page: String(page) });
+  if (query.trim()) p.set('q', query.trim());
+  if (f.city) p.set('city', f.city);
+  if (f.domain) p.set('domain', f.domain);
+  if (f.work) p.set('work', f.work);
+  if (f.level) p.set('level', f.level);
+  if (f.posted) p.set('posted', f.posted);
+  if (f.sort !== 'relevant') p.set('sort', f.sort);
+  return `/api/jobs?${p.toString()}`;
+}
+
+/** Chips for the filters that are switched on (sort isn't a filter, so it has no chip). */
+function activeChips(f: Filters): { key: keyof Filters; label: string }[] {
+  const chips: { key: keyof Filters; label: string }[] = [];
+  if (f.posted) chips.push({ key: 'posted', label: POSTED_OPTIONS.find((o) => o.value === f.posted)!.label });
+  if (f.level) chips.push({ key: 'level', label: LEVEL_OPTIONS.find((o) => o.value === f.level)!.label });
+  if (f.work) chips.push({ key: 'work', label: WORK_OPTIONS.find((o) => o.value === f.work)!.label });
+  if (f.city) chips.push({ key: 'city', label: f.city });
+  if (f.domain) chips.push({ key: 'domain', label: f.domain });
+  return chips;
+}
+
 interface JobOpeningsProps {
   /** Starting search, e.g. the role title. Empty shows every open job. */
   defaultQuery?: string;
@@ -56,64 +113,66 @@ interface JobOpeningsProps {
   subtitle?: string;
   /** "h1" on the Find Jobs page, "h2" when embedded. */
   as?: 'h1' | 'h2';
-  /** One-tap searches, e.g. the roles already in the tracker. */
+  /** Suggested searches shown when the search box is focused, e.g. roles in the tracker. */
   quickQueries?: string[];
 }
 
 export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', subtitle, as = 'h2', quickQueries = [] }: JobOpeningsProps) {
   const [query, setQuery] = useState(defaultQuery);
   const [draft, setDraft] = useState(defaultQuery);
-  const [domain, setDomain] = useState<string | null>(null);
-  const [city, setCity] = useState<string>(() => {
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [filters, setFilters] = useState<Filters>(() => {
     try {
-      return (typeof window !== 'undefined' && window.localStorage.getItem(CITY_KEY)) || 'All India';
+      const city = typeof window !== 'undefined' ? window.localStorage.getItem(CITY_KEY) || '' : '';
+      return { ...DEFAULT_FILTERS, city: CITIES.includes(city) ? city : '' };
     } catch {
-      return 'All India';
+      return DEFAULT_FILTERS;
     }
   });
-  const key = `${query}|${city}|${domain ?? ''}`;
+  const [panelOpen, setPanelOpen] = useState(false);
+
+  const key = buildUrl(query, filters, 1);
   const [feed, setFeed] = useState<(FeedResponse & { key: string }) | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [track, setTrack] = useState<Record<string, TrackState>>({});
 
-  const loading = feed?.key !== key && failedKey !== key;
-  const failed = failedKey === key;
   const current = feed && feed.key === key ? feed : null;
-
-  const urlFor = (page: number) => {
-    const p = new URLSearchParams({ page: String(page) });
-    if (query.trim()) p.set('q', query.trim());
-    if (city && city !== 'All India') p.set('city', city);
-    if (domain) p.set('domain', domain);
-    return `/api/jobs?${p.toString()}`;
-  };
+  const loading = !current && failedKey !== key;
+  const failed = failedKey === key;
 
   useEffect(() => {
     let cancelled = false;
-    const k = key;
-    fetch(urlFor(1))
+    fetch(key)
       .then((r) => {
         if (!r.ok) throw new Error(String(r.status));
         return r.json() as Promise<FeedResponse>;
       })
       .then((data) => {
-        if (!cancelled) setFeed({ ...data, key: k });
+        if (!cancelled) setFeed({ ...data, key });
       })
       .catch(() => {
-        if (!cancelled) setFailedKey(k);
+        if (!cancelled) setFailedKey(key);
       });
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
+
+  const applyFilters = (next: Filters) => {
+    setFilters(next);
+    try {
+      window.localStorage.setItem(CITY_KEY, next.city);
+    } catch {
+      // storage unavailable
+    }
+  };
 
   const loadMore = async () => {
     if (!current || loadingMore) return;
     setLoadingMore(true);
     try {
-      const r = await fetch(urlFor(current.page + 1));
+      const r = await fetch(buildUrl(query, filters, current.page + 1));
       const data = (await r.json()) as FeedResponse;
       setFeed((f) => (f && f.key === key ? { ...data, key, jobs: [...f.jobs, ...data.jobs] } : f));
     } catch {
@@ -122,17 +181,6 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
       setLoadingMore(false);
     }
   };
-
-  const chooseCity = (c: string) => {
-    setCity(c);
-    try {
-      window.localStorage.setItem(CITY_KEY, c);
-    } catch {
-      // storage unavailable
-    }
-  };
-
-  const portals = useMemo(() => portalLinks(query || 'jobs', city === 'All India' ? 'India' : city), [query, city]);
 
   const saveToTracker = async (job: OpenJob, status: 'saved' | 'applied') => {
     setTrack((t) => ({ ...t, [job.id]: 'saving' }));
@@ -154,13 +202,12 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
     }
   };
 
+  const chips = activeChips(filters);
   const Heading = as;
-  // Keep the last counts visible while a new filter loads, so the chips don't jump.
-  const counts = current?.domainCounts || feed?.domainCounts || {};
-  const allCount = Object.values(counts).reduce((a, b) => a + b, 0);
+  const suggestions = quickQueries.filter((q) => q && q !== query);
 
   return (
-    <section aria-labelledby="job-openings-heading" className="space-y-5">
+    <section aria-labelledby="job-openings-heading" className="space-y-4">
       <div>
         <Heading
           id="job-openings-heading"
@@ -168,147 +215,131 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
         >
           {title}
         </Heading>
-        <p className="mt-1 text-xs sm:text-sm text-[#6B6259] max-w-2xl">
-          {subtitle ?? 'Real openings from company career pages and remote job boards, updated every hour. Apply opens the original posting.'}
-        </p>
+        {subtitle !== '' && (
+          <p className="mt-1 text-xs sm:text-sm text-[#6B6259] max-w-2xl">
+            {subtitle ?? 'Real openings from company career pages and remote job boards. Apply opens the original posting.'}
+          </p>
+        )}
       </div>
 
-      {/* FILTERS */}
-      <div className="rolewise-card p-4 sm:p-5 space-y-4">
+      {/* SEARCH + FILTERS */}
+      <div className="space-y-2.5">
         <form
           role="search"
           onSubmit={(e) => {
             e.preventDefault();
+            setSuggestOpen(false);
             setQuery(draft.trim());
           }}
-          className="flex flex-col sm:flex-row gap-2"
+          className="flex gap-2"
         >
-          <label htmlFor="job-query" className="sr-only">Search jobs by role, skill or company</label>
-          <div className="flex-1 flex items-center gap-2 h-11 px-3.5 rounded-xl border border-[#E6E0D7] bg-white focus-within:border-[#1A1714] focus-within:ring-2 focus-within:ring-[#1A1714]/15">
-            <Search className="w-4 h-4 text-[#9A9086] shrink-0" aria-hidden="true" />
-            <input
-              id="job-query"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="Role, skill or company, e.g. Data Analyst, React, Swiggy"
-              className="w-full bg-transparent outline-none text-sm text-[#1A1714] placeholder:text-[#9A9086]"
-            />
-            {draft && (
-              <button
-                type="button"
-                aria-label="Clear search"
-                onClick={() => {
-                  setDraft('');
-                  setQuery('');
-                }}
-                className="text-[#9A9086] hover:text-[#1A1714] p-1 cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+          <div className="relative flex-1 min-w-0">
+            <label htmlFor="job-query" className="sr-only">Search jobs by role, skill or company</label>
+            <div className="flex items-center gap-2 h-12 px-3.5 rounded-xl border border-[#E6E0D7] bg-white focus-within:border-[#1A1714] focus-within:ring-2 focus-within:ring-[#1A1714]/15">
+              <Search className="w-4 h-4 text-[#9A9086] shrink-0" aria-hidden="true" />
+              <input
+                id="job-query"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onFocus={() => setSuggestOpen(true)}
+                onBlur={() => setSuggestOpen(false)}
+                placeholder="Search role, skill or company"
+                autoComplete="off"
+                className="w-full min-w-0 bg-transparent outline-none text-sm text-[#1A1714] placeholder:text-[#9A9086]"
+              />
+              {draft && (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => {
+                    setDraft('');
+                    setQuery('');
+                  }}
+                  className="text-[#9A9086] hover:text-[#1A1714] p-1 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            {suggestOpen && !draft && suggestions.length > 0 && (
+              <div className="absolute z-30 left-0 right-0 mt-1 rounded-xl border border-[#E6E0D7] bg-white shadow-lg p-1.5" role="listbox" aria-label="Your roles">
+                <p className="px-2.5 pt-1 pb-1.5 text-[11px] font-semibold text-[#9A9086]">Your roles</p>
+                {suggestions.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    role="option"
+                    aria-selected={false}
+                    // mousedown so it runs before the input's blur closes the list
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setDraft(q);
+                      setQuery(q);
+                      setSuggestOpen(false);
+                    }}
+                    className="w-full text-left px-2.5 py-2 rounded-lg text-sm text-[#1A1714] hover:bg-[#FAF8F4] flex items-center gap-2 cursor-pointer"
+                  >
+                    <Briefcase className="w-3.5 h-3.5 text-[#9A9086]" aria-hidden="true" />
+                    {q}
+                  </button>
+                ))}
+              </div>
             )}
           </div>
-          <button type="submit" className="h-11 px-5 rounded-xl bg-[#1A1714] hover:bg-[#3B342D] text-white text-sm font-semibold cursor-pointer">
-            Search
+
+          <button
+            type="button"
+            onClick={() => setPanelOpen(true)}
+            aria-haspopup="dialog"
+            aria-label={chips.length ? `Filters, ${chips.length} on` : 'Filters'}
+            className={`h-12 px-3.5 sm:px-4 rounded-xl border text-sm font-semibold inline-flex items-center gap-2 shrink-0 cursor-pointer transition-colors ${
+              chips.length ? 'bg-[#1A1714] border-[#1A1714] text-white' : 'bg-white border-[#E6E0D7] text-[#1A1714] hover:border-[#1A1714]'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
+            <span className="hidden sm:inline" aria-hidden="true">Filters</span>
+            {chips.length > 0 && (
+              <span aria-hidden="true" className="min-w-5 h-5 px-1 rounded-full bg-[#FFD84D] text-[#1A1714] text-[11px] font-bold inline-flex items-center justify-center">
+                {chips.length}
+              </span>
+            )}
           </button>
         </form>
 
-        {quickQueries.length > 0 && (
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 sm:flex-wrap sm:overflow-visible" aria-label="Your roles">
-            <span className="text-[11px] font-semibold text-[#6B6259] shrink-0 mr-0.5">Your roles:</span>
-            {['', ...quickQueries].map((t) => {
-              const active = t === query;
-              return (
-                <button
-                  key={t || 'all'}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => {
-                    setDraft(t);
-                    setQuery(t);
-                  }}
-                  className={`shrink-0 h-8 px-3 rounded-full text-[11px] font-semibold border transition-colors cursor-pointer ${
-                    active ? 'bg-[#FAF8F4] border-[#1A1714] text-[#1A1714]' : 'bg-white border-[#E6E0D7] text-[#574F46] hover:border-[#1A1714]/40'
-                  }`}
-                >
-                  {t || 'All jobs'}
-                </button>
-              );
-            })}
+        {chips.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5" aria-label="Active filters">
+            {chips.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => applyFilters({ ...filters, [c.key]: DEFAULT_FILTERS[c.key] })}
+                className="h-8 pl-3 pr-2 rounded-full bg-[#FAF8F4] border border-[#E6E0D7] hover:border-[#1A1714] text-xs font-semibold text-[#1A1714] inline-flex items-center gap-1 cursor-pointer"
+              >
+                {c.label}
+                <X className="w-3 h-3 text-[#6B6259]" aria-hidden="true" />
+                <span className="sr-only">Remove filter</span>
+              </button>
+            ))}
+            <button type="button" onClick={() => applyFilters({ ...DEFAULT_FILTERS, sort: filters.sort })} className="h-8 px-2 text-xs font-semibold text-[#6B6259] hover:text-[#1A1714] cursor-pointer">
+              Clear all
+            </button>
           </div>
         )}
-
-        <div>
-          <p className="text-xs font-semibold text-[#1A1714] mb-2 flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5" aria-hidden="true" /> Location
-          </p>
-          <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 sm:flex-wrap sm:overflow-visible" role="radiogroup" aria-label="Location">
-            {CITIES.map((c) => {
-              const active = city === c;
-              return (
-                <button
-                  key={c}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => chooseCity(c)}
-                  className={`shrink-0 h-9 px-3 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
-                    active ? 'bg-[#1A1714] text-white border-[#1A1714]' : 'bg-white text-[#574F46] border-[#E6E0D7] hover:border-[#1A1714]/40'
-                  }`}
-                >
-                  {c}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div>
-          <p className="text-xs font-semibold text-[#1A1714] mb-2 flex items-center gap-1.5">
-            <Briefcase className="w-3.5 h-3.5" aria-hidden="true" /> Field
-          </p>
-          <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 sm:flex-wrap sm:overflow-visible" role="radiogroup" aria-label="Field">
-            {[null, ...DOMAINS].map((d) => {
-              const active = domain === d;
-              const n = d ? counts[d] || 0 : allCount;
-              if (d && n === 0 && !active && feed) return null;
-              return (
-                <button
-                  key={d ?? 'all'}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => setDomain(d)}
-                  className={`shrink-0 h-9 px-3 rounded-full text-xs font-semibold border transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
-                    active ? 'bg-[#FFD84D] text-[#1A1714] border-[#FFD84D]' : 'bg-white text-[#574F46] border-[#E6E0D7] hover:border-[#1A1714]/40'
-                  }`}
-                >
-                  {d ?? 'All fields'}
-                  {feed && <span className={`tabular-nums ${active ? 'text-[#5C4A00]' : 'text-[#9A9086]'}`}>{n}</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
       {/* RESULTS */}
       <div aria-live="polite" aria-busy={loading}>
         {current && (
-          <div className="mb-3 space-y-1">
-            <p className="text-sm font-semibold text-[#1A1714]">
-              {current.total.toLocaleString('en-IN')} {current.total === 1 ? 'opening' : 'openings'}
-              <span className="font-normal text-[#6B6259]">
-                {' '}at {current.companies} {current.companies === 1 ? 'company' : 'companies'}
-                {query ? <> for “{query}”</> : null}
-                {city !== 'All India' ? <> · {city}</> : null}
-              </span>
+          <div className="mb-2.5 flex items-baseline justify-between gap-3">
+            <p className="text-sm text-[#6B6259]">
+              <span className="font-semibold text-[#1A1714]">{current.total.toLocaleString('en-IN')} jobs</span>
+              {query ? <> for “{query}”</> : null}
             </p>
-            {current.relaxed && (
-              <p className="text-xs text-[#8A5A12]">
-                No openings titled “{query}” right now, so these are other {current.relaxedDomain} roles.
-              </p>
-            )}
+            <p className="text-xs text-[#9A9086] shrink-0">{filters.sort === 'recent' ? 'Most recent first' : 'Best match first'}</p>
           </div>
+        )}
+        {current?.relaxed && (
+          <p className="mb-2.5 text-xs text-[#8A5A12]">No openings titled “{query}” right now, so these are other {current.relaxedDomain} roles.</p>
         )}
 
         <ul className="space-y-2.5">
@@ -356,7 +387,6 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
                       {job.type && <span className="inline-flex items-center gap-1"><Briefcase className="w-3 h-3" aria-hidden="true" />{job.type}</span>}
                       {job.salary && <span className="inline-flex items-center gap-1"><Wallet className="w-3 h-3" aria-hidden="true" />{job.salary}</span>}
                       {job.postedAt && <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" aria-hidden="true" />{timeAgo(job.postedAt)}</span>}
-                      <span className="rounded-full bg-[#FAF8F4] border border-[#E6E0D7] px-2 py-0.5 text-[10px] font-semibold text-[#574F46]">{job.domain}</span>
                     </div>
                     {job.source !== 'Company careers' && (
                       <p className="mt-1.5 text-[10px] text-[#9A9086]">
@@ -374,6 +404,10 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
                   </div>
 
                   <div className="hidden sm:flex items-center gap-2 shrink-0">
+                    {state === 'asking' ? (
+                      <AppliedPrompt onYes={() => saveToTracker(job, 'applied')} onNo={() => setTrack((t) => ({ ...t, [job.id]: 'idle' }))} />
+                    ) : (
+                    <>
                     <SaveButton state={state} onSave={() => saveToTracker(job, 'saved')} />
                     <a
                       href={job.url}
@@ -385,10 +419,16 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
                       Apply <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
                       <span className="sr-only">for {job.title} at {job.company} (opens in a new tab)</span>
                     </a>
+                    </>
+                    )}
                   </div>
                 </div>
 
-                <div className="sm:hidden mt-3 flex items-center gap-2">
+                <div className="sm:hidden mt-3 flex items-center justify-end gap-2">
+                  {state === 'asking' ? (
+                    <AppliedPrompt onYes={() => saveToTracker(job, 'applied')} onNo={() => setTrack((t) => ({ ...t, [job.id]: 'idle' }))} />
+                  ) : (
+                  <>
                   <a
                     href={job.url}
                     target="_blank"
@@ -399,21 +439,10 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
                     Apply <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
                   </a>
                   <SaveButton state={state} onSave={() => saveToTracker(job, 'saved')} />
+                  </>
+                  )}
                 </div>
 
-                {state === 'asking' && (
-                  <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl bg-[#FAF8F4] border border-[#E6E0D7] px-3.5 py-2.5">
-                    <p className="text-xs text-[#1A1714]">Did you apply? Track it so Rolewise reminds you to follow up.</p>
-                    <div className="flex gap-2 shrink-0">
-                      <button type="button" onClick={() => saveToTracker(job, 'applied')} className="h-9 px-3 rounded-lg bg-[#1A1714] text-white text-xs font-semibold cursor-pointer">
-                        Yes, mark as applied
-                      </button>
-                      <button type="button" onClick={() => setTrack((t) => ({ ...t, [job.id]: 'idle' }))} className="h-9 px-3 rounded-lg text-xs font-semibold text-[#574F46] hover:bg-white cursor-pointer">
-                        Not yet
-                      </button>
-                    </div>
-                  </div>
-                )}
                 {(state === 'saved' || state === 'applied') && (
                   <p className="mt-3 text-xs text-[#2F6B42] flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
@@ -429,10 +458,13 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
 
         {(failed || (current && current.total === 0)) && (
           <div className="rounded-2xl border border-dashed border-[#DDD5CA] bg-white/60 p-6 text-center">
-            <p className="text-sm font-semibold text-[#1A1714]">{failed ? 'Jobs couldn’t load right now' : 'No openings match these filters'}</p>
-            <p className="text-xs text-[#6B6259] mt-1">
-              {failed ? 'Please try again in a minute, or search the job sites below.' : 'Try another location or field, a shorter search, or the job sites below.'}
-            </p>
+            <p className="text-sm font-semibold text-[#1A1714]">{failed ? 'Jobs couldn’t load right now' : 'No jobs match your search'}</p>
+            <p className="text-xs text-[#6B6259] mt-1">{failed ? 'Please try again in a minute.' : 'Try a shorter search or remove a filter.'}</p>
+            {!failed && chips.length > 0 && (
+              <button type="button" onClick={() => applyFilters({ ...DEFAULT_FILTERS, sort: filters.sort })} className="mt-3 h-9 px-4 rounded-lg border border-[#E6E0D7] bg-white text-xs font-semibold text-[#1A1714] hover:border-[#1A1714] cursor-pointer">
+                Clear filters
+              </button>
+            )}
           </div>
         )}
 
@@ -454,29 +486,191 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
         )}
       </div>
 
-      {/* MORE PLACES TO LOOK */}
-      <div className="rounded-2xl bg-white border border-[#E6E0D7] p-4 sm:p-5">
-        <p className="text-sm font-semibold text-[#1A1714]">Didn’t find it? Search more job sites</p>
-        <p className="text-xs text-[#6B6259] mt-0.5">
-          Opens a ready-made search{query ? <> for “{query}”</> : null} in {city === 'All India' ? 'India' : city}.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {portals.map((p) => (
-            <a
-              key={p.id}
-              href={p.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-9 px-3 rounded-full border border-[#E6E0D7] hover:border-[#1A1714] text-xs font-semibold text-[#1A1714] inline-flex items-center gap-1.5"
-            >
-              {p.name}
-              <ArrowUpRight className="w-3 h-3 text-[#9A9086]" aria-hidden="true" />
-              <span className="sr-only">(opens in a new tab)</span>
-            </a>
-          ))}
+      {panelOpen && (
+        <FilterPanel
+          query={query}
+          initial={filters}
+          onClose={() => setPanelOpen(false)}
+          onApply={(f) => {
+            applyFilters(f);
+            setPanelOpen(false);
+          }}
+        />
+      )}
+    </section>
+  );
+}
+
+/* ---------------- LinkedIn-style "All filters" panel ---------------- */
+
+function FilterPanel({ query, initial, onClose, onApply }: { query: string; initial: Filters; onClose: () => void; onApply: (f: Filters) => void }) {
+  const [draft, setDraft] = useState<Filters>(initial);
+  const [preview, setPreview] = useState<{ key: string; total: number; domainCounts: Record<string, number> } | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const previewKey = buildUrl(query, { ...draft, domain: '' }, 1);
+  const totalKey = buildUrl(query, draft, 1);
+
+  // Live result count for the button, like "Show 120 results".
+  useEffect(() => {
+    let cancelled = false;
+    const t = setTimeout(() => {
+      Promise.all([fetch(totalKey).then((r) => r.json()), totalKey === previewKey ? null : fetch(previewKey).then((r) => r.json())])
+        .then(([withDomain, withoutDomain]: [FeedResponse, FeedResponse | null]) => {
+          if (cancelled) return;
+          setPreview({ key: totalKey, total: withDomain.total, domainCounts: (withoutDomain || withDomain).domainCounts });
+        })
+        .catch(() => undefined);
+    }, 200);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [totalKey, previewKey]);
+
+  // Dialog basics: Escape closes, focus moves in and stays in, page doesn't scroll behind.
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    panelRef.current?.querySelector<HTMLElement>('button')?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'Tab' && panelRef.current) {
+        const items = panelRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input');
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last?.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', onKey);
+      previouslyFocused?.focus();
+    };
+  }, [onClose]);
+
+  const set = <K extends keyof Filters>(k: K, v: Filters[K]) => setDraft((d) => ({ ...d, [k]: v }));
+  const counts = preview?.domainCounts || {};
+  const total = preview?.key === totalKey ? preview.total : null;
+
+  return (
+    <div className="fixed inset-0 z-[80]">
+      <button type="button" aria-label="Close filters" onClick={onClose} className="absolute inset-0 bg-[#1A1714]/30 backdrop-blur-[1px] cursor-default" />
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="filters-title"
+        className="absolute bg-white flex flex-col shadow-[0_0_40px_rgba(26,23,20,0.18)] inset-x-0 bottom-0 top-12 rounded-t-[24px] sm:inset-y-0 sm:right-0 sm:left-auto sm:top-0 sm:w-[440px] sm:rounded-none sm:rounded-l-[24px] animate-in slide-in-from-bottom sm:slide-in-from-right duration-200"
+      >
+        <div className="flex items-center justify-between px-5 h-16 border-b border-[#E6E0D7] shrink-0">
+          <h2 id="filters-title" className="text-base font-bold text-[#1A1714]">All filters</h2>
+          <button type="button" onClick={onClose} aria-label="Close filters" className="w-10 h-10 rounded-full flex items-center justify-center text-[#6B6259] hover:bg-[#FAF8F4] hover:text-[#1A1714] cursor-pointer">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 py-2 divide-y divide-[#E6E0D7]">
+          <FilterGroup label="Sort by" name="sort" options={SORT_OPTIONS} value={draft.sort} onChange={(v) => set('sort', v)} />
+          <FilterGroup label="Date posted" name="posted" options={POSTED_OPTIONS} value={draft.posted} onChange={(v) => set('posted', v)} />
+          <FilterGroup label="Experience level" name="level" options={LEVEL_OPTIONS} value={draft.level} onChange={(v) => set('level', v)} />
+          <FilterGroup label="Work type" name="work" options={WORK_OPTIONS} value={draft.work} onChange={(v) => set('work', v)} />
+          <FilterGroup
+            label="Location"
+            name="city"
+            options={[{ value: '', label: 'All India' }, ...CITIES.map((c) => ({ value: c, label: c }))]}
+            value={draft.city}
+            onChange={(v) => set('city', v)}
+          />
+          <FilterGroup
+            label="Field"
+            name="domain"
+            options={[
+              { value: '', label: 'All fields' },
+              ...DOMAINS.filter((d) => (counts[d] || 0) > 0 || draft.domain === d).map((d) => ({ value: d, label: d, count: counts[d] || 0 })),
+            ]}
+            value={draft.domain}
+            onChange={(v) => set('domain', v)}
+          />
+        </div>
+
+        <div className="shrink-0 border-t border-[#E6E0D7] px-5 py-3.5 flex items-center justify-between gap-3 pb-[max(14px,env(safe-area-inset-bottom))]">
+          <button type="button" onClick={() => setDraft({ ...DEFAULT_FILTERS })} className="h-11 px-3 text-sm font-semibold text-[#574F46] hover:text-[#1A1714] cursor-pointer">
+            Reset
+          </button>
+          <button
+            type="button"
+            onClick={() => onApply(draft)}
+            className="h-11 px-6 rounded-xl bg-[#1A1714] hover:bg-[#3B342D] text-white text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
+          >
+            {total === null ? 'Show results' : total === 0 ? 'No results' : `Show ${total.toLocaleString('en-IN')} results`}
+          </button>
         </div>
       </div>
-    </section>
+    </div>
+  );
+}
+
+function FilterGroup<T extends string>({
+  label,
+  name,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  name: string;
+  options: { value: T; label: string; count?: number }[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="py-4">
+      <p id={`filter-${name}`} className="text-sm font-semibold text-[#1A1714] mb-2.5">{label}</p>
+      <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-labelledby={`filter-${name}`}>
+        {options.map((o) => {
+          const active = value === o.value;
+          return (
+            <button
+              key={`${name}-${o.value || 'any'}`}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => onChange(o.value)}
+              className={`h-9 px-3 rounded-full text-xs font-semibold border transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
+                active ? 'bg-[#1A1714] text-white border-[#1A1714]' : 'bg-white text-[#574F46] border-[#E6E0D7] hover:border-[#1A1714]/50'
+              }`}
+            >
+              {active && <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />}
+              {o.label}
+              {typeof o.count === 'number' && <span className={`tabular-nums ${active ? 'text-white/70' : 'text-[#9A9086]'}`}>{o.count}</span>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/** Shown in place of Save / Apply right after Apply is clicked. */
+function AppliedPrompt({ onYes, onNo }: { onYes: () => void; onNo: () => void }) {
+  return (
+    <div className="flex items-center gap-2" role="group" aria-label="Did you apply?">
+      <span className="text-xs font-semibold text-[#1A1714] mr-1">Did you apply?</span>
+      <button type="button" onClick={onYes} className="h-10 max-sm:h-11 px-4 rounded-xl bg-[#1A1714] hover:bg-[#3B342D] text-white text-xs font-semibold cursor-pointer">
+        Yes
+      </button>
+      <button type="button" onClick={onNo} className="h-10 max-sm:h-11 px-4 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#1A1714] text-xs font-semibold text-[#1A1714] cursor-pointer">
+        No
+      </button>
+    </div>
   );
 }
 
