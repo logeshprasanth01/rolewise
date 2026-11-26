@@ -28,7 +28,7 @@ function score(job: OpenJob, words: string[]): number {
 }
 
 /**
- * GET /api/jobs?q=&domain=&city=&work=remote|onsite&level=intern|entry|mid|senior|lead&posted=1|7|30&sort=relevant|recent&page=1
+ * GET /api/jobs?q=&domain=&city=&work=remote|onsite&level=early|intern|entry|mid|senior|lead&posted=1|7|30&sort=relevant|recent&page=1
  * Real openings: India roles from company career boards + India-friendly remote roles.
  */
 export async function GET(req: NextRequest) {
@@ -68,27 +68,52 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 2. Location, work type, experience level, date posted
+  // 2. Filters. Each facet's counts ignore that facet's own filter, so every option shows
+  //    how many jobs you would get by picking it (UXHack / LinkedIn style).
   const since = postedDays ? Date.now() - postedDays * 86_400_000 : 0;
-  const byCity = matched.filter(({ j }) => {
-    if (city && city !== 'All India') {
+  type Facet = 'city' | 'domain' | 'work' | 'level' | 'posted';
+  const lvl = (j: OpenJob) => levelOf(j.title);
+  const passes = (j: OpenJob, except?: Facet) => {
+    if (except !== 'city' && city && city !== 'All India') {
       if (city === 'Remote') {
         if (!j.remote) return false;
       } else if (!(j.city === city || j.location.includes(city))) return false;
     }
-    if (work === 'remote' && !j.remote) return false;
-    if (work === 'onsite' && j.remote) return false;
-    if (level && levelOf(j.title) !== level) return false;
-    if (since && !(Date.parse(j.postedAt || '') >= since)) return false;
+    if (except !== 'domain' && domain && j.domain !== domain) return false;
+    if (except !== 'work' && work === 'remote' && !j.remote) return false;
+    if (except !== 'work' && work === 'onsite' && j.remote) return false;
+    if (except !== 'level' && level) {
+      const l = lvl(j);
+      if (level === 'early' ? !(l === 'intern' || l === 'entry') : l !== level) return false;
+    }
+    if (except !== 'posted' && since && !(Date.parse(j.postedAt || '') >= since)) return false;
     return true;
+  };
+
+  const count = (except: Facet, keyOf: (j: OpenJob) => string | string[] | null) => {
+    const out: Record<string, number> = {};
+    for (const { j } of matched) {
+      if (!passes(j, except)) continue;
+      const k = keyOf(j);
+      for (const key of Array.isArray(k) ? k : k ? [k] : []) out[key] = (out[key] || 0) + 1;
+    }
+    return out;
+  };
+  const now = Date.now();
+  const age = (j: OpenJob) => (now - (Date.parse(j.postedAt || '') || 0)) / 86_400_000;
+  const domainCounts = count('domain', (j) => j.domain);
+  const cityCounts = count('city', (j) => [...(j.city ? [j.city] : []), ...(j.remote ? ['Remote'] : [])]);
+  const levelCounts = count('level', (j) => {
+    const l = lvl(j);
+    return l === 'intern' || l === 'entry' ? [l, 'early'] : [l];
+  });
+  const workCounts = count('work', (j) => (j.remote ? 'remote' : 'onsite'));
+  const postedCounts = count('posted', (j) => {
+    const a = age(j);
+    return [...(a <= 1 ? ['1'] : []), ...(a <= 7 ? ['7'] : []), ...(a <= 30 ? ['30'] : [])];
   });
 
-  // Facet counts (before the domain filter, so the chips show what each domain would give)
-  const domainCounts: Record<string, number> = {};
-  for (const { j } of byCity) domainCounts[j.domain] = (domainCounts[j.domain] || 0) + 1;
-
-  // 3. Domain
-  const filtered = domain ? byCity.filter(({ j }) => j.domain === domain) : byCity;
+  const filtered = matched.filter(({ j }) => passes(j));
 
   // Most relevant: best match first, then newest. Most recent: newest only.
   const time = (x: { j: OpenJob }) => Date.parse(x.j.postedAt || '') || 0;
@@ -118,6 +143,10 @@ export async function GET(req: NextRequest) {
       relaxed,
       relaxedDomain: relaxed ? domainOf(q) : null,
       domainCounts,
+      cityCounts,
+      levelCounts,
+      workCounts,
+      postedCounts,
     },
     { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600' } }
   );
