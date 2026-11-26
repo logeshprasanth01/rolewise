@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DOMAINS, Domain, OpenJob, aggregatorJobs, companyJobs, domainOf, levelOf, remoteJobs } from '@/lib/job-feed';
+import { storedJobs } from '@/lib/job-store';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -30,7 +31,10 @@ function score(job: OpenJob, words: string[]): number {
 
 /**
  * GET /api/jobs?q=&domain=&city=&work=remote|onsite&level=early|intern|entry|mid|senior|lead&posted=1|7|30&sort=relevant|recent&page=1
- * Real openings: India roles from company career boards + India-friendly remote roles.
+ *   &fresh=1        only listings first seen in the last 24 hours (or since `since`)
+ *   &since=<ms>     the visitor's last visit: newSince counts listings first seen after it
+ * Real openings: India roles from company career boards + India-friendly remote roles,
+ * read from the hourly-synced store (job-store.ts) with the live feeds as fallback.
  */
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
@@ -44,21 +48,32 @@ export async function GET(req: NextRequest) {
   const sort = sp.get('sort') === 'recent' ? 'recent' : 'relevant';
   const page = Math.max(1, Math.min(50, Number(sp.get('page')) || 1));
   const pageSize = 20;
+  const fresh = sp.get('fresh') === '1';
+  const sinceParam = Number(sp.get('since')) || 0;
 
+  // The stored feed (synced hourly) holds every board, Amazon and JSearch's role searches.
+  // A search still asks the remote boards and JSearch live, since they search far wider than the store.
+  const stored = await storedJobs().catch(() => null);
+  const useStore = !!stored && stored.jobs.length > 200;
   const [company, remote, agg] = await Promise.all([
-    companyJobs().catch(() => ({ jobs: [] as OpenJob[], companies: 0 })),
-    remoteJobs(q).catch(() => [] as OpenJob[]),
-    aggregatorJobs(q).catch((err) => {
-      console.error('[Rolewise] JSearch failed', err);
-      return [] as OpenJob[];
-    }),
+    useStore ? { jobs: stored!.jobs } : companyJobs().catch(() => ({ jobs: [] as OpenJob[] })),
+    useStore && !q ? ([] as OpenJob[]) : remoteJobs(q).catch(() => [] as OpenJob[]),
+    useStore && !q
+      ? ([] as OpenJob[])
+      : aggregatorJobs(q).catch((err) => {
+          console.error('[Rolewise] JSearch failed', err);
+          return [] as OpenJob[];
+        }),
   ]);
+  const storedIds = useStore ? new Map(stored!.jobs.map((j) => [j.id, j])) : null;
 
   // De-duplicate across sources by company + title.
   const seen = new Set<string>();
   const all: OpenJob[] = [];
   // Company career pages first, then LinkedIn/Indeed/Naukri listings, then remote boards.
-  for (const j of [...company.jobs, ...agg, ...remote]) {
+  for (const raw of [...company.jobs, ...agg, ...remote]) {
+    // Live results that are also stored keep their first-seen time.
+    const j = storedIds?.get(raw.id) || raw;
     const key = `${j.company.toLowerCase()}|${j.title.toLowerCase()}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -76,6 +91,15 @@ export async function GET(req: NextRequest) {
       matched = all.filter((j) => j.domain === guess).map((j) => ({ j, s: 1 }));
     }
   }
+
+  // 1b. New listings: first seen since the visitor's last visit, or in the last 24 hours.
+  // Listings found by the very first sync were already open before Rolewise saw them, so never "new".
+  const floor = useStore && stored!.baseline ? Date.parse(stored!.baseline) + 30 * 60 * 1000 : Infinity;
+  const seenAfter = (j: OpenJob, t: number) => !!j.firstSeenAt && Date.parse(j.firstSeenAt) > Math.max(t, floor);
+  const isFresh = (j: OpenJob) => (sinceParam ? seenAfter(j, sinceParam) : !!j.isNew);
+  const newToday = matched.filter(({ j }) => j.isNew).length;
+  const newSince = sinceParam ? matched.filter(({ j }) => seenAfter(j, sinceParam)).length : 0;
+  if (fresh) matched = matched.filter(({ j }) => isFresh(j));
 
   // 2. Filters. Each facet's counts ignore that facet's own filter, so every option shows
   //    how many jobs you would get by picking it (UXHack / LinkedIn style).
@@ -185,7 +209,11 @@ export async function GET(req: NextRequest) {
       postedCounts,
       dailyCounts,
       topCompanies,
+      newToday,
+      newSince,
+      updatedAt: useStore ? stored!.updatedAt : null,
     },
-    { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600' } }
+    // `since` makes URLs per-visitor, so those responses aren't shared from the CDN.
+    { headers: { 'Cache-Control': sinceParam ? 'private, max-age=60' : 'public, s-maxage=300, stale-while-revalidate=1800' } }
   );
 }

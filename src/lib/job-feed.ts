@@ -3,7 +3,9 @@
  *  - Company career boards (Greenhouse, Lever, Ashby, SmartRecruiters) for companies hiring in India
  *  - Himalayas (remote, India-friendly) — terms: keep applicationLink unchanged, credit Himalayas
  *  - Jobicy (remote) — terms: credit Jobicy, Apply goes to the original posting
- * Everything is normalised into OpenJob and cached in memory for 30 minutes per server instance.
+ *  - Amazon's public job search (India)
+ * Everything is normalised into OpenJob. /api/jobs/sync stores it in Supabase every hour (see job-store.ts);
+ * the in-memory caches here are the fallback when the store is empty or unreachable.
  */
 
 export type Domain =
@@ -52,6 +54,12 @@ export interface OpenJob {
   salary: string | null;
   /** Raw HTML from the source when the list API includes it. Never sent in list responses. */
   descriptionHtml?: string;
+  /** Which feed produced it (e.g. "gh:stripe", "amazon", "jsearch"); used by the hourly sync. */
+  feed?: string;
+  /** When Rolewise first saw this listing (from the stored feed). */
+  firstSeenAt?: string | null;
+  /** First seen in the last 24 hours. */
+  isNew?: boolean;
 }
 
 /** Boards verified to return India openings (Nov 2026). [ats, slug, display name] */
@@ -109,6 +117,9 @@ const BOARDS: ['gh' | 'lever' | 'ashby' | 'sr' | 'workable', string, string][] =
   ['lever', 'pocketfm', 'Pocket FM'],
   ['gh', 'figma', 'Figma'],
   ['ashby', 'notion', 'Notion'],
+  ['sr', 'wise', 'Wise'],
+  ['lever', 'nium', 'Nium'],
+  ['ashby', 'airwallex', 'Airwallex'],
 ];
 
 const CITIES: [string, RegExp][] = [
@@ -198,8 +209,18 @@ function tidyPlace(city?: string, region?: string): string {
   return first ? `${titleCase(first)}, India` : 'India';
 }
 
+/** The hourly sync sets this so it always reads the boards live, not from Next's fetch cache. */
+let FRESH = false;
+export function setFreshFetch(on: boolean) {
+  FRESH = on;
+}
+
 async function getJson(url: string, init?: RequestInit): Promise<unknown> {
-  const res = await fetch(url, { ...init, signal: AbortSignal.timeout(9000), next: { revalidate: 3600 } });
+  const res = await fetch(url, {
+    ...init,
+    signal: AbortSignal.timeout(9000),
+    ...(FRESH ? { cache: 'no-store' as const } : { next: { revalidate: 3600 } }),
+  });
   if (!res.ok) throw new Error(`${res.status} ${url}`);
   return res.json();
 }
@@ -406,24 +427,106 @@ async function jobicy(q: string): Promise<OpenJob[]> {
     );
 }
 
+/* ---------- Amazon (public job search, India) ----------
+ * Amazon hires in India at a scale no other board matches, so we read its public search:
+ * the most recent openings plus a few role searches so every field is covered. ~10 requests an hour.
+ */
+type AmazonJob = {
+  id_icims?: string;
+  id?: string;
+  title: string;
+  company_name?: string;
+  normalized_location?: string;
+  location?: string;
+  city?: string;
+  posted_date?: string;
+  job_path?: string;
+  url_next_step?: string;
+  description?: string;
+  basic_qualifications?: string;
+  preferred_qualifications?: string;
+  job_category?: string;
+  job_schedule_type?: string;
+};
+const AMAZON_QUERIES = ['', 'designer', 'product manager', 'data', 'marketing', 'finance', 'human resources', 'operations'];
+
+async function amazonJobs(): Promise<OpenJob[]> {
+  const pages: Promise<{ jobs?: AmazonJob[] }>[] = [];
+  for (const q of AMAZON_QUERIES) {
+    const offsets = q ? [0] : [0, 100, 200];
+    for (const offset of offsets) {
+      const qs = new URLSearchParams({ result_limit: '100', offset: String(offset), sort: 'recent', country: 'IND' });
+      if (q) qs.set('base_query', q);
+      pages.push(getJson(`https://www.amazon.jobs/en/search.json?${qs}`, { headers: { Accept: 'application/json' } }) as Promise<{ jobs?: AmazonJob[] }>);
+    }
+  }
+  const results = await Promise.allSettled(pages);
+  const seen = new Set<string>();
+  const out: OpenJob[] = [];
+  for (const r of results) {
+    if (r.status !== 'fulfilled') continue;
+    for (const j of r.value.jobs || []) {
+      const id = j.id_icims || j.id;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      const posted = j.posted_date ? Date.parse(j.posted_date) : NaN;
+      const section = (title: string, body?: string) => (body ? `<h3>${title}</h3><p>${body}</p>` : '');
+      out.push(
+        make({
+          id: `amazon-${id}`,
+          title: j.title,
+          company: 'Amazon',
+          logo: null,
+          location: j.normalized_location || j.city || j.location || 'India',
+          type: (j.job_schedule_type || '').replace(/^\w/, (c) => c.toUpperCase()),
+          department: j.job_category || '',
+          postedAt: Number.isFinite(posted) ? new Date(posted).toISOString() : null,
+          url: j.job_path ? `https://www.amazon.jobs${j.job_path}` : j.url_next_step || 'https://www.amazon.jobs',
+          source: 'Company careers',
+          sourceUrl: null,
+          salary: null,
+          descriptionHtml:
+            section('About the role', j.description) +
+            section('Basic qualifications', j.basic_qualifications) +
+            section('Preferred qualifications', j.preferred_qualifications),
+          feed: 'amazon',
+        })
+      );
+    }
+  }
+  if (!out.length) throw new Error('amazon: no jobs');
+  return out;
+}
+
 /* ---------- in-memory cache (per server instance) ---------- */
 const TTL = 30 * 60 * 1000;
-let companyCache: { at: number; jobs: OpenJob[]; companies: number } | null = null;
-let companyInflight: Promise<{ jobs: OpenJob[]; companies: number }> | null = null;
+type CompanyFeed = { jobs: OpenJob[]; companies: number; okFeeds: string[]; failedFeeds: string[] };
+let companyCache: ({ at: number } & CompanyFeed) | null = null;
+let companyInflight: Promise<CompanyFeed> | null = null;
 const remoteCache = new Map<string, { at: number; jobs: OpenJob[] }>();
 
-export async function companyJobs(): Promise<{ jobs: OpenJob[]; companies: number }> {
-  if (companyCache && Date.now() - companyCache.at < TTL) return companyCache;
+/** Every company board plus Amazon. `force` skips the cache (used by the hourly sync). */
+export async function companyJobs(opts: { force?: boolean } = {}): Promise<CompanyFeed> {
+  if (!opts.force && companyCache && Date.now() - companyCache.at < TTL) return companyCache;
   if (companyInflight) return companyInflight;
   companyInflight = (async () => {
-    const results = await Promise.allSettled(BOARDS.map(([ats, slug, name]) => board(ats, slug, name)));
+    const feeds: { feed: string; run: () => Promise<OpenJob[]> }[] = [
+      ...BOARDS.map(([ats, slug, name]) => ({ feed: `${ats}:${slug.toLowerCase()}`, run: () => board(ats, slug, name) })),
+      { feed: 'amazon', run: amazonJobs },
+    ];
+    const results = await Promise.allSettled(feeds.map((f) => f.run()));
     const jobs: OpenJob[] = [];
+    const okFeeds: string[] = [];
+    const failedFeeds: string[] = [];
     let companies = 0;
-    results.forEach((r) => {
-      if (r.status === 'fulfilled' && r.value.length) {
-        companies++;
-        jobs.push(...r.value);
+    results.forEach((r, i) => {
+      if (r.status !== 'fulfilled') {
+        failedFeeds.push(feeds[i].feed);
+        return;
       }
+      okFeeds.push(feeds[i].feed);
+      if (r.value.length) companies++;
+      for (const j of r.value) jobs.push({ ...j, feed: feeds[i].feed });
     });
     // Same title at the same company in several cities → keep one, list cities together.
     const merged = new Map<string, OpenJob>();
@@ -433,7 +536,7 @@ export async function companyJobs(): Promise<{ jobs: OpenJob[]; companies: numbe
       if (!prev) merged.set(key, j);
       else if (j.city && prev.city && !prev.location.includes(j.city)) prev.location = `${prev.location}, ${j.city}`;
     }
-    const value = { jobs: [...merged.values()], companies };
+    const value = { jobs: [...merged.values()], companies, okFeeds, failedFeeds };
     if (value.jobs.length) companyCache = { at: Date.now(), ...value };
     return value;
   })().finally(() => {
@@ -447,7 +550,10 @@ export async function remoteJobs(q: string): Promise<OpenJob[]> {
   const hit = remoteCache.get(key);
   if (hit && Date.now() - hit.at < TTL) return hit.jobs;
   const [h, j] = await Promise.allSettled([himalayas(q), jobicy(q)]);
-  const jobs = [...(h.status === 'fulfilled' ? h.value : []), ...(j.status === 'fulfilled' ? j.value : [])];
+  const jobs = [
+    ...(h.status === 'fulfilled' ? h.value.map((x) => ({ ...x, feed: 'himalayas' })) : []),
+    ...(j.status === 'fulfilled' ? j.value.map((x) => ({ ...x, feed: 'jobicy' })) : []),
+  ];
   if (remoteCache.size > 200) remoteCache.clear();
   remoteCache.set(key, { at: Date.now(), jobs });
   return jobs;
@@ -466,8 +572,13 @@ export async function jobDetail(id: string, q = ''): Promise<OpenJob | null> {
   let job = [...company.jobs, ...remote, ...agg].find((j) => j.id === id) || null;
   if (!job && q) job = (await remoteJobs('').catch(() => [] as OpenJob[])).find((j) => j.id === id) || null;
   if (!job) return null;
-  if (job.descriptionHtml) return job;
+  return withDescription(job);
+}
 
+/** Fill in the description for boards whose list API leaves it out (Greenhouse, SmartRecruiters). */
+export async function withDescription(job: OpenJob): Promise<OpenJob> {
+  if (job.descriptionHtml) return job;
+  const id = job.id;
   try {
     if (id.startsWith('gh-')) {
       const [, slug, jobId] = id.match(/^gh-(.+)-(\d+)$/) || [];
@@ -528,16 +639,17 @@ export function aggregatorEnabled(): boolean {
   return !!process.env.JSEARCH_API_KEY;
 }
 
-export async function aggregatorJobs(q: string): Promise<OpenJob[]> {
+export async function aggregatorJobs(q: string, opts: { pages?: number; force?: boolean } = {}): Promise<OpenJob[]> {
   const key = process.env.JSEARCH_API_KEY;
   if (!key) return [];
-  const cacheKey = q.toLowerCase().trim() || '__all__';
+  const pages = opts.pages ?? 3;
+  const cacheKey = `${q.toLowerCase().trim() || '__all__'}|${pages}`;
   const hit = aggCache.get(cacheKey);
-  if (hit && Date.now() - hit.at < AGG_TTL) return hit.jobs;
+  if (!opts.force && hit && Date.now() - hit.at < AGG_TTL) return hit.jobs;
 
   const query = `${q.trim() || 'jobs'} in India`;
   const res = await fetch(
-    `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(query)}&page=1&num_pages=3&country=in&date_posted=month`,
+    `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(query)}&page=1&num_pages=${pages}&country=in&date_posted=month`,
     {
       headers: { 'X-RapidAPI-Key': key, 'X-RapidAPI-Host': 'jsearch.p.rapidapi.com' },
       signal: AbortSignal.timeout(12000),
@@ -568,6 +680,7 @@ export async function aggregatorJobs(q: string): Promise<OpenJob[]> {
         .split(/\n{2,}/)
         .map((para) => `<p>${escape(para).replace(/\n/g, '<br/>')}</p>`)
         .join(''),
+      feed: 'jsearch',
     });
   });
   if (aggCache.size > 100) aggCache.clear();

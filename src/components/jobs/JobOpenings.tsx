@@ -3,6 +3,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
+  BadgePlus,
+  BellRing,
   Bookmark,
   BookmarkCheck,
   Briefcase,
@@ -42,6 +44,8 @@ interface OpenJob {
   source: 'Company careers' | 'Himalayas' | 'Jobicy';
   sourceUrl: string | null;
   salary: string | null;
+  isNew?: boolean;
+  firstSeenAt?: string | null;
 }
 
 type Counts = Record<string, number>;
@@ -59,10 +63,15 @@ interface FeedResponse {
   levelCounts: Counts;
   workCounts: Counts;
   postedCounts: Counts;
+  /** Listings Rolewise first saw in the last 24 hours, and since the visitor's last visit. */
+  newToday?: number;
+  newSince?: number;
+  /** Last hourly sync, when the stored feed is in use. */
+  updatedAt?: string | null;
 }
 
-type FacetCounts = Pick<FeedResponse, 'domainCounts' | 'cityCounts' | 'levelCounts' | 'workCounts' | 'postedCounts'>;
-const NO_COUNTS: FacetCounts = { domainCounts: {}, cityCounts: {}, levelCounts: {}, workCounts: {}, postedCounts: {} };
+type FacetCounts = Pick<FeedResponse, 'domainCounts' | 'cityCounts' | 'levelCounts' | 'workCounts' | 'postedCounts' | 'newToday'>;
+const NO_COUNTS: FacetCounts = { domainCounts: {}, cityCounts: {}, levelCounts: {}, workCounts: {}, postedCounts: {}, newToday: 0 };
 
 type TrackState = 'idle' | 'saving' | 'saved' | 'applied' | 'error';
 
@@ -73,9 +82,11 @@ interface Filters {
   work: '' | 'onsite' | 'remote';
   city: string;
   domain: string;
+  /** today: first seen in the last 24 hours · since: first seen since the last visit */
+  fresh: '' | 'today' | 'since';
 }
 
-const DEFAULT_FILTERS: Filters = { sort: 'relevant', posted: '', level: '', work: '', city: '', domain: '' };
+const DEFAULT_FILTERS: Filters = { sort: 'relevant', posted: '', level: '', work: '', city: '', domain: '', fresh: '' };
 
 const LEVELS: { value: Filters['level']; label: string }[] = [
   { value: 'intern', label: 'Internship' },
@@ -96,10 +107,37 @@ const WORK: { value: Filters['work']; label: string }[] = [
 const CITIES = ['Bengaluru', 'Chennai', 'Hyderabad', 'Pune', 'Mumbai', 'Delhi NCR', 'Kolkata', 'Ahmedabad', 'Coimbatore', 'Kochi'];
 const DOMAINS = ['Engineering', 'Design', 'Product', 'Data & AI', 'Marketing', 'Sales', 'Customer Success', 'Operations', 'Finance & Legal', 'People & HR', 'Other'];
 const CITY_KEY = 'rw-job-city';
+const VISIT_KEY = 'rw-jobs-visit';
+const SINCE_KEY = 'rw-jobs-since';
+
+/** The previous visit's time, kept fixed for this browser session so the alert survives a refresh. */
+function readLastVisit(): number {
+  if (typeof window === 'undefined') return 0;
+  try {
+    const held = Number(window.sessionStorage.getItem(SINCE_KEY));
+    if (held) return held;
+    const prev = Number(window.localStorage.getItem(VISIT_KEY)) || 0;
+    window.localStorage.setItem(VISIT_KEY, String(Date.now()));
+    if (prev) window.sessionStorage.setItem(SINCE_KEY, String(prev));
+    return prev;
+  } catch {
+    return 0;
+  }
+}
+
+function updatedLabel(iso?: string | null): string {
+  if (!iso) return '';
+  const mins = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
+  if (mins < 1) return 'Updated just now';
+  if (mins < 60) return `Updated ${mins} min ago`;
+  const hours = Math.round(mins / 60);
+  return `Updated ${hours} hr ago`;
+}
 const PAGE_SIZE = 20;
 
 /** One-tap shortcuts above the list, each with a live count. */
 const PRESETS: { id: string; label: string; icon: React.ElementType; patch: Partial<Filters>; count: (c: FacetCounts) => number }[] = [
+  { id: 'new', label: 'New today', icon: BadgePlus, patch: { fresh: 'today' }, count: (c) => c.newToday || 0 },
   { id: 'early', label: 'Early career', icon: GraduationCap, patch: { level: 'early' }, count: (c) => c.levelCounts.early || 0 },
   { id: 'remote', label: 'Remote', icon: Laptop, patch: { work: 'remote' }, count: (c) => c.workCounts.remote || 0 },
   { id: 'week', label: 'Posted this week', icon: CalendarClock, patch: { posted: '7' }, count: (c) => c.postedCounts['7'] || 0 },
@@ -113,8 +151,10 @@ function tintFor(name: string) {
   return LOGO_TINTS[h % LOGO_TINTS.length];
 }
 
-function buildUrl(query: string, f: Filters, page: number) {
+function buildUrl(query: string, f: Filters, page: number, since: number) {
   const p = new URLSearchParams({ page: String(page) });
+  if (f.fresh) p.set('fresh', '1');
+  if (since) p.set('since', String(since));
   if (query.trim()) p.set('q', query.trim());
   if (f.city) p.set('city', f.city);
   if (f.domain) p.set('domain', f.domain);
@@ -135,6 +175,7 @@ function activeChips(f: Filters): { key: keyof Filters; label: string }[] {
   if (f.city) chips.push({ key: 'city', label: f.city });
   if (f.work) chips.push({ key: 'work', label: WORK.find((o) => o.value === f.work)!.label });
   if (f.posted) chips.push({ key: 'posted', label: POSTED.find((o) => o.value === f.posted)!.label });
+  if (f.fresh) chips.push({ key: 'fresh', label: f.fresh === 'since' ? 'New since last visit' : 'New today' });
   return chips;
 }
 
@@ -166,8 +207,11 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
   const [sheetOpen, setSheetOpen] = useState(false);
   const [page, setPage] = useState(1);
   const listTopRef = useRef<HTMLDivElement>(null);
+  const [lastVisit] = useState(readLastVisit);
+  const [alertDismissed, setAlertDismissed] = useState(false);
 
-  const key = buildUrl(query, filters, page);
+  // `since` only matters for the "new since last visit" alert; send it with the fresh filter, or on page 1.
+  const key = buildUrl(query, filters, page, filters.fresh === 'since' || page === 1 ? lastVisit : 0);
   const [feed, setFeed] = useState<(FeedResponse & { key: string }) | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
   const [track, setTrack] = useState<Record<string, TrackState>>({});
@@ -256,6 +300,15 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
             {subtitle ?? 'Real openings from company career pages and remote job boards. Apply opens the original posting.'}
           </p>
         )}
+        {feed?.updatedAt && (
+          <p className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-medium text-[#2F6B42]">
+            <span className="relative flex w-1.5 h-1.5" aria-hidden="true">
+              <span className="absolute inset-0 rounded-full bg-[#3E8E57] opacity-60 motion-safe:animate-ping" />
+              <span className="relative w-1.5 h-1.5 rounded-full bg-[#3E8E57]" />
+            </span>
+            {updatedLabel(feed.updatedAt)} · new jobs added every hour
+          </p>
+        )}
       </div>
 
       <div className="lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:gap-5 lg:items-start">
@@ -305,6 +358,7 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
             {PRESETS.map((p) => {
               const on = Object.entries(p.patch).every(([k, v]) => filters[k as keyof Filters] === v);
               const n = p.count(counts);
+              if (p.id === 'new' && !n && !on) return null;
               const Icon = p.icon;
               return (
                 <button
@@ -371,6 +425,27 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
             </label>
           </div>
 
+          {/* New-job alert: listings first seen since the last visit */}
+          {!alertDismissed && filters.fresh !== 'since' && (feed?.newSince || 0) > 0 && (
+            <div role="status" className="mb-2.5 rounded-xl border border-[#F0D77A] bg-[#FFF8DB] pl-3.5 pr-2 py-2.5 flex items-center gap-3">
+              <BellRing className="w-4 h-4 text-[#8A5A12] shrink-0" aria-hidden="true" />
+              <p className="flex-1 min-w-0 text-xs sm:text-sm text-[#1A1714]">
+                <span className="font-semibold tabular-nums">{feed!.newSince} new {feed!.newSince === 1 ? 'job' : 'jobs'}</span>
+                {query ? <> for “{query}”</> : null} since your last visit
+              </p>
+              <button
+                type="button"
+                onClick={() => patch({ fresh: 'since', sort: 'recent' })}
+                className="h-8 px-3 rounded-lg bg-[#1A1714] text-white text-xs font-semibold shrink-0 cursor-pointer hover:bg-black"
+              >
+                Show
+              </button>
+              <button type="button" onClick={() => setAlertDismissed(true)} aria-label="Dismiss" className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-[#6B6259] hover:bg-black/5 shrink-0 cursor-pointer">
+                <X className="w-4 h-4" aria-hidden="true" />
+              </button>
+            </div>
+          )}
+
           {current?.relaxed && (
             <p className="mb-2.5 text-xs text-[#8A5A12]">No openings titled “{query}” right now, so these are other {current.relaxedDomain} roles.</p>
           )}
@@ -432,7 +507,11 @@ export function JobOpenings({ defaultQuery = '', title = 'Jobs to apply for', su
                     </div>
 
                     <div className="relative z-10 flex items-center gap-1 shrink-0 -mt-1 -mr-1.5">
-                      {job.postedAt && <span className="text-[11px] text-[#9A9086] tabular-nums pr-0.5">{timeAgo(job.postedAt).replace(' ago', '')}</span>}
+                      {job.isNew ? (
+                        <span className="h-5 px-1.5 mr-0.5 rounded-md bg-[#FFD84D] text-[#1A1714] text-[10px] font-bold uppercase tracking-wide inline-flex items-center">New</span>
+                      ) : (
+                        job.postedAt && <span className="text-[11px] text-[#9A9086] tabular-nums pr-0.5">{timeAgo(job.postedAt).replace(' ago', '')}</span>
+                      )}
                       <button
                         type="button"
                         onClick={() => state !== 'saved' && saveToTracker(job, 'saved')}
@@ -663,7 +742,7 @@ function FilterSheet({ query, initial, onClose, onApply }: { query: string; init
   const [draft, setDraft] = useState<Filters>(initial);
   const [preview, setPreview] = useState<(FeedResponse & { key: string }) | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const draftKey = buildUrl(query, draft, 1);
+  const draftKey = buildUrl(query, draft, 1, 0);
 
   // Live counts and "Show N jobs" for the choices in the sheet.
   useEffect(() => {

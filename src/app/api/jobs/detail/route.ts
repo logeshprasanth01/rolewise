@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sanitizeHtml from 'sanitize-html';
-import { jobDetail, levelOf } from '@/lib/job-feed';
+import { jobDetail, levelOf, withDescription } from '@/lib/job-feed';
+import { storedDetail } from '@/lib/job-store';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -11,7 +12,10 @@ export async function GET(req: NextRequest) {
   const q = (req.nextUrl.searchParams.get('q') || '').slice(0, 80);
   if (!id) return NextResponse.json({ error: 'missing id' }, { status: 400 });
 
-  const job = await jobDetail(id, q);
+  // The store has every synced listing (and its description where the source sends one);
+  // anything else is looked up in the live feeds.
+  const stored = await storedDetail(id).catch(() => null);
+  const job = stored ? await withDescription(stored) : await jobDetail(id, q);
   if (!job) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
   // Third-party HTML: keep structure and links only.
