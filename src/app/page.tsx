@@ -11,17 +11,20 @@ import {
   Mic,
   Video,
   ChevronRight,
-  Lightbulb,
   Layers,
   Clock,
   Compass,
   MessageSquare,
+  Search,
+  Send,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { getInterviewHistory, getPreparationItems, getUserRoles } from '@/services/api';
+import { timeAgo } from '@/lib/job-portals';
 import { greeting, isAnalyzed, isActive, isFollowUpDue, followUpDate, formatDate, relativeDay, statusOf, todayISO, addDaysISO } from '@/lib/tracker';
 import { StatusPill } from '@/components/tracker/StatusPill';
-import { Role } from '@/types/database';
+import { InterviewHistoryRecord, Role } from '@/types/database';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 import { Mascot } from '@/components/brand/Mascot';
 import { JobsInfographic } from '@/components/dashboard/JobsInfographic';
@@ -31,6 +34,7 @@ export default function DashboardPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [rolesLoaded, setRolesLoaded] = useState(false);
   const [mockInterviews, setMockInterviews] = useState(0);
+  const [history, setHistory] = useState<InterviewHistoryRecord[]>([]);
   const [hello, setHello] = useState('Hello');
   const [preparationStats, setPreparationStats] = useState({
     completed: 0,
@@ -42,10 +46,11 @@ export default function DashboardPage() {
     async function loadDashboardData() {
       try {
         setHello(greeting());
-        const [userRoles, history] = await Promise.all([getUserRoles(), getInterviewHistory()]);
+        const [userRoles, interviewHistory] = await Promise.all([getUserRoles(), getInterviewHistory()]);
         setRoles(userRoles);
         setRolesLoaded(true);
-        setMockInterviews(history.length);
+        setMockInterviews(interviewHistory.length);
+        setHistory(interviewHistory);
 
         // Only roles with an AI prep plan have preparation items.
         const analyzedRoles = userRoles.filter(isAnalyzed);
@@ -98,6 +103,48 @@ export default function DashboardPage() {
       : prepRoles.length > 0
         ? { text: `One practice answer for ${prepRoles[0].title || 'your next role'} today?`, cta: 'Practise now', href: `/roles/${prepRoles[0].id}/interview` }
         : { text: 'Add a job and your resume, and I will map how well you fit.', cta: 'Add a job', href: '/jobs/new' };
+
+  // Recent activity from real data only: jobs added, applications sent, mock interviews.
+  const roleById = new Map(roles.map((r) => [r.id, r]));
+  const activity = [
+    ...history.map((h) => ({
+      key: `iv-${h.id}`,
+      at: h.completed_at || h.started_at || '',
+      icon: Mic,
+      tint: 'bg-[#EEF7F0] text-[#2F6B42]',
+      title: `Mock interview${roleById.get(h.role_id || '')?.title ? ` · ${roleById.get(h.role_id || '')!.title}` : ''}`,
+      note: `${h.questions_answered || 0} answer${h.questions_answered === 1 ? '' : 's'} reviewed`,
+      href: '/feedback',
+    })),
+    ...roles
+      .filter((r) => r.applied_at)
+      .map((r) => ({
+        key: `ap-${r.id}`,
+        at: r.applied_at as string,
+        icon: Send,
+        tint: 'bg-[#FFF2B8] text-[#5C4A00]',
+        title: `Applied to ${r.company || 'a company'}`,
+        note: r.title || 'Job application',
+        href: `/jobs/${r.id}`,
+      })),
+    ...roles
+      .filter((r) => r.created_at)
+      .map((r) => ({
+        key: `add-${r.id}`,
+        at: r.created_at as string,
+        icon: Briefcase,
+        tint: 'bg-[#F3EFE9] text-[#574F46]',
+        title: `Added ${r.title || 'a job'}`,
+        note: r.company || 'Job tracker',
+        href: `/jobs/${r.id}`,
+      })),
+  ]
+    .filter((a) => a.at)
+    .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
+    .slice(0, 5);
+
+  const prepTotal = preparationStats.completed + preparationStats.inProgress + preparationStats.notStarted;
+  const prepDonePct = prepTotal ? Math.round((preparationStats.completed / prepTotal) * 100) : 0;
 
   return (
     <div className="space-y-7 animate-in fade-in duration-300">
@@ -207,8 +254,9 @@ export default function DashboardPage() {
 
       {/* 3. MAIN WORKSPACE GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Columns: Jobs & Practice */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Left 2 columns: today, next steps, preparation.
+            Both columns stretch to the same height; the last card in each fills the rest, so no gaps. */}
+        <div className="lg:col-span-2 flex flex-col gap-6 lg:[&>*:last-child]:flex-1">
           {/* Today: follow-ups and upcoming interviews from the tracker */}
           {roles.length > 0 ? (
             <div className="rolewise-card p-5 sm:p-6 space-y-4">
@@ -297,9 +345,44 @@ export default function DashboardPage() {
             </div>
           )}
 
+          {/* Next steps for the most recent job (hidden until a job exists, so no made-up recommendations) */}
+          {roles.length > 0 && (() => {
+            const r = roles[0];
+            const steps = [
+              { href: `/roles/${r.id}/fit`, title: 'Review your role fit', note: 'See which requirements you meet', icon: Compass, tint: 'bg-[#FFE58A] text-[#1A1714]' },
+              { href: `/roles/${r.id}/preparation`, title: 'Work through your prep plan', note: 'Built from your gaps', icon: Layers, tint: 'bg-[#FFF5DF] text-[#A06C0E]' },
+              { href: `/roles/${r.id}/interview`, title: 'Mock interview with Rowi', note: 'Questions written for this role', icon: MessageSquare, tint: 'bg-[#EAF6F0] text-[#2F6B42]' },
+              { href: `/find-jobs?q=${encodeURIComponent(r.title || '')}`, title: 'Find similar jobs', note: 'Live openings to apply for', icon: Search, tint: 'bg-[#F3EFE9] text-[#1A1714]' },
+            ];
+            return (
+              <section className="rolewise-card p-5 sm:p-6 space-y-4" aria-labelledby="next-steps-heading">
+                <div>
+                  <h2 id="next-steps-heading" className="text-base font-semibold text-[#1A1714]">Next steps for {r.title}</h2>
+                  <p className="text-[13px] text-[#6B6259]">Pick up where you left off on your most recent job.</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {steps.map((st) => (
+                    <Link key={st.href} data-ui-sound="click" href={st.href} className="p-3.5 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#C8B33E] transition-all flex items-center justify-between gap-3 group">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-9 h-9 rounded-xl ${st.tint} flex items-center justify-center shrink-0`}>
+                          <st.icon className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-semibold text-[#1A1714] truncate">{st.title}</p>
+                          <p className="text-[11px] text-[#6B6259] truncate">{st.note}</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-[#9A9086] group-hover:text-[#1A1714] transition-colors shrink-0" />
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            );
+          })()}
+
           {/* Functional preparation analytics — derived only from the user's real preparation items */}
           {roles.length > 0 && (
-            <section className="rolewise-card p-5 sm:p-6 space-y-4">
+            <section className="rolewise-card p-5 sm:p-6 flex flex-col gap-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2">
@@ -319,12 +402,12 @@ export default function DashboardPage() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-5 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-5 items-center my-auto">
                 <div className="space-y-3">
                   {[
-                    { label: 'Completed', value: preparationStats.completed, track: 'bg-[#E7F2EA]', fill: 'bg-[#6FA77F]' },
-                    { label: 'In progress', value: preparationStats.inProgress, track: 'bg-[#FFE58A]', fill: 'bg-[#D49A35]' },
-                    { label: 'Not started', value: preparationStats.notStarted, track: 'bg-[#EFEAE3]', fill: 'bg-[#9A9086]' },
+                    { label: 'Completed', value: preparationStats.completed, track: 'bg-[#F3EFE9]', fill: 'bg-[#6FA77F]' },
+                    { label: 'In progress', value: preparationStats.inProgress, track: 'bg-[#F3EFE9]', fill: 'bg-[#E7B416]' },
+                    { label: 'Not started', value: preparationStats.notStarted, track: 'bg-[#F3EFE9]', fill: 'bg-[#9A9086]' },
                   ].map((item) => {
                     const total =
                       preparationStats.completed +
@@ -349,161 +432,120 @@ export default function DashboardPage() {
                   })}
                 </div>
 
-                <div className="w-full sm:w-[132px] h-[132px] rounded-[22px] bg-[#FFFFFF] border border-[#E8E3CE] flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-[#1A1714]">
-                    {preparationStats.completed + preparationStats.inProgress + preparationStats.notStarted}
-                  </span>
-                  <span className="text-[10px] font-medium text-[#6B6259] text-center leading-tight px-3">
-                    preparation items
-                  </span>
+                {/* Share of the plan that is done */}
+                <div className="flex sm:flex-col items-center gap-4 sm:gap-2 sm:w-[132px]">
+                  <div className="relative w-[104px] h-[104px] shrink-0" role="img" aria-label={`${prepDonePct}% of ${prepTotal} preparation items completed`}>
+                    <svg viewBox="0 0 104 104" className="w-full h-full -rotate-90">
+                      <circle cx="52" cy="52" r="44" fill="none" stroke="#F3EFE9" strokeWidth="10" />
+                      <circle
+                        cx="52"
+                        cy="52"
+                        r="44"
+                        fill="none"
+                        stroke="#6FA77F"
+                        strokeWidth="10"
+                        strokeLinecap="round"
+                        strokeDasharray={2 * Math.PI * 44}
+                        strokeDashoffset={2 * Math.PI * 44 * (1 - prepDonePct / 100)}
+                        className="transition-[stroke-dashoffset] duration-700"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-xl font-bold text-[#1A1714] tabular-nums">{prepDonePct}%</span>
+                      <span className="text-[10px] text-[#6B6259]">done</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-[#6B6259] sm:text-center leading-snug">
+                    <span className="font-semibold text-[#1A1714] tabular-nums">{prepTotal}</span> items in your plans
+                  </p>
                 </div>
               </div>
             </section>
           )}
 
-          {/* Supporting Communication Practice (PRD: Voice & Video) */}
-          <div className="rolewise-card p-6 space-y-4">
-            <div>
-              <h2 className="text-base font-semibold text-[#1A1714]">General drills</h2>
-              <p className="text-xs text-[#6B6259]">Build confidence practising with Rowi.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <Link data-ui-sound="click"
-                href="/communication-practice/voice"
-                className="p-4 rounded-xl border border-[#E6E0D7] hover:border-[#C8B33E] bg-white transition-all group flex items-start gap-3.5"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#FFE58A] text-[#1A1714] flex items-center justify-center shrink-0">
-                  <Mic className="w-5 h-5" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-xs sm:text-sm font-semibold text-[#1A1714] group-hover:text-[#1A1714] transition-colors flex items-center gap-1">
-                    <span>Voice Practice</span>
-                    <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </h3>
-                  <p className="text-xs text-[#6B6259] leading-relaxed">
-                    Record answers and receive observable clarity & conciseness feedback.
-                  </p>
-                </div>
-              </Link>
-
-              <Link data-ui-sound="click"
-                href="/communication-practice/video"
-                className="p-4 rounded-xl border border-[#E6E0D7] hover:border-[#C8B33E] bg-white transition-all group flex items-start gap-3.5"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#FFE58A] text-[#1A1714] flex items-center justify-center shrink-0">
-                  <Video className="w-5 h-5" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-xs sm:text-sm font-semibold text-[#1A1714] group-hover:text-[#1A1714] transition-colors flex items-center gap-1">
-                    <span>Video Practice</span>
-                    <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </h3>
-                  <p className="text-xs text-[#6B6259] leading-relaxed">
-                    Practice with camera & microphone recording with structured content review.
-                  </p>
-                </div>
-              </Link>
-            </div>
-          </div>
         </div>
 
-        {/* Right Column: Calendar, Quick Tips, Recent Activity */}
-        <div className="space-y-6">
+        {/* Right column: calendar, recent activity, practice */}
+        <div className="flex flex-col gap-6 lg:[&>*:last-child]:flex-1">
           {/* Functional Calendar Widget (Requirements 1-11) */}
           <CalendarWidget roles={roles} />
 
-          {/* Quick Tips */}
-          <div className="rolewise-card p-5 space-y-3">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#C58A2B]">
-              <Lightbulb className="w-3.5 h-3.5" />
-              <span>Quick Tips</span>
+          {/* Recent activity — real events only */}
+          <section className="rolewise-card p-5 space-y-3" aria-labelledby="activity-heading">
+            <div className="flex items-center justify-between">
+              <h2 id="activity-heading" className="text-sm font-semibold text-[#1A1714] flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-[#6B6259]" aria-hidden="true" /> Recent activity
+              </h2>
+              {activity.length > 0 && (
+                <Link href="/jobs" className="text-[11px] font-semibold text-[#6B6259] hover:text-[#1A1714]">
+                  Job tracker →
+                </Link>
+              )}
             </div>
+            {activity.length === 0 ? (
+              <div className="py-5 text-center space-y-1.5 border border-dashed border-[#E6E0D7] rounded-xl">
+                <CheckCircle2 className="w-5 h-5 text-[#9A9086] mx-auto" aria-hidden="true" />
+                <p className="text-xs font-semibold text-[#1A1714]">No activity yet</p>
+                <p className="text-[11px] text-[#6B6259] max-w-[210px] mx-auto">Jobs you add, applications and mock interviews will show here.</p>
+              </div>
+            ) : (
+              <ol className="relative">
+                {activity.map((a, idx) => (
+                  <li key={a.key} className="relative">
+                    {idx < activity.length - 1 && <span className="absolute left-[15px] top-9 bottom-0 w-px bg-[#E6E0D7]" aria-hidden="true" />}
+                    <Link href={a.href} className="flex items-start gap-3 py-2 rounded-lg hover:bg-[#FAF8F4] -mx-1.5 px-1.5 transition-colors">
+                      <span className={`relative w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${a.tint}`}>
+                        <a.icon className="w-3.5 h-3.5" aria-hidden="true" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[13px] font-semibold text-[#1A1714] truncate">{a.title}</span>
+                        <span className="block text-[11px] text-[#6B6259] truncate">{a.note}</span>
+                      </span>
+                      <span className="text-[11px] text-[#9A9086] shrink-0 pt-0.5 tabular-nums">{timeAgo(a.at)}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
 
-            <div className="space-y-2 text-xs">
-              <Link data-ui-sound="click"
-                href="/communication-practice"
-                className="p-2.5 rounded-lg border border-[#E6E0D7] hover:border-[#C8B33E] bg-[#FFFFFF] flex items-center justify-between text-[#1A1714] transition-all"
-              >
-                <span>Practice communication regularly</span>
-                <ChevronRight className="w-3.5 h-3.5 text-[#9A9086]" />
-              </Link>
-              <Link data-ui-sound="click"
-                href="/feedback"
-                className="p-2.5 rounded-lg border border-[#E6E0D7] hover:border-[#C8B33E] bg-[#FFFFFF] flex items-center justify-between text-[#1A1714] transition-all"
-              >
-                <span>Review feedback and improve</span>
-                <ChevronRight className="w-3.5 h-3.5 text-[#9A9086]" />
-              </Link>
+          {/* Practice: general drills + feedback (replaces the old Quick Tips and General drills cards) */}
+          <section className="rolewise-card p-5 flex flex-col gap-3" aria-labelledby="practice-heading">
+            <div>
+              <h2 id="practice-heading" className="text-sm font-semibold text-[#1A1714]">Practice with Rowi</h2>
+              <p className="text-[11px] text-[#6B6259]">Short drills to build clear, confident answers.</p>
             </div>
-          </div>
-
+            <ul className="space-y-2">
+              {[
+                { href: '/communication-practice/voice', icon: Mic, title: 'Voice practice', note: 'Clarity and conciseness feedback' },
+                { href: '/communication-practice/video', icon: Video, title: 'Video practice', note: 'Camera, voice and content review' },
+                { href: '/feedback', icon: MessageSquare, title: 'Review your feedback', note: 'See what to improve next' },
+              ].map((d) => (
+                <li key={d.href}>
+                  <Link
+                    data-ui-sound="click"
+                    href={d.href}
+                    className="flex items-center gap-3 p-2.5 rounded-xl border border-[#E6E0D7] bg-white hover:border-[#C8B33E] transition-colors group"
+                  >
+                    <span className="w-9 h-9 rounded-lg bg-[#FFE58A] text-[#1A1714] flex items-center justify-center shrink-0">
+                      <d.icon className="w-4 h-4" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[13px] font-semibold text-[#1A1714]">{d.title}</span>
+                      <span className="block text-[11px] text-[#6B6259] truncate">{d.note}</span>
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-[#9A9086] group-hover:text-[#1A1714] shrink-0" aria-hidden="true" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-auto pt-1 text-[11px] text-[#6B6259] leading-snug">
+              <span className="font-semibold text-[#1A1714]">Tip:</span> practise one answer a day. Small, regular reps add up.
+            </p>
+          </section>
         </div>
       </div>
 
-      {/* 4. LOWER DASHBOARD: RECOMMENDED FOR YOU (2x2 GRID) & RECENT ACTIVITY */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left Column: next steps for the person's own job. Hidden until a job exists,
-            so a new account never sees generic, made-up recommendations. */}
-        {roles.length > 0 && (() => {
-          const r = roles[0];
-          const steps = [
-            { href: `/roles/${r.id}/fit`, title: 'Review your role fit', note: 'See which requirements you meet', icon: Compass, tint: 'bg-[#FFE58A] text-[#1A1714]' },
-            { href: `/roles/${r.id}/preparation`, title: 'Work through your prep plan', note: 'Built from your gaps', icon: Layers, tint: 'bg-[#FFF5DF] text-[#D49A35]' },
-            { href: `/roles/${r.id}/interview`, title: 'Mock interview with Rowi', note: 'Questions written for this role', icon: MessageSquare, tint: 'bg-[#EAF6F0] text-[#6FA77F]' },
-            { href: '/communication-practice', title: 'General drills', note: 'Voice and video practice', icon: FileText, tint: 'bg-[#FAF8F4] text-[#1A1714]' },
-          ];
-          return (
-            <section className="lg:col-span-2 space-y-3">
-              <div className="space-y-0.5">
-                <h2 className="text-sm sm:text-base font-semibold text-[#1A1714]">Next steps for {r.title}</h2>
-                <p className="text-xs text-[#6B6259]">Pick up where you left off on your most recent job.</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {steps.map((st) => (
-                  <Link key={st.href} data-ui-sound="click" href={st.href} className="rolewise-card p-4 hover:border-[#C8B33E] transition-all flex items-center justify-between group">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-xl ${st.tint} flex items-center justify-center shrink-0`}>
-                        <st.icon className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-[#1A1714]">{st.title}</p>
-                        <p className="text-[11px] text-[#6B6259]">{st.note}</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-[#9A9086] group-hover:text-[#1A1714] transition-colors shrink-0" />
-                  </Link>
-                ))}
-              </div>
-            </section>
-          );
-        })()}
-
-        {/* Right Column: Recent Activity (Truthful empty state per PRD) */}
-        <section className={roles.length > 0 ? 'lg:col-span-1' : 'lg:col-span-3'}>
-          <div className="rolewise-card p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#1A1714] flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-[#6B6259]" />
-                <span>Recent Activity</span>
-              </span>
-              <span className="text-[11px] text-[#9A9086]">View all</span>
-            </div>
-
-            <div className="py-6 text-center space-y-2 border border-dashed border-[#E6E0D7] rounded-xl bg-[#FFFFFF]/50">
-              <div className="w-8 h-8 rounded-full bg-[#FAF8F4] text-[#9A9086] flex items-center justify-center mx-auto">
-                <FileText className="w-4 h-4" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-xs font-semibold text-[#1A1714]">No activity yet</p>
-                <p className="text-[11px] text-[#6B6259] max-w-[200px] mx-auto">
-                  Your practice sessions, interviews and feedback will appear here.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
     </div>
   );
 }
