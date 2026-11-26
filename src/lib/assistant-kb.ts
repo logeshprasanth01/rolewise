@@ -111,7 +111,7 @@ export const HELP: HelpEntry[] = [
     id: 'find-jobs',
     keywords: ['find jobs', 'job search', 'openings', 'apply', 'where to apply', 'vacancies', 'naukri', 'linkedin', 'indeed', 'remote jobs'],
     answer:
-      'Find Jobs shows openings for the roles you are preparing for. Pick a location to open a ready-made search on LinkedIn, Naukri, Indeed, Google Jobs or Glassdoor, or apply to a live remote opening. Apply opens the original posting; afterwards you can mark it as applied in your tracker in one tap.',
+      'Find Jobs lists real openings in every field (engineering, design, product, data, marketing, sales, support, operations, finance, HR) from company career pages and remote job boards, updated hourly. Filter by city or field, or search a role, skill or company. Apply opens the original posting; afterwards you can mark it as applied in your tracker in one tap.',
     link: { label: 'Find jobs', href: '/find-jobs' },
   },
   {

@@ -1,46 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { DOMAINS, Domain, OpenJob, companyJobs, domainOf, remoteJobs } from '@/lib/job-feed';
 
 export const runtime = 'nodejs';
+export const maxDuration = 30;
 
-/**
- * Live remote openings for a role, from Jobicy's free public API.
- * Jobicy asks that listings credit them and that "Apply" links go to the original job page,
- * so `url` is passed through unchanged and the UI shows the source.
- * Responses are cached for an hour (their fair-use guidance: no more than hourly syncing).
- */
-
-type JobicyJob = {
-  id: number;
-  url: string;
-  jobTitle: string;
-  companyName: string;
-  companyLogo?: string;
-  jobType?: string[] | string;
-  jobGeo?: string;
-  jobLevel?: string;
-  jobExcerpt?: string;
-  pubDate?: string;
-  salaryMin?: number;
-  salaryMax?: number;
-  salaryCurrency?: string;
-  salaryPeriod?: string;
-};
-
-export interface OpenJob {
-  id: string;
-  title: string;
-  company: string;
-  logo: string | null;
-  location: string;
-  type: string;
-  level: string;
-  postedAt: string | null;
-  url: string;
-  salary: string | null;
-  excerpt: string;
-}
-
-const STOP = new Set(['and', 'the', 'of', 'for', 'a', 'an', 'to', 'in', 'with', 'senior', 'junior', 'sr', 'jr', 'lead', 'ii', 'iii', 'intern']);
+const STOP = new Set(['and', 'the', 'of', 'for', 'a', 'an', 'to', 'in', 'with', 'senior', 'junior', 'sr', 'jr', 'lead', 'ii', 'iii', 'i', 'jobs', 'job', 'role']);
 
 function tokens(s: string): string[] {
   return s
@@ -50,90 +14,88 @@ function tokens(s: string): string[] {
     .filter((w) => w.length > 1 && !STOP.has(w));
 }
 
-/** Search tags to try, most specific first: "ui ux designer" → "ux designer" → "designer". */
-function tagsFor(q: string): string[] {
-  const t = tokens(q);
-  const out = [t.join(' ')];
-  if (t.length > 2) out.push(t.slice(-2).join(' '));
-  if (t.length > 1) out.push(t[t.length - 1]);
-  return [...new Set(out)].filter(Boolean).slice(0, 2);
+function score(job: OpenJob, words: string[]): number {
+  if (!words.length) return 1;
+  const title = new Set(tokens(job.title));
+  const extra = `${job.company} ${job.department}`.toLowerCase();
+  let s = 0;
+  for (const w of words) {
+    if (title.has(w)) s += 3;
+    else if ([...title].some((t) => t.startsWith(w) || w.startsWith(t))) s += 2;
+    else if (extra.includes(w)) s += 1;
+  }
+  return s;
 }
 
-function salaryText(j: JobicyJob): string | null {
-  if (!j.salaryMin && !j.salaryMax) return null;
-  const cur = j.salaryCurrency || '';
-  const fmt = (n?: number) => (n ? (n >= 1000 ? `${Math.round(n / 1000)}k` : String(n)) : '');
-  const range = j.salaryMin && j.salaryMax && j.salaryMin !== j.salaryMax ? `${fmt(j.salaryMin)}–${fmt(j.salaryMax)}` : fmt(j.salaryMin || j.salaryMax);
-  const per = j.salaryPeriod ? ` / ${j.salaryPeriod.replace('ly', '').replace('annual', 'year')}` : '';
-  return `${cur} ${range}${per}`.trim();
-}
-
-function decode(s: string): string {
-  return s
-    .replace(/&amp;/g, '&')
-    .replace(/&#0?39;|&#8217;|&rsquo;/g, '’')
-    .replace(/&quot;/g, '"')
-    .replace(/&#8211;|&ndash;/g, '–')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
+/**
+ * GET /api/jobs?q=&domain=&city=&remote=1&page=1
+ * Real openings: India roles from company career boards + India-friendly remote roles.
+ */
 export async function GET(req: NextRequest) {
-  const q = (req.nextUrl.searchParams.get('q') || '').slice(0, 80).trim();
-  if (q.length < 2) return NextResponse.json({ jobs: [], source: null });
+  const sp = req.nextUrl.searchParams;
+  const q = (sp.get('q') || '').slice(0, 80).trim();
+  const domainParam = sp.get('domain') as Domain | null;
+  const domain = domainParam && DOMAINS.includes(domainParam) ? domainParam : null;
+  const city = (sp.get('city') || '').trim();
+  const page = Math.max(1, Math.min(50, Number(sp.get('page')) || 1));
+  const pageSize = 20;
 
-  const wanted = tokens(q);
-  const seen = new Set<number>();
-  const jobs: OpenJob[] = [];
+  const [company, remote] = await Promise.all([companyJobs().catch(() => ({ jobs: [] as OpenJob[], companies: 0 })), remoteJobs(q).catch(() => [] as OpenJob[])]);
 
-  try {
-    const tags = tagsFor(q);
-    for (let i = 0; i < tags.length && jobs.length < 6; i++) {
-      if (i > 0) await sleep(1100); // Jobicy: at least 1s between requests
-      const res = await fetch(`https://jobicy.com/api/v2/remote-jobs?count=50&tag=${encodeURIComponent(tags[i])}`, {
-        next: { revalidate: 3600 },
-        headers: { Accept: 'application/json' },
-      });
-      if (!res.ok) break;
-      const data = (await res.json()) as { jobs?: JobicyJob[] };
-      for (const j of data.jobs || []) {
-        if (seen.has(j.id) || !j.url || !j.jobTitle) continue;
-        // Keep only titles that share a real word with the role (tag search also matches inside words).
-        const titleTokens = new Set(tokens(j.jobTitle));
-        const overlap = wanted.filter((w) => titleTokens.has(w)).length;
-        if (overlap === 0) continue;
-        seen.add(j.id);
-        jobs.push({
-          id: String(j.id),
-          title: decode(j.jobTitle),
-          company: decode(j.companyName || 'Company'),
-          logo: j.companyLogo || null,
-          location: j.jobGeo ? `Remote · ${decode(j.jobGeo)}` : 'Remote',
-          type: Array.isArray(j.jobType) ? j.jobType.join(', ') : j.jobType || '',
-          level: j.jobLevel && j.jobLevel !== 'Any' ? j.jobLevel : '',
-          postedAt: j.pubDate || null,
-          url: j.url,
-          salary: salaryText(j),
-          excerpt: decode(j.jobExcerpt || '').slice(0, 180),
-        });
-      }
-    }
-  } catch (err) {
-    console.error('[Rolewise] jobs feed error', err);
-    return NextResponse.json({ jobs: [], source: 'Jobicy', error: 'unavailable' }, { status: 200 });
+  // De-duplicate across sources by company + title.
+  const seen = new Set<string>();
+  const all: OpenJob[] = [];
+  for (const j of [...company.jobs, ...remote]) {
+    const key = `${j.company.toLowerCase()}|${j.title.toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    all.push(j);
   }
 
-  // Closest title match first, then newest.
-  jobs.sort((a, b) => {
-    const score = (t: string) => wanted.filter((w) => tokens(t).includes(w)).length;
-    return score(b.title) - score(a.title) || (Date.parse(b.postedAt || '') || 0) - (Date.parse(a.postedAt || '') || 0);
+  // 1. Keyword match. If the exact role has no openings, fall back to the role's domain.
+  const words = tokens(q);
+  let relaxed = false;
+  let matched = all.map((j) => ({ j, s: score(j, words) })).filter((x) => x.s >= Math.min(3, words.length * 2));
+  if (words.length && matched.length === 0) {
+    const guess = domainOf(q);
+    if (guess !== 'Other') {
+      relaxed = true;
+      matched = all.filter((j) => j.domain === guess).map((j) => ({ j, s: 1 }));
+    }
+  }
+
+  // 2. Location
+  const byCity = matched.filter(({ j }) => {
+    if (!city || city === 'All India') return true;
+    if (city === 'Remote') return j.remote;
+    return j.city === city || j.location.includes(city);
   });
 
+  // Facet counts (before the domain filter, so the chips show what each domain would give)
+  const domainCounts: Record<string, number> = {};
+  for (const { j } of byCity) domainCounts[j.domain] = (domainCounts[j.domain] || 0) + 1;
+
+  // 3. Domain
+  const filtered = domain ? byCity.filter(({ j }) => j.domain === domain) : byCity;
+
+  // Best match first, then newest.
+  filtered.sort((a, b) => b.s - a.s || (Date.parse(b.j.postedAt || '') || 0) - (Date.parse(a.j.postedAt || '') || 0));
+
+  const total = filtered.length;
+  const jobs = filtered.slice((page - 1) * pageSize, page * pageSize).map(({ j }) => j);
+  const companies = new Set(filtered.map(({ j }) => j.company)).size;
+
   return NextResponse.json(
-    { jobs: jobs.slice(0, 8), source: 'Jobicy', sourceUrl: 'https://jobicy.com' },
-    { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200' } }
+    {
+      jobs,
+      total,
+      page,
+      hasMore: page * pageSize < total,
+      companies,
+      relaxed,
+      relaxedDomain: relaxed ? domainOf(q) : null,
+      domainCounts,
+    },
+    { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600' } }
   );
 }
